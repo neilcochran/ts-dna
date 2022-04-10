@@ -22,7 +22,7 @@ export class DNA implements NucleicAcid {
 
     setSequence(sequence: string): void {
         if(!isValidSequence(sequence, NucleicAcidType.DNA)){
-            throw new Error(`invalid RNA squence provided: ${sequence}`)
+            throw new Error(`invalid RNA squence provided: ${sequence}`);
         }
         this.sequence = sequence.toUpperCase();
     }
@@ -48,7 +48,7 @@ export class RNA implements NucleicAcid {
 
     setSequence(sequence: string): void {
         if(!isValidSequence(sequence, this.nucleicAcidType)){
-            throw new Error(`invalid RNA squence provided: ${sequence}`)
+            throw new Error(`invalid RNA squence provided: ${sequence}`);
         }
         this.sequence = sequence.toUpperCase();
     }
@@ -70,11 +70,11 @@ export class RNA implements NucleicAcid {
 
 export const isDNA = (nucleicAcid: NucleicAcid): nucleicAcid is DNA => {
     return nucleicAcid.nucleicAcidType === NucleicAcidType.DNA;
-}
+};
 
 export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
     return nucleicAcid.nucleicAcidType === NucleicAcidType.RNA;
-}
+};
 
 
 /*
@@ -110,11 +110,11 @@ const getComplementSequence = (sequence: string | undefined, type: NucleicAcidTy
         for (const base of sequence) {
             complement += NucleicAcidType.DNA === type 
                 ? getDNABaseComplement(base) ?? ''
-                : getRNABaseComplement(base) ?? ''
+                : getRNABaseComplement(base) ?? '';
         }
     }
     return complement;
-}
+};
 
 export const isValidSequence = (sequence: string, type: NucleicAcidType): boolean => {
     let regex = undefined;
@@ -123,11 +123,11 @@ export const isValidSequence = (sequence: string, type: NucleicAcidType): boolea
             regex = DNA_REGEX;
             break;
         case NucleicAcidType.RNA:
-            regex = RNA_REGEX
+            regex = RNA_REGEX;
             break;
     }
     return regex.test(sequence);
-}
+};
 
 export const getDNABaseComplement = (base: string): string | undefined => {
     switch(base){
@@ -142,7 +142,7 @@ export const getDNABaseComplement = (base: string): string | undefined => {
         default:
             return undefined;
     }
-}
+};
 
 export const getRNABaseComplement = (base: string): string | undefined => {
     switch(base){
@@ -157,7 +157,7 @@ export const getRNABaseComplement = (base: string): string | undefined => {
         default:
             return undefined;
     }
-}
+};
 
 export const convertNucleicAcid = (nucleicAcid: NucleicAcid): DNA | RNA => {
     const sequence = nucleicAcid.getSequence();
@@ -175,7 +175,7 @@ export const convertNucleicAcid = (nucleicAcid: NucleicAcid): DNA | RNA => {
         }
         return dna;
     }
-}
+};
 
 export const convertDNAtoRNA = (dna: DNA): RNA => {
     const rna = new RNA();
@@ -184,7 +184,7 @@ export const convertDNAtoRNA = (dna: DNA): RNA => {
         rna.setSequence(sequence.replaceAll('U', 'T'));
     }
     return rna;
-}
+};
 
 export const convertRNAtoDNA = (rna: RNA): DNA => {
     const dna = new DNA();
@@ -193,6 +193,6 @@ export const convertRNAtoDNA = (rna: RNA): DNA => {
         dna.setSequence(sequence.replaceAll('U', 'T'));
     }
     return dna;
-}
+};
 
 
