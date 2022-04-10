@@ -54,7 +54,7 @@ export const getAminoAcidByCodon = (codon: NucleicAcid): AminoAcid | undefined =
     } catch (error) {
         return undefined;
     }
-}
+};
 
 const getAminoAcidNamesByCodon = (codon: NucleicAcid): AminoAcidName | undefined => {
     let sequence = codon.getSequence();
@@ -71,84 +71,84 @@ const getAminoAcidNamesByCodon = (codon: NucleicAcid): AminoAcidName | undefined
         case 'GCC':
         case 'GCG':
         case 'GCU':
-            return { name: "Alanine", abbrv: "Ala", slc: "A" };
+            return { name: 'Alanine', abbrv: 'Ala', slc: 'A' };
         case 'UGC':
         case 'UGU':
-            return { name: "Cysteine", abbrv: "Cys", slc: "C" };
+            return { name: 'Cysteine', abbrv: 'Cys', slc: 'C' };
         case 'GAC':
         case 'GAU':
-            return { name: "Aspartic acid", abbrv: "Asp", slc: "D" };
+            return { name: 'Aspartic acid', abbrv: 'Asp', slc: 'D' };
         case 'GAA':
         case 'GAG':
-            return { name: "Glutamic acid", abbrv: "Glu", slc: "E" };
+            return { name: 'Glutamic acid', abbrv: 'Glu', slc: 'E' };
         case 'UUC':
         case 'UUU':
-            return { name: "Phenylalanine", abbrv: "Phe", slc: "F" };
+            return { name: 'Phenylalanine', abbrv: 'Phe', slc: 'F' };
         case 'GGA':
         case 'GGC':
         case 'GGG':
         case 'GGU':
-            return { name: "Glycine", abbrv: "Gly", slc: "G" };
+            return { name: 'Glycine', abbrv: 'Gly', slc: 'G' };
         case 'CAC':
         case 'CAU':
-            return { name: "Histidine", abbrv: "His", slc: "H" };
+            return { name: 'Histidine', abbrv: 'His', slc: 'H' };
         case 'AUA':
         case 'AUC':
         case 'AUU':
-            return { name: "Isoleucine", abbrv: "Ile", slc: "I" };
+            return { name: 'Isoleucine', abbrv: 'Ile', slc: 'I' };
         case 'AAA':
         case 'AAG':
-            return { name: "Lysine", abbrv: "Lys", slc: "K" };
+            return { name: 'Lysine', abbrv: 'Lys', slc: 'K' };
         case 'UUA':
         case 'UUG':
         case 'CUA':
         case 'CUC':
         case 'CUG':
         case 'CUU':
-            return { name: "Leucine", abbrv: "Leu", slc: "L" };
+            return { name: 'Leucine', abbrv: 'Leu', slc: 'L' };
         case 'AUG':
-            return { name: "Methionine", abbrv: "Met", slc: "M" };
+            return { name: 'Methionine', abbrv: 'Met', slc: 'M' };
         case 'AAC':
         case 'AAU':
-            return { name: "Asparagine", abbrv: "Asn", slc: "N" };
+            return { name: 'Asparagine', abbrv: 'Asn', slc: 'N' };
         case 'CCA':
         case 'CCC':
         case 'CCG':
         case 'CCU':
-            return { name: "Proline", abbrv: "Pro", slc: "P" };
+            return { name: 'Proline', abbrv: 'Pro', slc: 'P' };
         case 'CAA':
         case 'CAG':
-            return { name: "Glutamine", abbrv: "Gln", slc: "Q" };
+            return { name: 'Glutamine', abbrv: 'Gln', slc: 'Q' };
         case 'AGA':
         case 'AGG':
         case 'CGA':
         case 'CGC':
         case 'CGG':
         case 'CGU':
-            return { name: "Arginine", abbrv: "Arg", slc: "R" };
+            return { name: 'Arginine', abbrv: 'Arg', slc: 'R' };
         case 'AGC':
         case 'AGU':
         case 'UCA':
         case 'UCC':
         case 'UCG':
         case 'UCU':
-            return { name: "Serine", abbrv: "Ser", slc: "S" };
+            return { name: 'Serine', abbrv: 'Ser', slc: 'S' };
         case 'ACA':
         case 'ACC':
         case 'ACG':
         case 'ACU':
-            return { name: "Threonine", abbrv: "Thr", slc: "T" };
+            return { name: 'Threonine', abbrv: 'Thr', slc: 'T' };
         case 'GUA':
         case 'GUC':
         case 'GUG':
         case 'GUU':
-            return { name: "Valine", abbrv: "Val", slc: "V" };
+            return { name: 'Valine', abbrv: 'Val', slc: 'V' };
         case 'UGG':
-            return { name: "Tryptophan", abbrv: "Trp", slc: "W" };
+            return { name: 'Tryptophan', abbrv: 'Trp', slc: 'W' };
         case 'UAC':
         case 'UAU':
-            return { name: "Tyrosine", abbrv: "Tyr", slc: "Y" }; 
+            return { name: 'Tyrosine', abbrv: 'Tyr', slc: 'Y' }; 
         default:
             return undefined;
     }
-}
+};
