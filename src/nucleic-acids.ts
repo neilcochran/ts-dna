@@ -10,7 +10,7 @@ export class DNA implements NucleicAcid {
     private sequence: string | undefined;
 
     constructor(sequence?: string) {
-        if(sequence){
+        if(sequence !== undefined){
             this.setSequence(sequence);
         }
     }
@@ -36,7 +36,7 @@ export class RNA implements NucleicAcid {
     private sequence: string | undefined;
 
     constructor(sequence?: string) {
-        if(sequence) {
+        if(sequence !== undefined) {
             this.setSequence(sequence);
         }
     }
@@ -91,10 +91,10 @@ export const isValidNucleicAcidSequence = (sequence: string, type: NucleicAcidTy
     let regex = undefined;
     switch(type){
         case NucleicAcidType.DNA:
-            regex = /^[AaTtCcGg]*$/;
+            regex = /^[AaTtCcGg]+$/;
             break;
         case NucleicAcidType.RNA:
-            regex =  /^[AaUuCcGg]*$/;
+            regex =  /^[AaUuCcGg]+$/;
             break;
     }
     return regex.test(sequence);
@@ -122,7 +122,7 @@ export const convertToRNA = (dna: DNA): RNA => {
     const rna = new RNA();
     const sequence = dna.getSequence();
     if(sequence) {
-        rna.setSequence(sequence.replaceAll('U', 'T'));
+        rna.setSequence(sequence.replaceAll('T', 'U'));
     }
     return rna;
 };
