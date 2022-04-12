@@ -1,6 +1,6 @@
-import { NucleicAcid, NucleicAcidType, convertNucleicAcid } from './nucleic-acids';
+import { convertNucleicAcid, NucleicAcid, NucleicAcidType } from './nucleic-acids';
 
-export interface AminoAcidName {
+interface AminoAcidName {
     readonly name: string;
     readonly abbrv: string;
     readonly slc: string;
