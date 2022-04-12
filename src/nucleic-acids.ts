@@ -1,8 +1,3 @@
-/*
-   --- Classes ---
-*/
-
-
 export interface NucleicAcid {
     readonly nucleicAcidType: NucleicAcidType;
     setSequence(sequence: string): void;
@@ -21,7 +16,7 @@ export class DNA implements NucleicAcid {
     }
 
     setSequence(sequence: string): void {
-        if(!isValidSequence(sequence, NucleicAcidType.DNA)){
+        if(!isValidNucleicAcidSequence(sequence, NucleicAcidType.DNA)){
             throw new Error(`invalid RNA squence provided: ${sequence}`);
         }
         this.sequence = sequence.toUpperCase();
@@ -47,7 +42,7 @@ export class RNA implements NucleicAcid {
     }
 
     setSequence(sequence: string): void {
-        if(!isValidSequence(sequence, this.nucleicAcidType)){
+        if(!isValidNucleicAcidSequence(sequence, this.nucleicAcidType)){
             throw new Error(`invalid RNA squence provided: ${sequence}`);
         }
         this.sequence = sequence.toUpperCase();
@@ -62,12 +57,6 @@ export class RNA implements NucleicAcid {
     }
 }
 
-
-/*
-    --- Type Guards ---
-*/
-
-
 export const isDNA = (nucleicAcid: NucleicAcid): nucleicAcid is DNA => {
     return nucleicAcid.nucleicAcidType === NucleicAcidType.DNA;
 };
@@ -76,28 +65,10 @@ export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
     return nucleicAcid.nucleicAcidType === NucleicAcidType.RNA;
 };
 
-
-/*
-    --- Utils ---
-*/
-
-
-export const DNA_REGEX = /^[AaTtCcGg]*$/;
-export const RNA_REGEX = /^[AaUuCcGg]*$/;
-
-export const DNA_BASES = ['A', 'T', 'C', 'G'];
-export const RNA_BASES = ['A', 'U', 'C', 'G'];
-
 export enum NucleicAcidType { 
     DNA = 'DNA',
     RNA = 'RNA'
 }
-
-
-/*
-    --- Util Functions ---
-*/
-
 
 // For internal use by DNA/RNA classes only!
 // since this is only ever called (and not exported) from DNA/RNA classes which are alway have a valid sequence (or none at all)
@@ -116,17 +87,53 @@ const getComplementSequence = (sequence: string | undefined, type: NucleicAcidTy
     return complement;
 };
 
-export const isValidSequence = (sequence: string, type: NucleicAcidType): boolean => {
+export const isValidNucleicAcidSequence = (sequence: string, type: NucleicAcidType): boolean => {
     let regex = undefined;
     switch(type){
         case NucleicAcidType.DNA:
-            regex = DNA_REGEX;
+            regex = /^[AaTtCcGg]*$/;
             break;
         case NucleicAcidType.RNA:
-            regex = RNA_REGEX;
+            regex =  /^[AaUuCcGg]*$/;
             break;
     }
     return regex.test(sequence);
+};
+
+export const convertNucleicAcid = (nucleicAcid: NucleicAcid): DNA | RNA => {
+    const sequence = nucleicAcid.getSequence();
+    if(nucleicAcid.nucleicAcidType === NucleicAcidType.DNA) {
+        const rna = new RNA();
+        if(sequence) {
+            rna.setSequence(sequence.replaceAll('T', 'U'));
+        }
+        return rna;
+    }
+    else {
+        const dna = new DNA();
+        if(sequence) {
+            dna.setSequence(sequence.replaceAll('U', 'T'));
+        }
+        return dna;
+    }
+};
+
+export const convertToRNA = (dna: DNA): RNA => {
+    const rna = new RNA();
+    const sequence = dna.getSequence();
+    if(sequence) {
+        rna.setSequence(sequence.replaceAll('U', 'T'));
+    }
+    return rna;
+};
+
+export const convertToDNA = (rna: RNA): DNA => {
+    const dna = new DNA();
+    const sequence = rna.getSequence();
+    if(sequence) {
+        dna.setSequence(sequence.replaceAll('U', 'T'));
+    }
+    return dna;
 };
 
 export const getDNABaseComplement = (base: string): string | undefined => {
@@ -158,41 +165,4 @@ export const getRNABaseComplement = (base: string): string | undefined => {
             return undefined;
     }
 };
-
-export const convertNucleicAcid = (nucleicAcid: NucleicAcid): DNA | RNA => {
-    const sequence = nucleicAcid.getSequence();
-    if(nucleicAcid.nucleicAcidType === NucleicAcidType.DNA) {
-        const rna = new RNA();
-        if(sequence) {
-            rna.setSequence(sequence.replaceAll('T', 'U'));
-        }
-        return rna;
-    }
-    else {
-        const dna = new DNA();
-        if(sequence) {
-            dna.setSequence(sequence.replaceAll('U', 'T'));
-        }
-        return dna;
-    }
-};
-
-export const convertDNAtoRNA = (dna: DNA): RNA => {
-    const rna = new RNA();
-    const sequence = dna.getSequence();
-    if(sequence) {
-        rna.setSequence(sequence.replaceAll('U', 'T'));
-    }
-    return rna;
-};
-
-export const convertRNAtoDNA = (rna: RNA): DNA => {
-    const dna = new DNA();
-    const sequence = rna.getSequence();
-    if(sequence) {
-        dna.setSequence(sequence.replaceAll('U', 'T'));
-    }
-    return dna;
-};
-
 
