@@ -1,15 +1,24 @@
-export interface NucleicAcid {
+export abstract class NucleicAcid {
     readonly nucleicAcidType: NucleicAcidType;
-    setSequence(sequence: string): void;
-    getSequence(): string | undefined;
-    getComplementSequence(): string | undefined;
+    
+    constructor(nucleicAcidType: NucleicAcidType){
+        this.nucleicAcidType = nucleicAcidType;
+    }
+
+    abstract setSequence(sequence: string): void;
+
+    abstract getSequence(): string | undefined;
+
+    getComplementSequence(): string | undefined {
+        return getComplementSequence(this.getSequence(), this.nucleicAcidType);
+    }
 }
 
-export class DNA implements NucleicAcid {
-    readonly nucleicAcidType = NucleicAcidType.DNA;
+export class DNA extends NucleicAcid {
     private sequence: string | undefined;
 
     constructor(sequence?: string) {
+        super(NucleicAcidType.DNA);
         if(sequence !== undefined){
             this.setSequence(sequence);
         }
@@ -25,17 +34,13 @@ export class DNA implements NucleicAcid {
     getSequence(): string | undefined {
         return this.sequence;
     }
-
-    getComplementSequence(): string | undefined {
-        return getComplementSequence(this.sequence, NucleicAcidType.DNA);
-    }
 }
 
-export class RNA implements NucleicAcid {
-    readonly nucleicAcidType = NucleicAcidType.RNA;
+export class RNA extends NucleicAcid {
     private sequence: string | undefined;
 
     constructor(sequence?: string) {
+        super(NucleicAcidType.RNA);
         if(sequence !== undefined) {
             this.setSequence(sequence);
         }
