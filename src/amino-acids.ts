@@ -1,6 +1,53 @@
-import { convertNucleicAcid, NucleicAcid, NucleicAcidType } from './nucleic-acids';
+import { isDeepStrictEqual } from 'util';
+import { convertNucleicAcid, isRNA, NucleicAcid, NucleicAcidType, RNA } from './nucleic-acids';
 
-interface AminoAcidName {
+export const SLC_AMINO_ACID_NAME_MAP: Record<string, AminoAcidName> = {
+    'A': { name: 'Alanine', abbrv: 'Ala', slc: 'A' },
+    'C': { name: 'Cysteine', abbrv: 'Cys', slc: 'C' },
+    'D': { name: 'Aspartic acid', abbrv: 'Asp', slc: 'D' },
+    'E': { name: 'Glutamic acid', abbrv: 'Glu', slc: 'E' },
+    'F': { name: 'Phenylalanine', abbrv: 'Phe', slc: 'F' },
+    'G': { name: 'Glycine', abbrv: 'Gly', slc: 'G' },
+    'H': { name: 'Histidine', abbrv: 'His', slc: 'H' },
+    'I': { name: 'Isoleucine', abbrv: 'Ile', slc: 'I' },
+    'K': { name: 'Lysine', abbrv: 'Lys', slc: 'K' },
+    'L': { name: 'Leucine', abbrv: 'Leu', slc: 'L' },
+    'M': { name: 'Methionine', abbrv: 'Met', slc: 'M' },
+    'N': { name: 'Asparagine', abbrv: 'Asn', slc: 'N' },
+    'P': { name: 'Proline', abbrv: 'Pro', slc: 'P' },
+    'Q': { name: 'Glutamine', abbrv: 'Gln', slc: 'Q' },
+    'R': { name: 'Arginine', abbrv: 'Arg', slc: 'R' },
+    'S': { name: 'Serine', abbrv: 'Ser', slc: 'S' },
+    'T': { name: 'Threonine', abbrv: 'Thr', slc: 'T' },
+    'V': { name: 'Valine', abbrv: 'Val', slc: 'V' },
+    'W': { name: 'Tryptophan', abbrv: 'Trp', slc: 'W' },
+    'Y': { name: 'Tyrosine', abbrv: 'Tyr', slc: 'Y' }
+};
+
+export const SLC_ALT_CODON_SEQ_MAP: Record<string, RNA[]> = {
+    'A': [ new RNA('GCA'), new RNA('GCC'), new RNA('GCG'), new RNA('GCU') ],
+    'C': [ new RNA('UGC'), new RNA('UGU') ],
+    'D': [ new RNA('GAC'), new RNA('GAU') ],
+    'E': [ new RNA('GAA'), new RNA('GAG') ],
+    'F': [ new RNA('UUC'), new RNA('UUU') ],
+    'G': [ new RNA('GGA'), new RNA('GGC'), new RNA('GGG'), new RNA('GGU') ],
+    'H': [ new RNA('CAC'), new RNA('CAU') ],
+    'I': [ new RNA('AUA'), new RNA('AUC'), new RNA('AUU') ],
+    'K': [ new RNA('AAA'), new RNA('AAG') ],
+    'L': [ new RNA('UUA'), new RNA('UUG'), new RNA('CUA'), new RNA('CUC'), new RNA('CUG'), new RNA('CUU') ],
+    'M': [ new RNA('AUG') ],
+    'N': [ new RNA('AAC'), new RNA('AAU') ],
+    'P': [ new RNA('CCA'), new RNA('CCC'), new RNA('CCG'), new RNA('CCU') ],
+    'Q': [ new RNA('CAA'), new RNA('CAG') ],
+    'R': [ new RNA('AGA'), new RNA('AGG'), new RNA('CGA'), new RNA('CGC'), new RNA('CGG'), new RNA('CGU') ],
+    'S': [ new RNA('AGC'), new RNA('AGU'), new RNA('UCA'), new RNA('UCC'), new RNA('UCG'), new RNA('UCU') ],
+    'T': [ new RNA('ACA'), new RNA('ACC'), new RNA('ACG'), new RNA('ACU') ],
+    'V': [ new RNA('GUA'), new RNA('GUC'), new RNA('GUG'), new RNA('GUU') ],
+    'W': [ new RNA('UGG') ],
+    'Y': [  new RNA('UAC'), new RNA('UAU') ]
+};
+
+export interface AminoAcidName {
     readonly name: string;
     readonly abbrv: string;
     readonly slc: string;
@@ -18,7 +65,7 @@ export class AminoAcid implements AminoAcidName {
         if(!sequence || sequence.length !== 3){
             throw new Error(`invalid codon length of: ${codon.getSequence()?.length ?? 0}`);
         }
-        const aminoAcidName = getAminoAcidNamesByCodon(codon);
+        const aminoAcidName = getAminoAcidNameByCodon(codon);
         if(!aminoAcidName) {
             throw new Error(`No amino acid is associated with the codon: ${sequence}`);
         }
@@ -40,8 +87,16 @@ export class AminoAcid implements AminoAcidName {
 
     //return any other codons for this amino acid if others exist
     getAllAlternateCodons(): NucleicAcid[] {
-        //TODO implement
-        throw new Error('Not implemented');
+        return SLC_ALT_CODON_SEQ_MAP[this.slc] ?? [];
+    }
+    
+    //an alternate is the same amino acid build from a different codon
+    isAlternateOf(aminoAcid: AminoAcid): boolean {
+        return this.name === aminoAcid.name && !this.codon.equals(aminoAcid.codon);
+    }
+
+    equals(otherAminoAcid: AminoAcid): boolean {
+        return isDeepStrictEqual(this, otherAminoAcid);
     }
 }
 
@@ -56,99 +111,20 @@ export const getAminoAcidByCodon = (codon: NucleicAcid): AminoAcid | undefined =
     }
 };
 
-const getAminoAcidNamesByCodon = (codon: NucleicAcid): AminoAcidName | undefined => {
-    let sequence = codon.getSequence();
-    if(!sequence || sequence.length !== 3) {
+export const getAminoAcidNameByCodon = (codon: NucleicAcid): AminoAcidName | undefined => {
+    if(!codon.getSequence() || codon.getSequence()?.length !== 3) {
         return undefined;
     }
-    //perform all look up as the standard RNA representation
-    if(codon.nucleicAcidType === NucleicAcidType.DNA) {
-        sequence = convertNucleicAcid(codon).getSequence();
+    //perform all look ups as the standard RNA representation
+    if(!isRNA(codon)) {
+        codon = convertNucleicAcid(codon);
     }
-
-    switch(sequence) {
-        case 'GCA':
-        case 'GCC':
-        case 'GCG':
-        case 'GCU':
-            return { name: 'Alanine', abbrv: 'Ala', slc: 'A' };
-        case 'UGC':
-        case 'UGU':
-            return { name: 'Cysteine', abbrv: 'Cys', slc: 'C' };
-        case 'GAC':
-        case 'GAU':
-            return { name: 'Aspartic acid', abbrv: 'Asp', slc: 'D' };
-        case 'GAA':
-        case 'GAG':
-            return { name: 'Glutamic acid', abbrv: 'Glu', slc: 'E' };
-        case 'UUC':
-        case 'UUU':
-            return { name: 'Phenylalanine', abbrv: 'Phe', slc: 'F' };
-        case 'GGA':
-        case 'GGC':
-        case 'GGG':
-        case 'GGU':
-            return { name: 'Glycine', abbrv: 'Gly', slc: 'G' };
-        case 'CAC':
-        case 'CAU':
-            return { name: 'Histidine', abbrv: 'His', slc: 'H' };
-        case 'AUA':
-        case 'AUC':
-        case 'AUU':
-            return { name: 'Isoleucine', abbrv: 'Ile', slc: 'I' };
-        case 'AAA':
-        case 'AAG':
-            return { name: 'Lysine', abbrv: 'Lys', slc: 'K' };
-        case 'UUA':
-        case 'UUG':
-        case 'CUA':
-        case 'CUC':
-        case 'CUG':
-        case 'CUU':
-            return { name: 'Leucine', abbrv: 'Leu', slc: 'L' };
-        case 'AUG':
-            return { name: 'Methionine', abbrv: 'Met', slc: 'M' };
-        case 'AAC':
-        case 'AAU':
-            return { name: 'Asparagine', abbrv: 'Asn', slc: 'N' };
-        case 'CCA':
-        case 'CCC':
-        case 'CCG':
-        case 'CCU':
-            return { name: 'Proline', abbrv: 'Pro', slc: 'P' };
-        case 'CAA':
-        case 'CAG':
-            return { name: 'Glutamine', abbrv: 'Gln', slc: 'Q' };
-        case 'AGA':
-        case 'AGG':
-        case 'CGA':
-        case 'CGC':
-        case 'CGG':
-        case 'CGU':
-            return { name: 'Arginine', abbrv: 'Arg', slc: 'R' };
-        case 'AGC':
-        case 'AGU':
-        case 'UCA':
-        case 'UCC':
-        case 'UCG':
-        case 'UCU':
-            return { name: 'Serine', abbrv: 'Ser', slc: 'S' };
-        case 'ACA':
-        case 'ACC':
-        case 'ACG':
-        case 'ACU':
-            return { name: 'Threonine', abbrv: 'Thr', slc: 'T' };
-        case 'GUA':
-        case 'GUC':
-        case 'GUG':
-        case 'GUU':
-            return { name: 'Valine', abbrv: 'Val', slc: 'V' };
-        case 'UGG':
-            return { name: 'Tryptophan', abbrv: 'Trp', slc: 'W' };
-        case 'UAC':
-        case 'UAU':
-            return { name: 'Tyrosine', abbrv: 'Tyr', slc: 'Y' }; 
-        default:
-            return undefined;
+    let slc: keyof typeof SLC_ALT_CODON_SEQ_MAP;
+    for(slc in SLC_ALT_CODON_SEQ_MAP) {
+        const altCodon = SLC_ALT_CODON_SEQ_MAP[slc].find(altCodon => altCodon.equals(codon));
+        if(altCodon) {
+            return SLC_AMINO_ACID_NAME_MAP[slc];
+        }
     }
+    return undefined;
 };

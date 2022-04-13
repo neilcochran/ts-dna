@@ -12,19 +12,19 @@ const DNA_SEQ_COMP = 'TAGCCGAT';
 */
 
 test('check DNA -> isDNA type guard', () => {
-    expect(isDNA(new DNA())).toBe(true);
+    expect(isDNA(new DNA())).toEqual(true);
 });
 
 test('check RNA -> isDNA type guard', () => {
-    expect(isDNA(new RNA())).toBe(false);
+    expect(isDNA(new RNA())).toEqual(false);
 });
 
 test('check RNA -> isRNA type guard', () => {
-    expect(isRNA(new RNA())).toBe(true);
+    expect(isRNA(new RNA())).toEqual(true);
 });
 
 test('check DNA -> isRNA type guard', () => {
-    expect(isRNA(new DNA())).toBe(false);
+    expect(isRNA(new DNA())).toEqual(false);
 });
 
 /*
@@ -62,6 +62,24 @@ test('get DNA complement sequence', () => {
     expect(dna.getComplementSequence()).toEqual(DNA_SEQ_COMP);
 });
 
+test('check DNA equality', () => {
+    const dna = new DNA(DNA_SEQ);
+    const dna2 = new DNA(DNA_SEQ);
+    expect(dna.equals(dna2)).toEqual(true);
+});
+
+test('check DNA inequality', () => {
+    const dna = new DNA(DNA_SEQ);
+    const dna2 = new DNA();
+    expect(dna.equals(dna2)).toEqual(false);
+});
+
+test('check DNA/RNA inequality', () => {
+    const dna = new DNA();
+    const rna = new RNA();
+    expect(dna.equals(rna)).toEqual(false);
+});
+
 /*
     RNA class tests
 */
@@ -97,24 +115,42 @@ test('get RNA complement sequence', () => {
     expect(rna.getComplementSequence()).toEqual(RNA_SEQ_COMP);
 });
 
+test('check RNA equality', () => {
+    const rna = new RNA(RNA_SEQ);
+    const rna2 = new RNA(RNA_SEQ);
+    expect(rna.equals(rna2)).toEqual(true);
+});
+
+test('check RNA inequality', () => {
+    const rna = new RNA(RNA_SEQ);
+    const rna2 = new RNA();
+    expect(rna.equals(rna2)).toEqual(false);
+});
+
+test('check RNA/DNA inequality', () => {
+    const rna = new RNA();
+    const dna = new DNA();
+    expect(rna.equals(dna)).toEqual(false);
+});
+
 /*
     Util tests
 */
 
 test('valid DNA sequence -> isValidNucleicAcidSequence', () => {
-    expect(isValidNucleicAcidSequence(DNA_SEQ, NucleicAcidType.DNA)).toBe(true);
+    expect(isValidNucleicAcidSequence(DNA_SEQ, NucleicAcidType.DNA)).toEqual(true);
 });
 
 test('invalid DNA sequence -> isValidNucleicAcidSequence', () => {
-    expect(isValidNucleicAcidSequence(RNA_SEQ, NucleicAcidType.DNA)).toBe(false);
+    expect(isValidNucleicAcidSequence(RNA_SEQ, NucleicAcidType.DNA)).toEqual(false);
 });
 
 test('valid RNA sequence -> isValidNucleicAcidSequence', () => {
-    expect(isValidNucleicAcidSequence(RNA_SEQ, NucleicAcidType.RNA)).toBe(true);
+    expect(isValidNucleicAcidSequence(RNA_SEQ, NucleicAcidType.RNA)).toEqual(true);
 });
 
 test('invalid RNA sequence -> isValidNucleicAcidSequence', () => {
-    expect(isValidNucleicAcidSequence(DNA_SEQ, NucleicAcidType.RNA)).toBe(false);
+    expect(isValidNucleicAcidSequence(DNA_SEQ, NucleicAcidType.RNA)).toEqual(false);
 });
 
 test('convert DNA -> RNA convertNucleicAcid', () => {
@@ -142,19 +178,19 @@ test('convert empty RNA -> DNA convertToDNA', () => {
 });
 
 test('get DNA base complement for A', () => {
-    expect(getDNABaseComplement('A')).toBe('T');
+    expect(getDNABaseComplement('A')).toEqual('T');
 });
 
 test('get DNA base complement for C', () => {
-    expect(getDNABaseComplement('C')).toBe('G');
+    expect(getDNABaseComplement('C')).toEqual('G');
 });
 
 test('get DNA base complement for G', () => {
-    expect(getDNABaseComplement('G')).toBe('C');
+    expect(getDNABaseComplement('G')).toEqual('C');
 });
 
 test('get DNA base complement for T', () => {
-    expect(getDNABaseComplement('T')).toBe('A');
+    expect(getDNABaseComplement('T')).toEqual('A');
 });
 
 test('get DNA base complement for invalid base \'x\'', () => {
@@ -166,19 +202,19 @@ test('get DNA base complement for empty string', () => {
 });
 
 test('get RNA base complement for A', () => {
-    expect(getRNABaseComplement('A')).toBe('U');
+    expect(getRNABaseComplement('A')).toEqual('U');
 });
 
 test('get RNA base complement for C', () => {
-    expect(getRNABaseComplement('C')).toBe('G');
+    expect(getRNABaseComplement('C')).toEqual('G');
 });
 
 test('get RNA base complement for G', () => {
-    expect(getRNABaseComplement('G')).toBe('C');
+    expect(getRNABaseComplement('G')).toEqual('C');
 });
 
 test('get RNA base complement for U', () => {
-    expect(getRNABaseComplement('U')).toBe('A');
+    expect(getRNABaseComplement('U')).toEqual('A');
 });
 
 test('get RNA base complement for invalid base \'x\'', () => {

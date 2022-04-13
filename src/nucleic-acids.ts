@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from 'util';
+
 export abstract class NucleicAcid {
     readonly nucleicAcidType: NucleicAcidType;
     
@@ -11,6 +13,10 @@ export abstract class NucleicAcid {
 
     getComplementSequence(): string | undefined {
         return getComplementSequence(this.getSequence(), this.nucleicAcidType);
+    }
+
+    equals(nucleicAcid: NucleicAcid): boolean {
+        return isDeepStrictEqual(this, nucleicAcid);
     }
 }
 
@@ -55,10 +61,6 @@ export class RNA extends NucleicAcid {
 
     getSequence(): string | undefined {
         return this.sequence;
-    }
-   
-    getComplementSequence(): string | undefined {
-        return getComplementSequence(this.sequence, this.nucleicAcidType);
     }
 }
 

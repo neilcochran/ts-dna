@@ -5,7 +5,7 @@ export {
     RNA,
     isDNA,
     isRNA,
-    isValidNucleicAcidSequence as isValidSequence,
+    isValidNucleicAcidSequence,
     convertNucleicAcid,
     convertToDNA,
     convertToRNA
