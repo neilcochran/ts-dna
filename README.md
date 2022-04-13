@@ -88,4 +88,4 @@ Resulting polypeptide:
 
 ## License
 
-This project is licensed under the MIT License - see the <a href="neilcochran/ts-dna/blob/master/LICENSE.md">LICENSE.md</a> file for details
+This project is licensed under the MIT License - see the <a href="/LICENSE.md">LICENSE.md</a> file for details
