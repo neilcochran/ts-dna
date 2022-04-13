@@ -2,7 +2,7 @@ import { isDeepStrictEqual } from 'util';
 
 export abstract class NucleicAcid {
     readonly nucleicAcidType: NucleicAcidType;
-    
+
     constructor(nucleicAcidType: NucleicAcidType){
         this.nucleicAcidType = nucleicAcidType;
     }
@@ -36,7 +36,7 @@ export class DNA extends NucleicAcid {
         }
         this.sequence = sequence.toUpperCase();
     }
-    
+
     getSequence(): string | undefined {
         return this.sequence;
     }
@@ -72,7 +72,7 @@ export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
     return nucleicAcid.nucleicAcidType === NucleicAcidType.RNA;
 };
 
-export enum NucleicAcidType { 
+export enum NucleicAcidType {
     DNA = 'DNA',
     RNA = 'RNA'
 }
@@ -86,7 +86,7 @@ const getComplementSequence = (sequence: string | undefined, type: NucleicAcidTy
     if(sequence){
         complement = '';
         for (const base of sequence) {
-            complement += NucleicAcidType.DNA === type 
+            complement += NucleicAcidType.DNA === type
                 ? getDNABaseComplement(base) ?? ''
                 : getRNABaseComplement(base) ?? '';
         }
@@ -172,4 +172,3 @@ export const getRNABaseComplement = (base: string): string | undefined => {
             return undefined;
     }
 };
-

@@ -21,6 +21,9 @@
             4,
             { "SwitchCase": 1 }
         ],
+        "no-trailing-spaces": [
+            "error"
+        ],
         "linebreak-style": [
             "error",
             "unix"

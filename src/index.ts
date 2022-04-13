@@ -15,3 +15,8 @@ export {
     AminoAcid,
     getAminoAcidByCodon
 } from './amino-acids';
+
+export {
+    Polypeptide,
+    nucleicAcidToAminoAcids
+} from './polypeptide';
