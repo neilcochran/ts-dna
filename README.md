@@ -5,7 +5,15 @@ A simple typescript utility library for working with nucleic acids, amino acids,
 ts-dna aims to model and offer utilites for the biological relationship between nucleic acids, amino acids, and polypeptides. All classes are immutable, and validation is enforced on construction. Therefor, all instances of the classes will always be valid once constructed. ts-dna is a zero dependency library.
 
 ## Installing
-*Coming soon to NPM!* 
+npm:
+```
+npm install ts-dna
+``` 
+
+yarn:
+```
+yarn add ts-dna
+```
 
 ## Examples
 Below is a very brief and very contrieved example of how some of this library's classes and its utilities might be used.
