@@ -1,8 +1,15 @@
 {
   "name": "ts-dna",
   "version": "0.2.1",
-  "main": "index.js",
   "license": "MIT",
+  "description": "A simple typescript utility library for working with nucleic acids, amino acids, and polypeptides",
+  "author": {
+    "name": "Neil Cochran",
+    "email": "dev.neil.cochran@pm.me",
+    "url": "https://github.com/neilcochran"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "lint": "eslint --ext .ts .",
     "lint:fix": "eslint --ext .ts --fix .",
@@ -10,6 +17,10 @@
     "clean": "rimraf dist/",
     "test": "jest",
     "dev": "tsc-watch -p tsconfig.json --onSuccess \"node ./dist/index.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neilcochran/ts-dna.git"
   },
   "devDependencies": {
     "@types/jest": "^27.4.1",
@@ -23,5 +34,14 @@
     "ts-node": "^10.7.0",
     "tsc-watch": "^5.0.3",
     "typescript": "^4.6.3"
-  }
+  },
+  "keywords": [
+    "dna",
+    "rna",
+    "nucleic",
+    "amino",
+    "polypeptide",
+    "genetics"
+  ],
+  "files": [ "dist/**/*" ]
 }
