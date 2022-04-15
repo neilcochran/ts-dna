@@ -9,7 +9,8 @@ import {
     getDNABaseComplement,
     getRNABaseComplement,
     isValidNucleicAcidSequence,
-    NucleicAcidType
+    NucleicAcidType,
+    RNASubType
 } from '../src/nucleic-acids';
 import * as TestUtils from './test-utils';
 
@@ -94,8 +95,16 @@ test('construct valid RNA sequence', () => {
     expect(new RNA(TestUtils.RNA_SEQ).getSequence()).toEqual(TestUtils.RNA_SEQ);
 });
 
-test('construct valid undefined RNA', () => {
-    expect(new RNA(undefined).getSequence()).toBeUndefined();
+test('construct valid empty RNA', () => {
+    expect(new RNA().getSequence()).toBeUndefined();
+});
+
+test('construct valid RNA with RNASubType PRE_M_RNA', () => {
+    expect(new RNA(undefined, RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
+});
+
+test('construct valid RNA with RNASubType M_RNA', () => {
+    expect(new RNA(undefined, RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
 });
 
 test('construct invalid RNA sequence', () => {
@@ -173,6 +182,14 @@ test('convert DNA -> RNA convertToRNA', () => {
 
 test('convert empty DNA -> RNA convertToRNA', () => {
     expect(convertToRNA(new DNA())).toEqual(new RNA());
+});
+
+test('convert DNA -> RNA with RNASubType PRE_M_RNA convertToRNA', () => {
+    expect(convertToRNA(new DNA(), RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
+});
+
+test('convert DNA -> RNA with RNASubType M_RNA convertToRNA', () => {
+    expect(convertToRNA(new DNA(), RNASubType.M_RNA).rnaSubType).toEqual(RNASubType.M_RNA);
 });
 
 test('convert RNA -> DNA convertToDNA', () => {
