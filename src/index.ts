@@ -1,5 +1,6 @@
 export {
     NucleotidePatternSymbol,
+    NucleotidePattern,
     NucleicAcidType,
     RNASubType,
     NucleicAcid,
@@ -7,7 +8,7 @@ export {
     RNA,
     isDNA,
     isRNA,
-    isValidNucleotideSymbolPattern,
+    isValidNucleotidePattern,
     getNucleotidePatternSymbolComplement,
     isValidNucleicAcidSequence,
     convertNucleicAcid,

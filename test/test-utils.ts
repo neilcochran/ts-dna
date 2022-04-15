@@ -17,8 +17,13 @@ export const RNA_ALL_AMINO_ACIDS_1 = new RNA('GCAUGCGACGAAUUCGGACACAUAAAAUUAAUGA
 export const RNA_ALL_AMINO_ACIDS_2 = new RNA('GCCUGUGAUGAGUUUGGCCAUAUCAAGUUGAUGAAUCCCCAGAGGAGUACCGUCUGGUAU');
 export const DNA_ALL_AMINO_ACIDS_1 = new DNA('GCATGCGACGAATTCGGACACATAAAATTAATGAACCCACAAAGAAGCACAGTATGGTAC');
 export const DNA_ALL_AMINO_ACIDS_2 = new DNA('GCCTGTGATGAGTTTGGCCATATCAAGTTGATGAATCCCCAGAGGAGTACCGTCTGGTAT');
+
 //the sequence of amino acid SLCs produced by the above codons (all amino acids in alphabetic order by SLC)
 export const ALL_AMINO_ACIDS_SLC_SEQ = 'ACDEFGHIKLMNPQRSTVWY';
+
+//Nucleotide pattern symbols and complement symbols strings
+export const ALL_NUCLEOTIDE_SYMBOLS = 'ATCGURYKMSWBVDHN';
+export const ALL_NUCLEOTIDE_SYMBOLS_COMP = 'TAGCAYRMKSWVBHDN';
 
 export const isCorrectAminoAcid = (aminoAcid: AminoAcid, correctAminoAcidName: AminoAcidName): boolean => {
     let k: keyof  AminoAcidName;

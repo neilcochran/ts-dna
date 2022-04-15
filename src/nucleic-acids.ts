@@ -2,7 +2,7 @@ import { isDeepStrictEqual } from 'util';
 
 const NUCLEOTIDE_PATTERN_SYMBOLS_REGEX =  /^[AaTtCcGgUuRrYyKkMmSsWwBbVvDdHhNn]+$/;
 
-const NUCLEOTIDE_PATTERN_SYMBOLS: Record<string, string[]> = {
+export const NUCLEOTIDE_PATTERN_SYMBOLS: Record<string, string[]> = {
     A: ['A'], //Adenine
     T: ['T'], //Thymine
     C: ['C'], //Cytosine
@@ -26,8 +26,8 @@ export class NucleotidePatternSymbol {
     private matchingBases: string[];
 
     constructor(symbol: string) {
-        this.symbol = symbol;
-        this.matchingBases = NUCLEOTIDE_PATTERN_SYMBOLS[symbol];
+        this.symbol = symbol.toUpperCase();
+        this.matchingBases = NUCLEOTIDE_PATTERN_SYMBOLS[this.symbol];
         if(!this.matchingBases) {
             throw new Error(`invalid IUPAC nucleotide symbol: ${this.symbol}`);
         }
@@ -42,12 +42,12 @@ export class NucleotidePatternSymbol {
     }
 }
 
-export const isValidNucleotideSymbolPattern = (pattern: string): boolean => {
+export const isValidNucleotidePattern = (pattern: string): boolean => {
     return NUCLEOTIDE_PATTERN_SYMBOLS_REGEX.test(pattern);
 };
 
-export const getNucleotidePatternSymbolComplement = (symbol: string): NucleotidePatternSymbol | undefined => {
-    switch(symbol) {
+export const getNucleotidePatternSymbolComplement = (patternSymbol: NucleotidePatternSymbol): NucleotidePatternSymbol | undefined => {
+    switch(patternSymbol.getSymbol()) {
         case 'A':
             return new NucleotidePatternSymbol('T');
         case 'T':
@@ -90,13 +90,13 @@ export class NucleotidePattern {
     private patternString: string;
 
     constructor(pattern: string) {
-        if(!isValidNucleotideSymbolPattern(pattern)){
+        if(!isValidNucleotidePattern(pattern)){
             throw new Error('Nucleotide symbol patterns must use valid IUPAC notation');
         }
         this.patternString = '';
         for(const symbol of pattern) {
             this.pattern.push(new NucleotidePatternSymbol(symbol));
-            this.patternString += symbol;
+            this.patternString += symbol.toUpperCase();
         }
     }
 
@@ -122,15 +122,14 @@ export class NucleotidePattern {
     }
 }
 
-export const getNucleotidePatternComplement = (pattern: string): string | undefined => {
-    if(!isValidNucleotideSymbolPattern(pattern)) {
-        return undefined;
+export const getNucleotidePatternComplement = (nucleotidePattern: NucleotidePattern): NucleotidePattern => {
+    let complementPatternString = '';
+    for(const patternSymbol of nucleotidePattern.getPattern()) {
+        //Since we've already validated the pattern getting the complement should never return undefined
+        //however, coalesce to an empty string to satisfy compiler.
+        complementPatternString += getNucleotidePatternSymbolComplement(patternSymbol)?.getSymbol() ?? '';
     }
-    let complement: string | undefined;
-    for(const symbol of pattern) {
-        complement += getNucleotidePatternSymbolComplement(symbol)?.getSymbol() ?? '';
-    }
-    return complement;
+    return new NucleotidePattern(complementPatternString);
 };
 
 export enum NucleicAcidType {

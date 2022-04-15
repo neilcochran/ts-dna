@@ -10,9 +10,98 @@ import {
     getRNABaseComplement,
     isValidNucleicAcidSequence,
     NucleicAcidType,
-    RNASubType
+    RNASubType,
+    NucleotidePatternSymbol,
+    NUCLEOTIDE_PATTERN_SYMBOLS,
+    NucleotidePattern,
+    getNucleotidePatternComplement,
+    isValidNucleotidePattern
 } from '../src/nucleic-acids';
 import * as TestUtils from './test-utils';
+
+/*
+    --- Nucleotide Symbols & Patterns --
+*/
+
+test('create valid NucleotidePatternSymbols and check matching bases', () => {
+    for(let i = 0; i < TestUtils.ALL_NUCLEOTIDE_SYMBOLS.length; i++) {
+        const symbol = TestUtils.ALL_NUCLEOTIDE_SYMBOLS[i];
+        expect(new NucleotidePatternSymbol(symbol).getMatchingBases()).toEqual(NUCLEOTIDE_PATTERN_SYMBOLS[symbol]);
+    }
+});
+
+test('create invalid nucleotide pattern symbol', () => {
+    expect(() => new NucleotidePatternSymbol('Z')).toThrowError();
+});
+
+test('create valid NucleotidePattern', () => {
+    expect(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS)).toBeDefined();
+});
+
+test('create valid NucleotidePattern and check it\'s patternString', () => {
+    expect(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS).getPatternString()).toEqual(TestUtils.ALL_NUCLEOTIDE_SYMBOLS);
+});
+
+test('create valid NucleotidePattern and check it\'s pattern', () => {
+    const pattern = new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS).getPattern();
+    for(let i = 0; i < pattern.length; i++) {
+        expect(pattern[i].getSymbol()).toEqual(TestUtils.ALL_NUCLEOTIDE_SYMBOLS[i]);
+    }
+});
+
+test('get complement NucleotidePattern', () => {
+    expect(
+        getNucleotidePatternComplement(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS))
+    ).toEqual(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS_COMP));
+});
+
+test('pass valid pattern string to isValidNucleotidePattern', () => {
+    expect(isValidNucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS)).toEqual(true);
+});
+
+test('pass invalid empty pattern string to isValidNucleotidePattern', () => {
+    expect(isValidNucleotidePattern('')).toEqual(false);
+});
+
+test('pass invalid pattern string to isValidNucleotidePattern', () => {
+    expect(isValidNucleotidePattern('invalid')).toEqual(false);
+});
+
+test('ensure each base for each symbol\'s getMatchingBases() matches', () => {
+    let symbol: keyof typeof NUCLEOTIDE_PATTERN_SYMBOLS;
+    for(symbol in NUCLEOTIDE_PATTERN_SYMBOLS) {
+        const bases = NUCLEOTIDE_PATTERN_SYMBOLS[symbol];
+        const pattern = new NucleotidePattern(symbol);
+        for(const baseSeq of bases) {
+            const base = baseSeq === 'U' ? new RNA(baseSeq) : new DNA(baseSeq);
+            expect(pattern.matches(base)).toEqual(true);
+        }
+    }
+});
+
+test('match a valid DNA sequence for a multi symbol NucleotidePattern', () => {
+    expect(new NucleotidePattern('RYKM').matches(new DNA('GCGA'))).toEqual(true);
+});
+
+test('match an alternate valid DNA sequence for a multi symbol NucleotidePattern', () => {
+    expect(new NucleotidePattern('RYKM').matches(new DNA('ATTC'))).toEqual(true);
+});
+
+test('match a valid RNA sequence for a multi symbol NucleotidePattern', () => {
+    expect(new NucleotidePattern('RYKM').matches(new RNA('GCGA'))).toEqual(true);
+});
+
+test('match an alternate valid RNA sequence for a multi symbol NucleotidePattern', () => {
+    expect(new NucleotidePattern('RYKM').matches(new RNA('ACGA'))).toEqual(true);
+});
+
+test('invalid DNA match for a NucleotidePattern', () => {
+    expect(new NucleotidePattern('RYKM').matches(new DNA('CTTC'))).toEqual(false);
+});
+
+test('invalid RNA match for a NucleotidePattern', () => {
+    expect(new NucleotidePattern('RYKM').matches(new RNA('GUCU'))).toEqual(false);
+});
 
 /*
     -- DNA/RNA type guards ---
