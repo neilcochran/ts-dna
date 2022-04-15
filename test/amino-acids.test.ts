@@ -1,7 +1,6 @@
 
-import { DNA, RNA } from '../src/nucleic-acids';
+import { DNA, RNA, AminoAcid } from '../src/model';
 import {
-    AminoAcid,
     getAminoAcidByCodon,
     getAminoAcidNameByCodon,
     SLC_ALT_CODON_SEQ_MAP,

@@ -1,11 +1,8 @@
+export * from './model';
+
 export {
-    NucleotidePatternSymbol,
-    NucleotidePattern,
     NucleicAcidType,
     RNASubType,
-    NucleicAcid,
-    DNA,
-    RNA,
     isDNA,
     isRNA,
     isValidNucleotidePattern,
@@ -17,11 +14,6 @@ export {
 } from './nucleic-acids';
 
 export {
-    AminoAcid,
-    getAminoAcidByCodon
-} from './amino-acids';
-
-export {
-    Polypeptide,
+    getAminoAcidByCodon,
     nucleicAcidToAminoAcids
-} from './polypeptide';
+} from './amino-acids';

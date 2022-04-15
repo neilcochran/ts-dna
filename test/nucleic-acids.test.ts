@@ -1,6 +1,10 @@
 import {
+    NucleotidePatternSymbol,
+    NucleotidePattern,
     DNA,
-    RNA,
+    RNA
+} from '../src/model';
+import {
     isDNA,
     isRNA,
     convertNucleicAcid,
@@ -11,9 +15,7 @@ import {
     isValidNucleicAcidSequence,
     NucleicAcidType,
     RNASubType,
-    NucleotidePatternSymbol,
     NUCLEOTIDE_PATTERN_SYMBOLS,
-    NucleotidePattern,
     getNucleotidePatternComplement,
     isValidNucleotidePattern
 } from '../src/nucleic-acids';
