@@ -1,5 +1,5 @@
-import { DNA, RNA } from '../src/nucleic-acids';
-import { nucleicAcidToAminoAcids, Polypeptide } from '../src/polypeptide';
+import { DNA, RNA, Polypeptide } from '../src/model';
+import { nucleicAcidToAminoAcids,  } from '../src/amino-acids';
 import * as TestUtils from './test-utils';
 
 /*

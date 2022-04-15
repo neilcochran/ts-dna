@@ -1,10 +1,12 @@
+export * from './model';
+
 export {
     NucleicAcidType,
-    NucleicAcid,
-    DNA,
-    RNA,
+    RNASubType,
     isDNA,
     isRNA,
+    isValidNucleotidePattern,
+    getNucleotidePatternSymbolComplement,
     isValidNucleicAcidSequence,
     convertNucleicAcid,
     convertToDNA,
@@ -12,11 +14,6 @@ export {
 } from './nucleic-acids';
 
 export {
-    AminoAcid,
-    getAminoAcidByCodon
-} from './amino-acids';
-
-export {
-    Polypeptide,
+    getAminoAcidByCodon,
     nucleicAcidToAminoAcids
-} from './polypeptide';
+} from './amino-acids';

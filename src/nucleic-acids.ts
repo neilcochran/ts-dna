@@ -1,67 +1,93 @@
-import { isDeepStrictEqual } from 'util';
+import {
+    NucleotidePatternSymbol,
+    NucleotidePattern,
+    NucleicAcid,
+    DNA,
+    RNA
+} from './model';
 
-export abstract class NucleicAcid {
-    readonly nucleicAcidType: NucleicAcidType;
+const NUCLEOTIDE_PATTERN_SYMBOLS_REGEX =  /^[AaTtCcGgUuRrYyKkMmSsWwBbVvDdHhNn]+$/;
 
-    constructor(nucleicAcidType: NucleicAcidType){
-        this.nucleicAcidType = nucleicAcidType;
+export const NUCLEOTIDE_PATTERN_SYMBOLS: Record<string, string[]> = {
+    A: ['A'], //Adenine
+    T: ['T'], //Thymine
+    C: ['C'], //Cytosine
+    G: ['G'], //Guanine
+    U: ['U'], //Uracil
+    R: ['G', 'A'], //Purine
+    Y: ['C', 'T'], //Pyrimidine
+    K: ['G', 'T'], //Ketone
+    M: ['A', 'C'], //Amino
+    S: ['G', 'C'], //Strong
+    W: ['A', 'T'], //Weak
+    B: ['G', 'T', 'C'], //Not A
+    V: ['G', 'C', 'A'], //Not T
+    D: ['G', 'A', 'T'], //Not C
+    H: ['A', 'C', 'T'], //Not G
+    N: ['A', 'G', 'C', 'T'] //Any one base
+};
+
+export const isValidNucleotidePattern = (pattern: string): boolean => {
+    return NUCLEOTIDE_PATTERN_SYMBOLS_REGEX.test(pattern);
+};
+
+export const getNucleotidePatternSymbolComplement = (patternSymbol: NucleotidePatternSymbol): NucleotidePatternSymbol | undefined => {
+    switch(patternSymbol.getSymbol()) {
+        case 'A':
+            return new NucleotidePatternSymbol('T');
+        case 'T':
+            return new NucleotidePatternSymbol('A');
+        case 'C':
+            return new NucleotidePatternSymbol('G');
+        case 'G':
+            return new NucleotidePatternSymbol('C');
+        case 'U':
+            return new NucleotidePatternSymbol('A');
+        case 'R':
+            return new NucleotidePatternSymbol('Y');
+        case 'Y':
+            return new NucleotidePatternSymbol('R');
+        case 'K':
+            return new NucleotidePatternSymbol('M');
+        case 'M':
+            return new NucleotidePatternSymbol('K');
+        case 'S':
+            return new NucleotidePatternSymbol('S');
+        case 'W':
+            return new NucleotidePatternSymbol('W');
+        case 'B':
+            return new NucleotidePatternSymbol('V');
+        case 'V':
+            return new NucleotidePatternSymbol('B');
+        case 'D':
+            return new NucleotidePatternSymbol('H');
+        case 'H':
+            return new NucleotidePatternSymbol('D');
+        case 'N':
+            return new NucleotidePatternSymbol('N');
+        default:
+            return undefined;
     }
+};
 
-    abstract setSequence(sequence: string): void;
-
-    abstract getSequence(): string | undefined;
-
-    getComplementSequence(): string | undefined {
-        return getComplementSequence(this.getSequence(), this.nucleicAcidType);
+export const getNucleotidePatternComplement = (nucleotidePattern: NucleotidePattern): NucleotidePattern => {
+    let complementPatternString = '';
+    for(const patternSymbol of nucleotidePattern.getPattern()) {
+        //Since we've already validated the pattern getting the complement should never return undefined
+        //however, coalesce to an empty string to satisfy compiler.
+        complementPatternString += getNucleotidePatternSymbolComplement(patternSymbol)?.getSymbol() ?? '';
     }
+    return new NucleotidePattern(complementPatternString);
+};
 
-    equals(nucleicAcid: NucleicAcid): boolean {
-        return isDeepStrictEqual(this, nucleicAcid);
-    }
+export enum NucleicAcidType {
+    DNA = 'DNA',
+    RNA = 'RNA'
 }
 
-export class DNA extends NucleicAcid {
-    private sequence: string | undefined;
-
-    constructor(sequence?: string) {
-        super(NucleicAcidType.DNA);
-        if(sequence !== undefined){
-            this.setSequence(sequence);
-        }
-    }
-
-    setSequence(sequence: string): void {
-        if(!isValidNucleicAcidSequence(sequence, NucleicAcidType.DNA)){
-            throw new Error(`invalid RNA squence provided: ${sequence}`);
-        }
-        this.sequence = sequence.toUpperCase();
-    }
-
-    getSequence(): string | undefined {
-        return this.sequence;
-    }
-}
-
-export class RNA extends NucleicAcid {
-    private sequence: string | undefined;
-
-    constructor(sequence?: string) {
-        super(NucleicAcidType.RNA);
-        if(sequence !== undefined) {
-            this.setSequence(sequence);
-        }
-    }
-
-    setSequence(sequence: string): void {
-        if(!isValidNucleicAcidSequence(sequence, this.nucleicAcidType)){
-            throw new Error(`invalid RNA squence provided: ${sequence}`);
-        }
-        this.sequence = sequence.toUpperCase();
-    }
-
-    getSequence(): string | undefined {
-        return this.sequence;
-    }
+export enum RNASubType {
+    PRE_M_RNA = 'PRE_M_RNA',
+    M_RNA = 'M_RNA'
 }
 
 export const isDNA = (nucleicAcid: NucleicAcid): nucleicAcid is DNA => {
@@ -72,16 +98,8 @@ export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
     return nucleicAcid.nucleicAcidType === NucleicAcidType.RNA;
 };
 
-export enum NucleicAcidType {
-    DNA = 'DNA',
-    RNA = 'RNA'
-}
-
-// For internal use by DNA/RNA classes only!
-// since this is only ever called (and not exported) from DNA/RNA classes which are alway have a valid sequence (or none at all)
-// once successfully constructed, we can skip validation here and just check for undefined
-// all other internal and external use should first construct the desired DNA/RNA object and then call it's .getComplementSequence()
-const getComplementSequence = (sequence: string | undefined, type: NucleicAcidType): string | undefined => {
+// For internal use by DNA/RNA classes only! Since sequence validation is enforced in the DNA/RNA constructor so no validation is needed
+export const getComplementSequence = (sequence: string | undefined, type: NucleicAcidType): string | undefined => {
     let complement: string | undefined;
     if(sequence){
         complement = '';
@@ -125,8 +143,8 @@ export const convertNucleicAcid = (nucleicAcid: NucleicAcid): DNA | RNA => {
     }
 };
 
-export const convertToRNA = (dna: DNA): RNA => {
-    const rna = new RNA();
+export const convertToRNA = (dna: DNA, rnaSubType?: RNASubType): RNA => {
+    const rna = new RNA(undefined, rnaSubType);
     const sequence = dna.getSequence();
     if(sequence) {
         rna.setSequence(sequence.replaceAll('T', 'U'));

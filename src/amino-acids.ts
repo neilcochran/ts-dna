@@ -1,5 +1,5 @@
-import { isDeepStrictEqual } from 'util';
-import { convertNucleicAcid, isRNA, NucleicAcid, NucleicAcidType, RNA } from './nucleic-acids';
+import { AminoAcid, DNA, NucleicAcid, RNA } from './model';
+import { convertNucleicAcid, isRNA } from './nucleic-acids';
 
 export const SLC_AMINO_ACID_NAME_MAP: Record<string, AminoAcidName> = {
     A: { name: 'Alanine', abbrv: 'Ala', slc: 'A' },
@@ -53,53 +53,6 @@ export interface AminoAcidName {
     readonly slc: string;
 }
 
-export class AminoAcid implements AminoAcidName {
-    private codon: NucleicAcid;
-    readonly acidType: NucleicAcidType;
-    readonly name: string;
-    readonly abbrv: string;
-    readonly slc: string;
-
-    constructor(codon: NucleicAcid){
-        const sequence = codon.getSequence();
-        if(!sequence || sequence.length !== 3){
-            throw new Error(`invalid codon length of: ${codon.getSequence()?.length ?? 0}`);
-        }
-        const aminoAcidName = getAminoAcidNameByCodon(codon);
-        if(!aminoAcidName) {
-            throw new Error(`No amino acid is associated with the codon: ${sequence}`);
-        }
-        this.name = aminoAcidName.name;
-        this.abbrv = aminoAcidName.abbrv;
-        this.slc = aminoAcidName.slc;
-        this.acidType = codon.nucleicAcidType;
-        this.codon = codon;
-    }
-
-    getCodonSequence(): string {
-        //due to our constructor enforced logic getSequence() should never return undefined
-        return this.codon.getSequence() ?? '';
-    }
-
-    getCodon(): NucleicAcid {
-        return this.codon;
-    }
-
-    //return any other codons for this amino acid if others exist
-    getAllAlternateCodons(): NucleicAcid[] {
-        return SLC_ALT_CODON_SEQ_MAP[this.slc] ?? [];
-    }
-
-    //an alternate is the same amino acid build from a different codon
-    isAlternateOf(aminoAcid: AminoAcid): boolean {
-        return this.name === aminoAcid.name && !this.codon.equals(aminoAcid.codon);
-    }
-
-    equals(otherAminoAcid: AminoAcid): boolean {
-        return isDeepStrictEqual(this, otherAminoAcid);
-    }
-}
-
 export const getAminoAcidByCodon = (codon: NucleicAcid): AminoAcid | undefined => {
     //leverage the AminoAcid constructor validation and simply attempt to create the AminoAcid object
     //if it is not a valid amino acid codon it will throw an error
@@ -127,4 +80,25 @@ export const getAminoAcidNameByCodon = (codon: NucleicAcid): AminoAcidName | und
         }
     }
     return undefined;
+};
+
+//parse a nucleic acid into a list of amino acids. The nucleic acid must be made up of valid codons only.
+export const nucleicAcidToAminoAcids = (nucleicAcid: NucleicAcid): AminoAcid[] => {
+    const sequence = nucleicAcid.getSequence();
+    const aminoAcids: AminoAcid[] = [];
+    if(!sequence) {
+        throw new Error('The nucleic acid sequence cannot be undefined');
+    }
+    if(sequence.length % 3 !== 0) {
+        throw new Error('the nucleic acid length must be divisable by 3 to be comprised of only codons');
+    }
+    //parse sequence into groups of 3 (codons)
+    sequence.match(/.{1,3}/g)?.forEach(codonSeq => {
+        const aminoAcid = getAminoAcidByCodon(isRNA(nucleicAcid) ? new RNA(codonSeq) : new DNA(codonSeq));
+        if(!aminoAcid) {
+            throw new Error(`invalid codon encounted: ${codonSeq}`);
+        }
+        aminoAcids.push(aminoAcid);
+    });
+    return aminoAcids;
 };
