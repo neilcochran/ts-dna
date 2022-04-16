@@ -13,10 +13,11 @@
   "scripts": {
     "lint": "eslint --ext .ts .",
     "lint:fix": "eslint --ext .ts --fix .",
-    "build": "tsc",
     "clean": "rimraf dist/",
     "test": "jest",
-    "dev": "tsc-watch -p tsconfig.json --onSuccess \"node ./dist/index.js\""
+    "build": "tsc",
+    "doc:gen": "typedoc --out doc src/",
+    "doc:clean": "rimraf doc/"
   },
   "repository": {
     "type": "git",
@@ -34,6 +35,7 @@
     "ts-jest": "^27.1.4",
     "ts-node": "^10.7.0",
     "tsc-watch": "^5.0.3",
+    "typedoc": "^0.22.15",
     "typescript": "^4.6.3"
   },
   "keywords": [
