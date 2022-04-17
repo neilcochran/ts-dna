@@ -15,7 +15,7 @@ yarn:
 yarn add ts-dna
 ```
 ## Library Documentation
-Check out the full library documentation <a href="/doc/">here</a>.
+Check out the full library documentation <a href="http://www.neilcochran.com/ts-dna/">here</a>.
 
 ## Examples
 Below is a very brief and very contrived example of how some of this library's classes and its utilities might be used.
