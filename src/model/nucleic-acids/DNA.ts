@@ -2,8 +2,8 @@ import { NucleicAcid } from './NucleicAcid';
 import { NucleicAcidType, isValidNucleicAcidSequence } from '../../nucleic-acids';
 
 /**
- * A class representing DNA. An DNA object can either have an unset (undefined) sequence, or a valid sequnce.
- * Both the constructor and setSequnce() enforce validation, and the backing sequence is a private member. Therefor, all DNA
+ * A class representing DNA. An DNA object can either have an unset (undefined) sequence, or a valid sequence.
+ * Both the constructor and setSequence() enforce validation, and the backing sequence is a private member. Therefor, all DNA
  * objects can only exist in a valid state.
  */
 export class DNA extends NucleicAcid {
@@ -29,7 +29,7 @@ export class DNA extends NucleicAcid {
      */
     setSequence(sequence: string): void {
         if(!isValidNucleicAcidSequence(sequence, NucleicAcidType.DNA)){
-            throw new Error(`invalid DNA squence provided: ${sequence}`);
+            throw new Error(`invalid DNA sequence provided: ${sequence}`);
         }
         this.sequence = sequence.toUpperCase();
     }

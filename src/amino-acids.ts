@@ -51,7 +51,7 @@ export const SLC_ALT_CODONS_MAP: Record<string, RNA[]> = {
 
 /**
  * An interface representing an amino acid name.
- * It has all the standard representations of an amino acid name: the fullname (name), the 3 letter abbreviation (abbrv), and the single letter code (slc).
+ * It has all the standard representations of an amino acid name: the full name (name), the 3 letter abbreviation (abbrv), and the single letter code (slc).
  */
 export interface AminoAcidName {
     readonly name: string;
@@ -113,13 +113,13 @@ export const nucleicAcidToAminoAcids = (nucleicAcid: NucleicAcid): AminoAcid[] =
         throw new Error('The nucleic acid sequence cannot be undefined');
     }
     if(sequence.length % 3 !== 0) {
-        throw new Error('the nucleic acid length must be divisable by 3 to be comprised of only codons');
+        throw new Error('the nucleic acid length must be divisible by 3 to be comprised of only codons');
     }
     //parse sequence into groups of 3 (codons)
     sequence.match(/.{1,3}/g)?.forEach(codonSeq => {
         const aminoAcid = getAminoAcidByCodon(isRNA(nucleicAcid) ? new RNA(codonSeq) : new DNA(codonSeq));
         if(!aminoAcid) {
-            throw new Error(`invalid codon encounted: ${codonSeq}`);
+            throw new Error(`invalid codon encounter: ${codonSeq}`);
         }
         aminoAcids.push(aminoAcid);
     });

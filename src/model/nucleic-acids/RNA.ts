@@ -2,8 +2,8 @@ import { isValidNucleicAcidSequence, NucleicAcidType, RNASubType } from '../../n
 import { NucleicAcid } from '../nucleic-acids';
 
 /**
- * A class representing RNA. An RNA object can either have an unset (undefined) sequence, or a valid sequnce.
- * Both the constructor and setSequnce() enforce validation, and the backing sequence is a private member. Therefor, all RNA
+ * A class representing RNA. An RNA object can either have an unset (undefined) sequence, or a valid sequence.
+ * Both the constructor and setSequence() enforce validation, and the backing sequence is a private member. Therefor, all RNA
  * objects can only exist in a valid state.
  */
 export class RNA extends NucleicAcid {
@@ -30,7 +30,7 @@ export class RNA extends NucleicAcid {
      */
     setSequence(sequence: string): void {
         if(!isValidNucleicAcidSequence(sequence, this.nucleicAcidType)){
-            throw new Error(`invalid RNA squence provided: ${sequence}`);
+            throw new Error(`invalid RNA sequence provided: ${sequence}`);
         }
         this.sequence = sequence.toUpperCase();
     }

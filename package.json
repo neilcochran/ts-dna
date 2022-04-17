@@ -11,6 +11,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "spellcheck": "cspell lint \"src/**/*\"",
     "lint": "eslint --ext .ts .",
     "lint:fix": "eslint --ext .ts --fix .",
     "clean": "rimraf dist/",
@@ -28,6 +29,7 @@
     "@types/node": "^17.0.23",
     "@typescript-eslint/eslint-plugin": "^5.18.0",
     "@typescript-eslint/parser": "^5.18.0",
+    "cspell": "^5.19.7",
     "eslint": "^8.13.0",
     "eslint-plugin-tsdoc": "^0.2.16",
     "jest": "^27.5.1",
@@ -42,7 +44,9 @@
     "dna",
     "rna",
     "nucleic",
+    "nucleic acid",
     "amino",
+    "amino acid",
     "polypeptide",
     "genetics"
   ],
