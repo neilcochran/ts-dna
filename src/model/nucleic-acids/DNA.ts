@@ -3,8 +3,8 @@ import { NucleicAcidType, isValidNucleicAcidSequence } from '../../nucleic-acids
 
 /**
  * A class representing DNA. An DNA object can either have an unset (undefined) sequence, or a valid sequnce.
- * Both the constructor and setSequnce() enforce validation, and the backing sequence is a private member. Therefor all DNA
- * object can only exist in a valid state.
+ * Both the constructor and setSequnce() enforce validation, and the backing sequence is a private member. Therefor, all DNA
+ * objects can only exist in a valid state.
  */
 export class DNA extends NucleicAcid {
     private sequence?: string;

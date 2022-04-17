@@ -2,7 +2,7 @@ import { isDeepStrictEqual } from 'util';
 import { getComplementSequence, NucleicAcidType } from '../../nucleic-acids';
 
 /**
- * An abstract class representing a general NucleicAcid (a squence of nucleotides)
+ * An abstract class representing a general nucleic acid (a squence of nucleotides)
  */
 export abstract class NucleicAcid {
     readonly nucleicAcidType: NucleicAcidType;

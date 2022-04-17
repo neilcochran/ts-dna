@@ -1,7 +1,7 @@
 import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../../nucleic-acids';
 
 /**
- * A class representing a single nucleotide IUPAC notation symbol
+ * A class representing a single nucleotide IUPAC notation symbol.
  * @see {@link NucleotidePattern}
  * @see {@link https://en.wikipedia.org/wiki/Nucleic_acid_notation#IUPAC_notation|More info on IUPAC notation}
  */

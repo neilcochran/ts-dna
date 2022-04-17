@@ -3,8 +3,8 @@ import { NucleicAcid } from '../nucleic-acids';
 
 /**
  * A class representing RNA. An RNA object can either have an unset (undefined) sequence, or a valid sequnce.
- * Both the constructor and setSequnce() enforce validation, and the backing sequence is a private member. Therefor all RNA
- * object can only exist in a valid state.
+ * Both the constructor and setSequnce() enforce validation, and the backing sequence is a private member. Therefor, all RNA
+ * objects can only exist in a valid state.
  */
 export class RNA extends NucleicAcid {
     private sequence?: string;

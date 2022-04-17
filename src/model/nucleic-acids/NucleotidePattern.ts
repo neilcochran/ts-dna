@@ -3,7 +3,7 @@ import { NucleicAcid } from './NucleicAcid';
 import { NucleotidePatternSymbol } from './NucleotidePatternSymbol';
 
 /**
- * A class to represent patterns comprised of nucleotide IUPAC notation symbols
+ * A class to represent patterns comprised of nucleotide IUPAC notation symbols.
  * @see {@link NucleotidePatternSymbol}
  * @see {@link https://en.wikipedia.org/wiki/Nucleic_acid_notation#IUPAC_notation|More info on IUPAC notation}
  */
