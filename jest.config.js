@@ -8,7 +8,5 @@ export default {
     testMatch: [
         '**/test/**/*.test.ts'
     ],
-    preset: 'ts-jest',
-    // Indicates whether each individual test should be reported during the run
-    verbose: true
+    preset: 'ts-jest'
 };
