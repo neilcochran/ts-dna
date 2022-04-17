@@ -1,6 +1,6 @@
 import { NucleicAcid } from './nucleic-acids';
 import { NucleicAcidType } from '../nucleic-acids';
-import { AminoAcidName, getAminoAcidNameByCodon, SLC_ALT_CODON_SEQ_MAP } from '../amino-acids';
+import { AminoAcidName, getAminoAcidNameByCodon, SLC_ALT_CODONS_MAP } from '../amino-acids';
 import { isDeepStrictEqual } from 'util';
 
 /**
@@ -59,7 +59,7 @@ export class AminoAcid implements AminoAcidName {
      * @returns All codons that code for this amino acid
      */
     getAllAlternateCodons(): NucleicAcid[] {
-        return SLC_ALT_CODON_SEQ_MAP[this.slc] ?? [];
+        return SLC_ALT_CODONS_MAP[this.slc];
     }
 
     /**
