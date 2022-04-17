@@ -17,8 +17,8 @@
     "clean": "rimraf dist/",
     "test": "jest",
     "build": "tsc",
-    "doc:gen": "typedoc --out doc src/",
-    "doc:clean": "rimraf doc/"
+    "doc:gen": "typedoc --out docs src/",
+    "doc:clean": "rimraf docs/"
   },
   "repository": {
     "type": "git",
