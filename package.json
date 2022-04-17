@@ -10,15 +10,12 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
-    "spellcheck": "cspell lint \"src/**/*\"",
-    "lint": "eslint --ext .ts .",
-    "lint:fix": "eslint --ext .ts --fix .",
-    "clean": "rimraf dist/",
-    "test": "jest",
-    "build": "tsc",
-    "doc:gen": "typedoc --out doc --readme none src/",
-    "doc:clean": "rimraf doc/"
+    "lint": "node scripts/lint.js",
+    "test": "node scripts/test.js",
+    "doc": "node scripts/documentation.js",
+    "build": "node scripts/build.js"
   },
   "repository": {
     "type": "git",
