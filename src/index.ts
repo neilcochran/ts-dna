@@ -7,6 +7,7 @@ export {
     isRNA,
     isValidNucleotidePattern,
     getNucleotidePatternSymbolComplement,
+    getNucleotidePatternComplement,
     isValidNucleicAcidSequence,
     convertNucleicAcid,
     convertToDNA,
@@ -14,6 +15,7 @@ export {
 } from './nucleic-acids';
 
 export {
+    AminoAcidName,
     getAminoAcidByCodon,
     nucleicAcidToAminoAcids
 } from './amino-acids';

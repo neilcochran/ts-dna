@@ -1,0 +1,4 @@
+abbrv
+Aspartic
+Glutamic
+IUPAC

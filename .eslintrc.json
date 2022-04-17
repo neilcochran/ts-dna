@@ -13,7 +13,8 @@
         "ecmaVersion": "latest"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "eslint-plugin-tsdoc"
     ],
     "rules": {
         "indent": [
@@ -35,6 +36,8 @@
         "semi": [
             "error",
             "always"
-        ]
+        ],
+        "tsdoc/syntax": "error"
+
     }
 }
