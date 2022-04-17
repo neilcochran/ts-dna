@@ -3,7 +3,7 @@ import { DNA, RNA, AminoAcid } from '../src/model';
 import {
     getAminoAcidByCodon,
     getAminoAcidNameByCodon,
-    SLC_ALT_CODON_SEQ_MAP,
+    SLC_ALT_CODONS_MAP,
     SLC_AMINO_ACID_NAME_MAP
 } from '../src/amino-acids';
 import * as TestUtils from './test-utils';
@@ -29,7 +29,7 @@ test('create invalid AminoAcid (Alanine) from too long RNA', () => {
 test('get all AminoAcid (Alanine) alternate codons', () => {
     expect(
         new AminoAcid(TestUtils.ALANINE_RNA_CODON_2).getAllAlternateCodons()
-    ).toEqual(SLC_ALT_CODON_SEQ_MAP['A']);
+    ).toEqual(SLC_ALT_CODONS_MAP['A']);
 });
 
 test('ensure alternate AminoAcids (Alanine) return the same alternate RNA codons', () => {
@@ -106,7 +106,7 @@ test('testing creation of all codon variations for each amino acid', () => {
     let slc: keyof typeof SLC_AMINO_ACID_NAME_MAP;
     for(slc in SLC_AMINO_ACID_NAME_MAP) {
         const aminoAcidName = SLC_AMINO_ACID_NAME_MAP[slc];
-        for(const codon of SLC_ALT_CODON_SEQ_MAP[slc]) {
+        for(const codon of SLC_ALT_CODONS_MAP[slc]) {
             expect(TestUtils.isCorrectAminoAcid(new AminoAcid(codon), aminoAcidName)).toEqual(true);
         }
     }
@@ -116,7 +116,7 @@ test('testing AminoAcid retreval via getAminoAcidByCodon() using all codon varia
     let slc: keyof typeof SLC_AMINO_ACID_NAME_MAP;
     for(slc in SLC_AMINO_ACID_NAME_MAP) {
         const aminoAcidName = SLC_AMINO_ACID_NAME_MAP[slc];
-        for(const codon of SLC_ALT_CODON_SEQ_MAP[slc]) {
+        for(const codon of SLC_ALT_CODONS_MAP[slc]) {
             const aminoAcid = getAminoAcidByCodon(codon);
             if(aminoAcid) {
                 expect(TestUtils.isCorrectAminoAcid(aminoAcid, aminoAcidName)).toEqual(true);
@@ -132,7 +132,7 @@ test('testing AminoAcidName retreval via getAminoAcidNameByCodon() using all cod
     let slc: keyof typeof SLC_AMINO_ACID_NAME_MAP;
     for(slc in SLC_AMINO_ACID_NAME_MAP) {
         const correctAminoAcidName = SLC_AMINO_ACID_NAME_MAP[slc];
-        for(const codon of SLC_ALT_CODON_SEQ_MAP[slc]) {
+        for(const codon of SLC_ALT_CODONS_MAP[slc]) {
             expect(getAminoAcidNameByCodon(codon)).toEqual(correctAminoAcidName);
         }
     }
