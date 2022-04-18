@@ -17,5 +17,5 @@ export {
 export {
     AminoAcidName,
     getAminoAcidByCodon,
-    nucleicAcidToAminoAcids
+    RNAtoAminoAcids
 } from './amino-acids';
