@@ -1,5 +1,5 @@
 
-import { DNA, RNA, AminoAcid } from '../src/model';
+import { RNA, AminoAcid } from '../src/model';
 import {
     getAminoAcidByCodon,
     getAminoAcidNameByCodon,
@@ -57,49 +57,7 @@ test('RNA AminoAcids (Alanine) are alternates', () => {
 });
 
 /*
-    --- AminoAcid from DNA ---
-*/
-
-test('create AminoAcid (Alanine) from valid DNA codon', () => {
-    expect(
-        TestUtils.isCorrectAminoAcid(new AminoAcid(TestUtils.ALANINE_DNA_CODON_1), SLC_AMINO_ACID_NAME_MAP['A'])
-    ).toEqual(true);
-});
-
-test('create invalid AminoAcid (Alanine) from empty DNA', () => {
-    expect(() => new AminoAcid(new DNA())).toThrowError();
-});
-
-test('create invalid AminoAcid (Alanine) from too long DNA', () => {
-    expect(() => new AminoAcid(new DNA('ATCG'))).toThrowError();
-});
-
-test('ensure alternate AminoAcids (Alanine) return the same alternate DNA codons', () => {
-    expect(
-        new AminoAcid(TestUtils.ALANINE_DNA_CODON_1).getAllAlternateCodons()
-    ).toEqual(new AminoAcid(TestUtils.ALANINE_DNA_CODON_2).getAllAlternateCodons());
-});
-
-test('DNA AminoAcids (Alanine) is equal', () => {
-    expect(
-        new AminoAcid(TestUtils.ALANINE_DNA_CODON_1).equals(new AminoAcid(TestUtils.ALANINE_DNA_CODON_1))
-    ).toEqual(true);
-});
-
-test('DNA AminoAcids (Alanine) not equal', () => {
-    expect(
-        new AminoAcid(TestUtils.ALANINE_DNA_CODON_1).equals(new AminoAcid(TestUtils.ALANINE_DNA_CODON_2))
-    ).toEqual(false);
-});
-
-test('DNA AminoAcids (Alanine) are alternates', () => {
-    expect(
-        new AminoAcid(TestUtils.ALANINE_DNA_CODON_1).isAlternateOf(new AminoAcid(TestUtils.ALANINE_DNA_CODON_2))
-    ).toEqual(true);
-});
-
-/*
-    --- Bulk AminoAcid creation and retreval
+    --- Bulk AminoAcid creation and retrieval
 */
 
 test('testing creation of all codon variations for each amino acid', () => {
@@ -112,7 +70,7 @@ test('testing creation of all codon variations for each amino acid', () => {
     }
 });
 
-test('testing AminoAcid retreval via getAminoAcidByCodon() using all codon variations for each amino acid', () => {
+test('testing AminoAcid retrieval via getAminoAcidByCodon() using all codon variations for each amino acid', () => {
     let slc: keyof typeof SLC_AMINO_ACID_NAME_MAP;
     for(slc in SLC_AMINO_ACID_NAME_MAP) {
         const aminoAcidName = SLC_AMINO_ACID_NAME_MAP[slc];
@@ -122,13 +80,13 @@ test('testing AminoAcid retreval via getAminoAcidByCodon() using all codon varia
                 expect(TestUtils.isCorrectAminoAcid(aminoAcid, aminoAcidName)).toEqual(true);
             }
             else {
-                throw new Error(`invalid codon sequence did not return an AminoAcid: ${codon.getSequence()}`);
+                throw new Error(`Invalid codon sequence did not return an AminoAcid: ${codon.getSequence()}`);
             }
         }
     }
 });
 
-test('testing AminoAcidName retreval via getAminoAcidNameByCodon() using all codon variations for each amino acid', () => {
+test('testing AminoAcidName retrieval via getAminoAcidNameByCodon() using all codon variations for each amino acid', () => {
     let slc: keyof typeof SLC_AMINO_ACID_NAME_MAP;
     for(slc in SLC_AMINO_ACID_NAME_MAP) {
         const correctAminoAcidName = SLC_AMINO_ACID_NAME_MAP[slc];
