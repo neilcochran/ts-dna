@@ -1,4 +1,6 @@
 import { AminoAcid, DNA, NucleicAcid, RNA } from './model';
+import { InvalidCodonError } from './model/errors/InvalidCodonError';
+import { InvalidSequenceError } from './model/errors/InvalidSequenceError';
 import { convertNucleicAcid, isRNA } from './nucleic-acids';
 
 //helper record that maps an amino acid's SLC to its corresponding AminoAcidName
@@ -103,23 +105,27 @@ export const getAminoAcidNameByCodon = (codon: NucleicAcid): AminoAcidName | und
  * Parse a nucleic acid into a list of amino acids. The nucleic acid must be made up of valid codons only.
  * @param nucleicAcid - The nucleic acid comprised of codons
  * @returns A list of amino acids
- * @throws
- * If the nucleic acid contains any invalid codons, or has an undefined sequence, an error is thrown.
+ *
+ * @throws {@link InvalidSequenceError}
+ * Thrown if the sequence is undefined, or not evenly divisible by 3 (codons always have a length of 3)
+ *
+ * @throws {@link InvalidCodonError}
+ * Thrown if an invalid codon is encountered (one that does not code for an amino acid)
  */
 export const nucleicAcidToAminoAcids = (nucleicAcid: NucleicAcid): AminoAcid[] => {
     const sequence = nucleicAcid.getSequence();
     const aminoAcids: AminoAcid[] = [];
     if(!sequence) {
-        throw new Error('The nucleic acid sequence cannot be undefined');
+        throw new InvalidSequenceError('The nucleic acid\'s sequence cannot be undefined', '', nucleicAcid.nucleicAcidType);
     }
     if(sequence.length % 3 !== 0) {
-        throw new Error('the nucleic acid length must be divisible by 3 to be comprised of only codons');
+        throw new InvalidSequenceError('The nucleic acid\'s sequence length must be divisible by 3 to be comprised of only codons', sequence, nucleicAcid.nucleicAcidType);
     }
     //parse sequence into groups of 3 (codons)
     sequence.match(/.{1,3}/g)?.forEach(codonSeq => {
         const aminoAcid = getAminoAcidByCodon(isRNA(nucleicAcid) ? new RNA(codonSeq) : new DNA(codonSeq));
         if(!aminoAcid) {
-            throw new Error(`invalid codon encounter: ${codonSeq}`);
+            throw new InvalidCodonError('Invalid codon encountered', codonSeq);
         }
         aminoAcids.push(aminoAcid);
     });

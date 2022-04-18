@@ -26,13 +26,13 @@ test('create invalid polypeptide from invalid (short) length RNA sequence', () =
 
 test('create valid polypeptide from RNA_ALL_AMINO_ACIDS_1', () => {
     expect(
-        TestUtils.isCorrectAminoAcidSequence(new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_1).getAminoAcidSequence(), TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
+        TestUtils.isCorrectAminoAcidSequence(new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_1).aminoAcidSequence, TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
     ).toEqual(true);
 });
 
 test('create valid polypeptide from RNA_ALL_AMINO_ACIDS_2', () => {
     expect(
-        TestUtils.isCorrectAminoAcidSequence(new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_2).getAminoAcidSequence(), TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
+        TestUtils.isCorrectAminoAcidSequence(new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_2).aminoAcidSequence, TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
     ).toEqual(true);
 });
 
@@ -60,13 +60,13 @@ test('create invalid polypeptide from invalid (short) length DNA sequence', () =
 
 test('create valid polypeptide from DNA_ALL_AMINO_ACIDS_1', () => {
     expect(
-        TestUtils.isCorrectAminoAcidSequence(new Polypeptide(TestUtils.DNA_ALL_AMINO_ACIDS_1).getAminoAcidSequence(), TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
+        TestUtils.isCorrectAminoAcidSequence(new Polypeptide(TestUtils.DNA_ALL_AMINO_ACIDS_1).aminoAcidSequence, TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
     ).toEqual(true);
 });
 
 test('create valid polypeptide from DNA_ALL_AMINO_ACIDS_2', () => {
     expect(
-        TestUtils.isCorrectAminoAcidSequence(new Polypeptide(TestUtils.DNA_ALL_AMINO_ACIDS_2).getAminoAcidSequence(), TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
+        TestUtils.isCorrectAminoAcidSequence(new Polypeptide(TestUtils.DNA_ALL_AMINO_ACIDS_2).aminoAcidSequence, TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
     ).toEqual(true);
 });
 

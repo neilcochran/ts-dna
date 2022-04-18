@@ -1,4 +1,5 @@
-import { isValidNucleicAcidSequence, NucleicAcidType, RNASubType } from '../../nucleic-acids';
+import { isValidNucleicAcid, NucleicAcidType, RNASubType } from '../../nucleic-acids';
+import { InvalidSequenceError } from '../errors/InvalidSequenceError';
 import { NucleicAcid } from '../nucleic-acids';
 
 /**
@@ -25,12 +26,13 @@ export class RNA extends NucleicAcid {
     /**
      * Set a new RNA sequence
      * @param sequence - String representing the RNA sequence
-     * @throws
-     * If the sequence param is invalid an error is thrown.
+     *
+     * @throws {@link InvalidSequenceError}
+     * Thrown if the sequence is invalid
      */
     setSequence(sequence: string): void {
-        if(!isValidNucleicAcidSequence(sequence, this.nucleicAcidType)){
-            throw new Error(`invalid RNA sequence provided: ${sequence}`);
+        if(!isValidNucleicAcid(sequence, this.nucleicAcidType)){
+            throw new InvalidSequenceError('Invalid RNA sequence provided', sequence, NucleicAcidType.RNA);
         }
         this.sequence = sequence.toUpperCase();
     }

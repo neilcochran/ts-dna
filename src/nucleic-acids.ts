@@ -45,7 +45,7 @@ export const isValidNucleotidePattern = (pattern: string): boolean => {
  * @returns The complement of the given nucleotide pattern symbol
  */
 export const getNucleotidePatternSymbolComplement = (patternSymbol: NucleotidePatternSymbol): NucleotidePatternSymbol => {
-    switch(patternSymbol.getSymbol()) {
+    switch(patternSymbol.symbol) {
         case 'A':
             return new NucleotidePatternSymbol('T');
         case 'T':
@@ -91,8 +91,8 @@ export const getNucleotidePatternSymbolComplement = (patternSymbol: NucleotidePa
  */
 export const getNucleotidePatternComplement = (nucleotidePattern: NucleotidePattern): NucleotidePattern => {
     let complementPatternString = '';
-    for(const patternSymbol of nucleotidePattern.getPattern()) {
-        complementPatternString += getNucleotidePatternSymbolComplement(patternSymbol).getSymbol();
+    for(const patternSymbol of nucleotidePattern.pattern) {
+        complementPatternString += getNucleotidePatternSymbolComplement(patternSymbol).symbol;
     }
     return new NucleotidePattern(complementPatternString);
 };
@@ -159,7 +159,7 @@ export const getComplementSequence = (sequence: string | undefined, nucleicAcidT
  * @param nucleicAcidType - The type of nucleic acid of the given sequence
  * @returns True if the sequence if valid, false otherwise
  */
-export const isValidNucleicAcidSequence = (sequence: string, nucleicAcidType: NucleicAcidType): boolean => {
+export const isValidNucleicAcid = (sequence: string, nucleicAcidType: NucleicAcidType): boolean => {
     let regex = undefined;
     switch(nucleicAcidType){
         case NucleicAcidType.DNA:
