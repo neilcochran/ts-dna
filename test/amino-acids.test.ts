@@ -1,5 +1,5 @@
 
-import { RNA, AminoAcid, InvalidSequenceError, InvalidCodonError } from '../src/model';
+import { RNA, AminoAcid, InvalidCodonError } from '../src/model';
 import {
     getAminoAcidByCodon,
     getAminoAcidNameByCodon,
