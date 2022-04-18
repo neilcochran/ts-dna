@@ -2,7 +2,9 @@ import {
     NucleotidePatternSymbol,
     NucleotidePattern,
     DNA,
-    RNA
+    RNA,
+    InvalidNucleotidePatternError,
+    InvalidSequenceError
 } from '../src/model';
 import {
     isDNA,
@@ -33,7 +35,7 @@ test('create valid NucleotidePatternSymbols and check matching bases', () => {
 });
 
 test('create invalid nucleotide pattern symbol', () => {
-    expect(() => new NucleotidePatternSymbol('Z')).toThrowError();
+    expect(() => new NucleotidePatternSymbol('Z')).toThrowError(InvalidNucleotidePatternError);
 });
 
 test('create valid NucleotidePattern', () => {
@@ -138,11 +140,11 @@ test('construct valid undefined DNA sequence', () => {
 });
 
 test('construct invalid DNA sequence', () => {
-    expect(() => new DNA(TestUtils.RNA_SEQ)).toThrowError();
+    expect(() => new DNA(TestUtils.RNA_SEQ)).toThrowError(InvalidSequenceError);
 });
 
 test('construct invalid empty string DNA sequence', () => {
-    expect(() => new DNA('')).toThrowError();
+    expect(() => new DNA('')).toThrowError(InvalidSequenceError);
 });
 
 test('call DNA\'s .setSequence() with a valid sequence', () => {
@@ -152,7 +154,7 @@ test('call DNA\'s .setSequence() with a valid sequence', () => {
 });
 
 test('call DNA\'s .setSequence() with an invalid empty string', () => {
-    expect(() => new DNA().setSequence('')).toThrowError();
+    expect(() => new DNA().setSequence('')).toThrowError(InvalidSequenceError);
 });
 
 test('get DNA complement sequence', () => {
@@ -199,11 +201,11 @@ test('construct valid RNA with RNASubType M_RNA', () => {
 });
 
 test('construct invalid RNA sequence', () => {
-    expect(() => new RNA(TestUtils.DNA_SEQ)).toThrowError();
+    expect(() => new RNA(TestUtils.DNA_SEQ)).toThrowError(InvalidSequenceError);
 });
 
 test('construct invalid empty string RNA', () => {
-    expect(() => new RNA('').getSequence()).toThrowError();
+    expect(() => new RNA('').getSequence()).toThrowError(InvalidSequenceError);
 });
 
 test('call RNA\'s .setSequence() with a valid sequence', () => {
@@ -213,7 +215,7 @@ test('call RNA\'s .setSequence() with a valid sequence', () => {
 });
 
 test('call RNA\'s .setSequence() with an invalid empty string', () => {
-    expect(() =>  new RNA().setSequence('')).toThrowError();
+    expect(() =>  new RNA().setSequence('')).toThrowError(InvalidSequenceError);
 });
 
 test('get RNA complement sequence', () => {
