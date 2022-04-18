@@ -1,4 +1,4 @@
-import { RNA, Polypeptide } from '../src/model';
+import { RNA, Polypeptide, InvalidSequenceError } from '../src/model';
 import { RNAtoAminoAcids  } from '../src/amino-acids';
 import * as TestUtils from './test-utils';
 
@@ -11,13 +11,13 @@ test('create invalid polypeptide from empty RNA', () => {
 test('create invalid polypeptide from invalid length RNA sequence', () => {
     expect(() => {
         new Polypeptide(new RNA('AUGC'));
-    }).toThrowError();
+    }).toThrowError(InvalidSequenceError);
 });
 
 test('create invalid polypeptide from invalid (short) length RNA sequence', () => {
     expect(() => {
         new Polypeptide(new RNA('AU'));
-    }).toThrowError();
+    }).toThrowError(InvalidSequenceError);
 });
 
 test('create valid polypeptide from RNA_ALL_AMINO_ACIDS_1', () => {
@@ -35,19 +35,19 @@ test('create valid polypeptide from RNA_ALL_AMINO_ACIDS_2', () => {
 test('RNAtoAminoAcids() from empty RNA', () => {
     expect(() => {
         RNAtoAminoAcids(new RNA());
-    }).toThrowError();
+    }).toThrowError(InvalidSequenceError);
 });
 
 test('RNAtoAminoAcids() from invalid length RNA sequence', () => {
     expect(() => {
         RNAtoAminoAcids(new RNA('AUGC'));
-    }).toThrowError();
+    }).toThrowError(InvalidSequenceError);
 });
 
 test('RNAtoAminoAcids() from invalid (short) length RNA sequence', () => {
     expect(() => {
         new Polypeptide(new RNA('AU'));
-    }).toThrowError();
+    }).toThrowError(InvalidSequenceError);
 });
 
 test('RNAtoAminoAcids() from RNA_ALL_AMINO_ACIDS_1', () => {

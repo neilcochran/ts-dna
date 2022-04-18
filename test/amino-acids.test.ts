@@ -1,5 +1,5 @@
 
-import { RNA, AminoAcid } from '../src/model';
+import { RNA, AminoAcid, InvalidCodonError } from '../src/model';
 import {
     getAminoAcidByCodon,
     getAminoAcidNameByCodon,
@@ -19,11 +19,11 @@ test('create AminoAcid (Alanine) from valid RNA codon', () => {
 });
 
 test('create invalid AminoAcid (Alanine) from empty RNA', () => {
-    expect(() => new AminoAcid(new RNA())).toThrowError();
+    expect(() => new AminoAcid(new RNA())).toThrowError(InvalidCodonError);
 });
 
 test('create invalid AminoAcid (Alanine) from too long RNA', () => {
-    expect(() => new AminoAcid(new RNA('AUCG'))).toThrowError();
+    expect(() => new AminoAcid(new RNA('AUCG'))).toThrowError(InvalidCodonError);
 });
 
 test('get all AminoAcid (Alanine) alternate codons', () => {

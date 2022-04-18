@@ -20,7 +20,4 @@ import child_process from 'child_process';
         //suppress the node error and print a much simpler one since all the needed error info is printed by tsc
         throw new Error('tsc failed to compile.');
     }
-
-    //regenerate documentation
-    child_process.execSync('node scripts/documentation.js', {stdio: 'inherit'});
 })();
