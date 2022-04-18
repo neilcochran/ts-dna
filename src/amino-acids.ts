@@ -1,7 +1,7 @@
-import { AminoAcid, DNA, NucleicAcid, RNA } from './model';
+import { AminoAcid, RNA } from './model';
 import { InvalidCodonError } from './model/errors/InvalidCodonError';
 import { InvalidSequenceError } from './model/errors/InvalidSequenceError';
-import { convertNucleicAcid, isRNA } from './nucleic-acids';
+import { NucleicAcidType } from './nucleic-acids';
 
 //helper record that maps an amino acid's SLC to its corresponding AminoAcidName
 export const SLC_AMINO_ACID_NAME_MAP: Record<string, AminoAcidName> = {
@@ -62,11 +62,11 @@ export interface AminoAcidName {
 }
 
 /**
- * Given a valid codon, return the corresponding amino acid
- * @param codon - The codon that codes for an amino acid
- * @returns The corresponding amino acid or undefined if the codon is invalid
+ * Given a valid RNA codon, return the corresponding amino acid
+ * @param codon - The RNA codon that codes for an amino acid
+ * @returns The corresponding amino acid or undefined if the RNA codon is invalid
  */
-export const getAminoAcidByCodon = (codon: NucleicAcid): AminoAcid | undefined => {
+export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
     //leverage the AminoAcid constructor validation and simply attempt to create the AminoAcid object
     //if it is not a valid amino acid codon it will throw an error
     try {
@@ -80,16 +80,12 @@ export const getAminoAcidByCodon = (codon: NucleicAcid): AminoAcid | undefined =
 /**
  * Given a valid codon, return the corresponding amino acid name
  * @internal
- * @param codon - The codon that codes for an amino acid
+ * @param codon - The RNA codon that codes for an amino acid
  * @returns The corresponding amino acid name or undefined if the codon is invalid
  */
-export const getAminoAcidNameByCodon = (codon: NucleicAcid): AminoAcidName | undefined => {
+export const getAminoAcidNameByCodon = (codon: RNA): AminoAcidName | undefined => {
     if(!codon.getSequence() || codon.getSequence()?.length !== 3) {
         return undefined;
-    }
-    //perform all look ups as the standard RNA representation
-    if(!isRNA(codon)) {
-        codon = convertNucleicAcid(codon);
     }
     let slc: keyof typeof SLC_ALT_CODONS_MAP;
     for(slc in SLC_ALT_CODONS_MAP) {
@@ -102,8 +98,8 @@ export const getAminoAcidNameByCodon = (codon: NucleicAcid): AminoAcidName | und
 };
 
 /**
- * Parse a nucleic acid into a list of amino acids. The nucleic acid must be made up of valid codons only.
- * @param nucleicAcid - The nucleic acid comprised of codons
+ * Parse RNA into a list of amino acids. The RNA must be made up of valid codons only.
+ * @param rna - The RNA comprised of codons
  * @returns A list of amino acids
  *
  * @throws {@link InvalidSequenceError}
@@ -112,18 +108,18 @@ export const getAminoAcidNameByCodon = (codon: NucleicAcid): AminoAcidName | und
  * @throws {@link InvalidCodonError}
  * Thrown if an invalid codon is encountered (one that does not code for an amino acid)
  */
-export const nucleicAcidToAminoAcids = (nucleicAcid: NucleicAcid): AminoAcid[] => {
-    const sequence = nucleicAcid.getSequence();
+export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
+    const sequence = rna.getSequence();
     const aminoAcids: AminoAcid[] = [];
     if(!sequence) {
-        throw new InvalidSequenceError('The nucleic acid\'s sequence cannot be undefined', '', nucleicAcid.nucleicAcidType);
+        throw new InvalidSequenceError('The RNA sequence cannot be undefined', '', NucleicAcidType.RNA);
     }
     if(sequence.length % 3 !== 0) {
-        throw new InvalidSequenceError('The nucleic acid\'s sequence length must be divisible by 3 to be comprised of only codons', sequence, nucleicAcid.nucleicAcidType);
+        throw new InvalidSequenceError('The RNA sequence length must be divisible by 3 to be comprised of only codons', sequence, NucleicAcidType.RNA);
     }
     //parse sequence into groups of 3 (codons)
     sequence.match(/.{1,3}/g)?.forEach(codonSeq => {
-        const aminoAcid = getAminoAcidByCodon(isRNA(nucleicAcid) ? new RNA(codonSeq) : new DNA(codonSeq));
+        const aminoAcid = getAminoAcidByCodon(new RNA(codonSeq));
         if(!aminoAcid) {
             throw new InvalidCodonError('Invalid codon encountered', codonSeq);
         }

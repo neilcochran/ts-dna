@@ -1,6 +1,6 @@
 import { NucleicAcid } from './nucleic-acids';
 import { AminoAcid } from './AminoAcid';
-import { nucleicAcidToAminoAcids } from '../amino-acids';
+import { RNAtoAminoAcids } from '../amino-acids';
 
 /**
  * A class representing a polypeptide. It has a sequence of amino acids and a nucleic acid that contains the full coding sequence.
@@ -20,7 +20,7 @@ export class Polypeptide {
      * Thrown if the codon is invalid
      */
     constructor(nucleicAcid: NucleicAcid) {
-        this.aminoAcidSequence = nucleicAcidToAminoAcids(nucleicAcid);
+        this.aminoAcidSequence = RNAtoAminoAcids(nucleicAcid);
         this.nucleicAcid = nucleicAcid;
     }
 }

@@ -2,10 +2,9 @@ import child_process from 'child_process';
 
 (function main() {
     console.log('\n*** Running eslint ***\n');
-    child_process.execSync('eslint --ext .ts --fix .');
+    child_process.execSync('eslint --ext .ts --fix .', {stdio: 'inherit'});
     console.log('\n*** Running cspell ***\n');
     try {
-        //with CSpell we lose the specific spelling error occurrence if we dont pass {stdio: 'inherit'}
         child_process.execSync('cspell lint "src/**/*"', {stdio: 'inherit'});
     } catch (error) {
         //suppress the node error and print a much simpler one since all the needed error info is printed by cspell
