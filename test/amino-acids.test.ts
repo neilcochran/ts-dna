@@ -122,7 +122,7 @@ test('testing AminoAcid retreval via getAminoAcidByCodon() using all codon varia
                 expect(TestUtils.isCorrectAminoAcid(aminoAcid, aminoAcidName)).toEqual(true);
             }
             else {
-                throw new Error(`invalid codon sequence did not return an AminoAcid: ${codon.getSequence()}`);
+                throw new Error(`Invalid codon sequence did not return an AminoAcid: ${codon.getSequence()}`);
             }
         }
     }

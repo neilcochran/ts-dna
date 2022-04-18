@@ -8,7 +8,7 @@ export {
     isValidNucleotidePattern,
     getNucleotidePatternSymbolComplement,
     getNucleotidePatternComplement,
-    isValidNucleicAcidSequence,
+    isValidNucleicAcid,
     convertNucleicAcid,
     convertToDNA,
     convertToRNA

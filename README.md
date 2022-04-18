@@ -22,7 +22,7 @@ Below is a very brief and very contrived example of how some of this library's c
 
 ```typescript
 const dnaSequence = 'ATGTGCGACGAATTC';
-if(isValidNucleicAcidSequence(dnaSequence, NucleicAcidType.DNA)) {
+if(isValidNucleicAcid(dnaSequence, NucleicAcidType.DNA)) {
     const dna = new DNA(dnaSequence);
     const rna = convertToRNA(dna);
     const polypeptide = new Polypeptide(rna);

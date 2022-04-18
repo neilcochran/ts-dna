@@ -1,5 +1,6 @@
 import { NucleicAcid } from './NucleicAcid';
-import { NucleicAcidType, isValidNucleicAcidSequence } from '../../nucleic-acids';
+import { NucleicAcidType, isValidNucleicAcid } from '../../nucleic-acids';
+import { InvalidSequenceError } from '../errors/InvalidSequenceError';
 
 /**
  * A class representing DNA. An DNA object can either have an unset (undefined) sequence, or a valid sequence.
@@ -11,8 +12,9 @@ export class DNA extends NucleicAcid {
 
     /**
      * @param sequence - Optional string representing the DNA sequence
-     * @throws
-     * If the sequence param is invalid an error is thrown.
+     *
+     * @throws {@link InvalidSequenceError}
+     * Thrown if the sequence is invalid
      */
     constructor(sequence?: string) {
         super(NucleicAcidType.DNA);
@@ -24,12 +26,13 @@ export class DNA extends NucleicAcid {
     /**
      * Set a new DNA sequence
      * @param sequence - String representing the DNA sequence
-     * @throws
-     * If the sequence param is invalid an error is thrown.
+     *
+     * @throws {@link InvalidSequenceError}
+     * Thrown if the sequence is invalid
      */
     setSequence(sequence: string): void {
-        if(!isValidNucleicAcidSequence(sequence, NucleicAcidType.DNA)){
-            throw new Error(`invalid DNA sequence provided: ${sequence}`);
+        if(!isValidNucleicAcid(sequence, NucleicAcidType.DNA)){
+            throw new InvalidSequenceError('Invalid DNA sequence provided', sequence, NucleicAcidType.DNA);
         }
         this.sequence = sequence.toUpperCase();
     }
