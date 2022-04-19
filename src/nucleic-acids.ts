@@ -6,10 +6,18 @@ import {
     RNA
 } from './model';
 
-//helper regex for validating nucleotide patters
+/**
+ * helper regex for validating nucleotide patters
+ *
+ * @internal
+ */
 const NUCLEOTIDE_PATTERN_SYMBOLS_REGEX =  /^[AaTtCcGgUuRrYyKkMmSsWwBbVvDdHhNn]+$/;
 
-//helper record that maps a nucleotide pattern symbol to its list of matching bases
+/**
+ * helper record that maps a nucleotide pattern symbol to its list of matching bases
+ *
+ * @internal
+ */
 export const NUCLEOTIDE_PATTERN_SYMBOLS: Record<string, string[]> = {
     A: ['A'], //Adenine
     T: ['T'], //Thymine
@@ -31,9 +39,21 @@ export const NUCLEOTIDE_PATTERN_SYMBOLS: Record<string, string[]> = {
 
 /**
  * Checks if a string is a valid nucleotide pattern
+ *
  * @see {@link NucleotidePattern}
+ *
  * @param pattern - The pattern to validate
+ *
  * @returns True if the pattern is a valid nucleotide pattern, false otherwise.
+ *
+ * @example
+ * ```typescript
+ *  //passing a valid pattern string
+ *  isValidNucleotidePattern('RRYYATNNNN'); //returns true
+ *
+ *  //passing an invalid pattern string (X & Z are not a valid symbol)
+ *  isValidNucleotidePattern('XXZZAANN'); //returns false
+ * ```
  */
 export const isValidNucleotidePattern = (pattern: string): boolean => {
     return NUCLEOTIDE_PATTERN_SYMBOLS_REGEX.test(pattern);
@@ -41,8 +61,17 @@ export const isValidNucleotidePattern = (pattern: string): boolean => {
 
 /**
  * Get the complement of the given nucleotide pattern symbol
+ *
  * @param patternSymbol - The nucleotide pattern symbol to get the complement of
+ *
  * @returns The complement of the given nucleotide pattern symbol
+ *
+ * @example
+ * ```typescript
+ *  const symbol = new NucleotidePatternSymbol('R');
+ *  //pass a valid nucleotide pattern symbol'R' and get it's complement symbol
+ *  getNucleotidePatternSymbolComplement(symbol); //returns the nucleotide pattern symbol 'Y'
+ * ```
  */
 export const getNucleotidePatternSymbolComplement = (patternSymbol: NucleotidePatternSymbol): NucleotidePatternSymbol => {
     switch(patternSymbol.symbol) {
@@ -86,8 +115,17 @@ export const getNucleotidePatternSymbolComplement = (patternSymbol: NucleotidePa
 
 /**
  * Get the complement of the given nucleotide pattern
+ *
  * @param nucleotidePattern - The nucleotide pattern to get the complement of
+ *
  * @returns The complement of the given nucleotide pattern
+ *
+ * @example
+ * ```typescript
+ *  const pattern = new NucleotidePattern('RYNA');
+ *  //pass a valid nucleotide pattern and get it's complement pattern
+ *  getNucleotidePatternComplement(pattern); //returns the complement pattern 'YRNT'
+ * ```
  */
 export const getNucleotidePatternComplement = (nucleotidePattern: NucleotidePattern): NucleotidePattern => {
     let complementPatternString = '';
@@ -115,8 +153,19 @@ export enum RNASubType {
 
 /**
  * Type guard for checking if a nucleic acid is DNA
+ *
  * @param nucleicAcid - The nucleic acid to check
+ *
  * @returns True if the nucleic acid is DNA, false otherwise
+ *
+ * @example
+ * ```typescript
+ *  //pass a DNA object
+ *  isDNA(new DNA()); //returns true
+ *
+ *  //pass an RNA object
+ *  isDNA(new RNA()); //returns false
+ * ```
  */
 export const isDNA = (nucleicAcid: NucleicAcid): nucleicAcid is DNA => {
     return nucleicAcid.nucleicAcidType === NucleicAcidType.DNA;
@@ -124,8 +173,19 @@ export const isDNA = (nucleicAcid: NucleicAcid): nucleicAcid is DNA => {
 
 /**
  * Type guard for checking if a nucleic acid is RNA
+ *
  * @param nucleicAcid - The nucleic acid to check
+ *
  * @returns True if the nucleic acid is RNA, false otherwise
+ *
+ * @example
+ * ```typescript
+ *  //pass an RNA object
+ *  isRNA(new RNA()); //returns true
+ *
+ *  //pass an DNA object
+ *  isRNA(new DNA()); //returns false
+ * ```
  */
 export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
     return nucleicAcid.nucleicAcidType === NucleicAcidType.RNA;
@@ -133,12 +193,17 @@ export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
 
 /**
  * Given a string sequence and a nucleic acid type, get the complement sequence
+ *
  * @remarks
  * For internal use by DNA/RNA classes only. Since sequence validation is enforced in those classes, it is not needed here.
- * @internal
+ *
  * @param sequence - The sequence to get a complement of
+ *
  * @param nucleicAcidType - The type of nucleic acid of the given sequence
+ *
  * @returns The complement sequence, or undefined if the input sequence was undefined
+ *
+ * @internal
  */
 export const getComplementSequence = (sequence: string | undefined, nucleicAcidType: NucleicAcidType): string | undefined => {
     let complement: string | undefined;
@@ -155,9 +220,27 @@ export const getComplementSequence = (sequence: string | undefined, nucleicAcidT
 
 /**
  * Given a string sequence and a nucleic acid type, check if the sequence is valid
+ *
  * @param sequence - The sequence to validate
+ *
  * @param nucleicAcidType - The type of nucleic acid of the given sequence
+ *
  * @returns True if the sequence if valid, false otherwise
+ *
+ * @example
+ * ```typescript
+ *  //pass a valid DNA sequence
+ *  isValidNucleicAcid('ATTCG', NucleicAcidType.DNA); //returns true
+ *
+ *  //pass a valid RNA sequence
+ *  isValidNucleicAcid('AUUCG', NucleicAcidType.RNA); //returns true
+ *
+ *  //pass an invalid sequence (regardless of type)
+ *  isValidNucleicAcid('XYZ', NucleicAcidType.RNA); //returns false
+ *
+ *  //pass a valid RNA sequence, but the wrong type (DNA)
+ *  isValidNucleicAcid('UUUA', NucleicAcidType.DNA); //returns false
+ * ```
  */
 export const isValidNucleicAcid = (sequence: string, nucleicAcidType: NucleicAcidType): boolean => {
     let regex = undefined;
@@ -174,8 +257,19 @@ export const isValidNucleicAcid = (sequence: string, nucleicAcidType: NucleicAci
 
 /**
  * Given a nucleic acid, convert it to the opposite nucleic acid type
+ *
  * @param nucleicAcid - The nucleic acid to convert
+ *
  * @returns The equivalent DNA if the input was RNA, or the equivalent RNA if the input was DNA
+ *
+ * @example
+ * ```typescript
+ *  //Convert RNA to DNA
+ *  convertNucleicAcid(new RNA('AUG')); //returns DNA with the sequence 'ATG'
+ *
+ *  //Convert DNA to RNA (if an RNASubType is desired it must be set after conversion)
+ *  convertNucleicAcid(new DNA('ATG')); //returns RNA with a sequence of 'AUG'
+ * ```
  */
 export const convertNucleicAcid = (nucleicAcid: NucleicAcid): DNA | RNA => {
     const sequence = nucleicAcid.getSequence();
@@ -197,9 +291,21 @@ export const convertNucleicAcid = (nucleicAcid: NucleicAcid): DNA | RNA => {
 
 /**
  * Convert the given DNA into RNA, optionally providing an RNA sub type
+ *
  * @param dna - The DNA to convert to RNA
+ *
  * @param rnaSubType - Optional RNA sub type
+ *
  * @returns The equivalent RNA of the given DNA
+ *
+ * @example
+ * ```typescript
+ *  //Convert DNA to RNA with no RNA subtype
+ *  convertToRNA(new DNA('ATG')); //returns RNA('AUG')
+ *
+ *  //Convert DNA to RNA with an RNA subtype
+ *  convertToRNA(new DNA('ATG'), RNASubType.M_RNA); //returns RNA('AUG') with RNASubType.M_RNA
+ * ```
  */
 export const convertToRNA = (dna: DNA, rnaSubType?: RNASubType): RNA => {
     const rna = new RNA(undefined, rnaSubType);
@@ -212,8 +318,16 @@ export const convertToRNA = (dna: DNA, rnaSubType?: RNASubType): RNA => {
 
 /**
  * Convert the given RNA into DNA
+ *
  * @param rna - The RNA to convert to DNA
+ *
  * @returns The equivalent
+ *
+ * @example
+ * ```typescript
+ *  //Convert RNA to DNA
+ *  convertToDNA(new RNA('AUG')); //returns DNA('ATG')
+ * ```
  */
 export const convertToDNA = (rna: RNA): DNA => {
     const dna = new DNA();
@@ -226,9 +340,12 @@ export const convertToDNA = (rna: RNA): DNA => {
 
 /**
  * Given a valid DNA base string, return its complement
- * @internal
+ *
  * @param base - The DNA base string to get the complement of
+ *
  * @returns A string of the complement of the given base, or undefined if the given base was invalid
+ *
+ * @internal
  */
 export const getDNABaseComplement = (base: string): string | undefined => {
     switch(base){
@@ -247,9 +364,12 @@ export const getDNABaseComplement = (base: string): string | undefined => {
 
 /**
  * Given a valid RNA base string, return its complement
- * @internal
+ *
  * @param base - The RNA base string to get the complement of
+ *
  * @returns A string of the complement of the given base, or undefined if the given base was invalid
+ *
+ * @internal
  */
 export const getRNABaseComplement = (base: string): string | undefined => {
     switch(base){

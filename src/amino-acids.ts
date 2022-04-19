@@ -3,7 +3,11 @@ import { InvalidCodonError } from './model/errors/InvalidCodonError';
 import { InvalidSequenceError } from './model/errors/InvalidSequenceError';
 import { NucleicAcidType } from './nucleic-acids';
 
-//helper record that maps an amino acid's SLC to its corresponding AminoAcidName
+/**
+ * helper record that maps an amino acid's SLC to its corresponding AminoAcidName
+ *
+ * @internal
+ */
 export const SLC_AMINO_ACID_NAME_MAP: Record<string, AminoAcidName> = {
     A: { name: 'Alanine', abbrv: 'Ala', slc: 'A' },
     C: { name: 'Cysteine', abbrv: 'Cys', slc: 'C' },
@@ -27,9 +31,13 @@ export const SLC_AMINO_ACID_NAME_MAP: Record<string, AminoAcidName> = {
     Y: { name: 'Tyrosine', abbrv: 'Tyr', slc: 'Y' }
 };
 
-//helper record that maps an amino acid's SLC to its list of RNA codons
+/**
+ * helper record that maps an amino acid's SLC to its list of RNA codons
+ *
+ * @internal
+ */
 export const SLC_ALT_CODONS_MAP: Record<string, RNA[]> = {
-    A: [ new RNA('GCA'), new RNA('GCC'), new RNA('GCG'), new RNA('GCU') ],
+    A: [ new RNA('GCA'), new RNA('GCC'), new RNA('GCC'), new RNA('GCU') ],
     C: [ new RNA('UGC'), new RNA('UGU') ],
     D: [ new RNA('GAC'), new RNA('GAU') ],
     E: [ new RNA('GAA'), new RNA('GAG') ],
@@ -63,8 +71,21 @@ export interface AminoAcidName {
 
 /**
  * Given a valid RNA codon, return the corresponding amino acid
+ *
  * @param codon - The RNA codon that codes for an amino acid
+ *
  * @returns The corresponding amino acid or undefined if the RNA codon is invalid
+ *
+ * @example
+ * ```typescript
+ *  //passing a valid RNA codon
+ *  getAminoAcidByCodon(new RNA('GCA')); //returns an AminoAcid object
+ * ```
+ *
+ * ```typescript
+ *  //passing valid RNA, but an invalid codon (no sequence)
+ *  getAminoAcidByCodon(new RNA()); //returns undefined
+ * ```
  */
 export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
     //leverage the AminoAcid constructor validation and simply attempt to create the AminoAcid object
@@ -79,9 +100,12 @@ export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
 
 /**
  * Given a valid codon, return the corresponding amino acid name
- * @internal
+ *
  * @param codon - The RNA codon that codes for an amino acid
+ *
  * @returns The corresponding amino acid name or undefined if the codon is invalid
+ *
+ * @internal
  */
 export const getAminoAcidNameByCodon = (codon: RNA): AminoAcidName | undefined => {
     if(!codon.getSequence() || codon.getSequence()?.length !== 3) {
@@ -99,7 +123,9 @@ export const getAminoAcidNameByCodon = (codon: RNA): AminoAcidName | undefined =
 
 /**
  * Parse RNA into a list of amino acids. The RNA must be made up of valid codons only.
+ *
  * @param rna - The RNA comprised of codons
+ *
  * @returns A list of amino acids
  *
  * @throws {@link InvalidSequenceError}
@@ -107,6 +133,15 @@ export const getAminoAcidNameByCodon = (codon: RNA): AminoAcidName | undefined =
  *
  * @throws {@link InvalidCodonError}
  * Thrown if an invalid codon is encountered (one that does not code for an amino acid)
+ *
+ * @example
+ * ```typescript
+ *  //passing RNA comprised of 3 valid codons
+ *  RNAtoAminoAcids(new RNA('GCAUGCGAC')); //returns a list of 3 AminoAcid objects
+ *
+ *  //passing empty RNA object
+ *  RNAtoAminoAcids(new RNA()); //returns an empty list
+ * ```
  */
 export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
     const sequence = rna.getSequence();

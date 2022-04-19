@@ -4,7 +4,9 @@ import { InvalidNucleotidePatternError } from '../../model';
  * A class representing a single nucleotide IUPAC notation symbol.
  * The constructor enforces validation, and all members are readonly. Therefor, all NucleotidePatternSymbol
  * objects can only exist in a valid state.
+ *
  * @see {@link NucleotidePattern}
+ *
  * @see {@link https://en.wikipedia.org/wiki/Nucleic_acid_notation#IUPAC_notation|More info on IUPAC notation}
  */
 export class NucleotidePatternSymbol {

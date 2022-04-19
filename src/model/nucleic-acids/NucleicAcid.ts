@@ -20,6 +20,7 @@ export abstract class NucleicAcid {
 
     /**
      * Returns the complement of the sequence if the sequence is set
+     *
      * @returns String representing the complement of the sequence or undefined if there is no sequence
      */
     getComplementSequence(): string | undefined {
@@ -28,7 +29,9 @@ export abstract class NucleicAcid {
 
     /**
      * Checks if the given NucleicAcid is equal
+     *
      * @param nucleicAcid - The NucleicAcid to compare
+     *
      * @returns True if the NucleicAcids are equal, false otherwise
      */
     equals(nucleicAcid: NucleicAcid): boolean {
