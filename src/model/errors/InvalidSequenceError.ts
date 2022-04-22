@@ -9,7 +9,9 @@ export class InvalidSequenceError extends Error {
 
     /**
      * @param message - The error message
+     *
      * @param sequence - The invalid nucleotide sequence
+     *
      * @param nucleicAcidType - The type of nucleic acid
      */
     constructor(message: string, sequence: string, nucleicAcidType: NucleicAcidType) {

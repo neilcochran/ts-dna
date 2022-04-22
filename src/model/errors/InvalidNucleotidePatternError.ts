@@ -6,6 +6,7 @@ export class InvalidNucleotidePatternError extends Error {
 
     /**
      * @param message - The error message
+     *
      * @param nucleotidePattern - The invalid nucleotide pattern
      */
     constructor(message: string, nucleotidePattern: string) {

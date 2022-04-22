@@ -25,6 +25,7 @@ export class DNA extends NucleicAcid {
 
     /**
      * Set a new DNA sequence
+     *
      * @param sequence - String representing the DNA sequence
      *
      * @throws {@link InvalidSequenceError}
@@ -39,6 +40,7 @@ export class DNA extends NucleicAcid {
 
     /**
      * Returns the DNA sequence string if it is set
+     *
      * @returns The DNA sequence string or undefined if it is not set
      */
     getSequence(): string | undefined {
