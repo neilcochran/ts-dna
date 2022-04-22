@@ -13,6 +13,7 @@ export class RNA extends NucleicAcid {
 
     /**
      * @param sequence - Optional string representing the RNA sequence
+     *
      * @param rnaSubType - Optional RNASubType representing the type of RNA
      */
     constructor(sequence?: string, rnaSubType?: RNASubType) {
@@ -39,6 +40,7 @@ export class RNA extends NucleicAcid {
 
     /**
      * Returns the RNA sequence string if it is set
+     *
      * @returns The RNA sequence string or undefined if it is not set
      */
     getSequence(): string | undefined {

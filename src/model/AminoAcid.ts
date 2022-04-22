@@ -40,6 +40,7 @@ export class AminoAcid implements AminoAcidName {
 
     /**
      * Returns the codon nucleotide sequence
+     *
      * @returns The codon nucleotide sequence
      */
     getCodonSequence(): string {
@@ -49,6 +50,7 @@ export class AminoAcid implements AminoAcidName {
 
     /**
      * Return all codons that code for this amino acid
+     *
      * @returns All codons that code for this amino acid
      */
     getAllAlternateCodons(): RNA[] {
@@ -57,8 +59,18 @@ export class AminoAcid implements AminoAcidName {
 
     /**
      * Checks if the given amino acid is the same amino acid regardless of the backing codon
+     *
      * @param aminoAcid - The amino acid to check
+     *
      * @returns True if the amino acid is the same (without checking the codon), false otherwise
+     *
+     * @example
+     * ```typescript
+     *  //comparing the same amino acid with the same codon
+     *  new AminoAcid(new RNA('GCG')).isAlternateOf(new AminoAcid(new RNA('GCG'))); //returns false
+     *  //comparing the same amino acid with alternate codons
+     *  new AminoAcid(new RNA('GCA')).isAlternateOf(new AminoAcid(new RNA('GCC'))); //returns true
+     * ```
      */
     isAlternateOf(aminoAcid: AminoAcid): boolean {
         return this.name === aminoAcid.name && !this.codon.equals(aminoAcid.codon);
@@ -66,8 +78,22 @@ export class AminoAcid implements AminoAcidName {
 
     /**
      * Checks if the given amino acid is the same, including the backing codon
+     *
      * @param aminoAcid - The amino acid to check
+     *
      * @returns True if the amino acid is the same (including the backing codon), false otherwise
+     *
+     * @example
+     * ```typescript
+     *  //comparing the same amino acid with the same codon
+     *  new AminoAcid(new RNA('GCG')).equals(new AminoAcid(new RNA('GCG'))); //returns true
+     *
+     *  //comparing the same amino acid with alternate codons
+     *  new AminoAcid(new RNA('GCA')).equals(new AminoAcid(new RNA('GCC'))); //returns false
+     *
+     *  //comparing different amino acids
+     *  new AminoAcid(new RNA('UGC')).equals(new AminoAcid(new RNA('GCA'))); //returns false
+     * ```
      */
     equals(aminoAcid: AminoAcid): boolean {
         return isDeepStrictEqual(this, aminoAcid);
