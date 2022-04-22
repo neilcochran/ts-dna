@@ -1,3 +1,6 @@
+## Version 0.5.3
+- Correct documentation version number
+
 ## Version 0.5.2
 - Add `CHANGELOG.md`
 - Add examples to `TSDoc` comments using `@example`
