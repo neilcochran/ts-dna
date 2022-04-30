@@ -37,7 +37,7 @@ export const SLC_AMINO_ACID_NAME_MAP: Record<string, AminoAcidName> = {
  * @internal
  */
 export const SLC_ALT_CODONS_MAP: Record<string, RNA[]> = {
-    A: [ new RNA('GCA'), new RNA('GCC'), new RNA('GCC'), new RNA('GCU') ],
+    A: [ new RNA('GCA'), new RNA('GCC'), new RNA('GCG'), new RNA('GCU') ],
     C: [ new RNA('UGC'), new RNA('UGU') ],
     D: [ new RNA('GAC'), new RNA('GAU') ],
     E: [ new RNA('GAA'), new RNA('GAG') ],

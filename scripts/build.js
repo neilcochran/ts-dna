@@ -1,4 +1,4 @@
-import child_process from 'child_process';
+const child_process = require('child_process');
 
 (function main() {
     //lint
