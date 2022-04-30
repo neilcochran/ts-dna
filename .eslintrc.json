@@ -1,6 +1,5 @@
 {
     "env": {
-        "browser": true,
         "commonjs": true,
         "es2021": true
     },
@@ -16,6 +15,7 @@
         "@typescript-eslint",
         "eslint-plugin-tsdoc"
     ],
+    "ignorePatterns": "scripts/**",
     "rules": {
         "no-unused-vars": "warn",
         "indent": [
@@ -39,6 +39,5 @@
             "always"
         ],
         "tsdoc/syntax": "error"
-
     }
 }

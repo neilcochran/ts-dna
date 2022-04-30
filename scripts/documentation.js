@@ -1,4 +1,4 @@
-import child_process from 'child_process';
+const child_process = require('child_process');
 
 console.log('\n*** Clearing previous documentation ***\n');
 child_process.execSync('rimraf /doc');

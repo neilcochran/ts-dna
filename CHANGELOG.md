@@ -1,3 +1,6 @@
+## Version 0.6.0
+- Change package to commonjs (remove package.json `"type": "module"`)
+
 ## Version 0.5.3
 - Correct documentation version number
 
