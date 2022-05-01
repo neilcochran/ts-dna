@@ -1,7 +1,6 @@
-import { isValidNucleotidePattern } from '../../nucleic-acids';
+import { getNucleotidePattern } from '../../nucleic-acids';
 import { InvalidNucleotidePatternError } from '../errors/InvalidNucleotidePatternError';
 import { NucleicAcid } from './NucleicAcid';
-import { NucleotidePatternSymbol } from './NucleotidePatternSymbol';
 
 /**
  * A class to represent patterns comprised of nucleotide IUPAC notation symbols.
@@ -13,24 +12,22 @@ import { NucleotidePatternSymbol } from './NucleotidePatternSymbol';
  * @see {@link https://en.wikipedia.org/wiki/Nucleic_acid_notation#IUPAC_notation|More info on IUPAC notation}
  */
 export class NucleotidePattern {
-    public readonly pattern: NucleotidePatternSymbol[] = [];
-    public readonly patternString: string;
+    public readonly patternRegex: RegExp;
+    public readonly pattern: string;
 
     /**
-     * @param pattern - A nonempty string of nucleotide IUPAC notation symbols
+     * @param pattern - A nonempty regex string containing only nucleotide IUPAC notation symbols and valid regex symbols/operators
      *
      * @throws {@link InvalidNucleotidePatternError}
      * Thrown if the pattern is empty, or contains invalid characters
      */
     constructor(pattern: string) {
-        if(!isValidNucleotidePattern(pattern)){
-            throw new InvalidNucleotidePatternError('Nucleotide symbol patterns must use valid IUPAC notation', pattern);
+        try {
+            this.patternRegex = getNucleotidePattern(pattern) as RegExp;
+        } catch(error) {
+            throw new InvalidNucleotidePatternError(`Invalid nucleotide pattern: ${pattern}`, pattern);
         }
-        this.patternString = '';
-        for(const symbol of pattern) {
-            this.pattern.push(new NucleotidePatternSymbol(symbol));
-            this.patternString += symbol.toUpperCase();
-        }
+        this.pattern = pattern;
     }
 
     /**
@@ -60,14 +57,9 @@ export class NucleotidePattern {
      */
     matches(nucleicAcid: NucleicAcid): boolean {
         const sequence = nucleicAcid.getSequence();
-        if(this.patternString.length === sequence?.length) {
-            for(let i = 0; i < this.pattern.length; i ++) {
-                if(!this.pattern[i].matchingBases.includes(sequence[i])) {
-                    return false;
-                }
-            }
-            return true;
+        if(!sequence) {
+            return false;
         }
-        return false;
+        return this.patternRegex.test(sequence);
     }
 }

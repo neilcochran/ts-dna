@@ -18,8 +18,8 @@ import {
     NucleicAcidType,
     RNASubType,
     NUCLEOTIDE_PATTERN_SYMBOLS,
-    getNucleotidePatternComplement,
-    isValidNucleotidePattern
+    isValidNucleotidePattern,
+    getNucleotidePatternComplement
 } from '../src/nucleic-acids';
 import * as TestUtils from './test-utils';
 
@@ -30,8 +30,35 @@ import * as TestUtils from './test-utils';
 test('create valid NucleotidePatternSymbols and check matching bases', () => {
     for(let i = 0; i < TestUtils.ALL_NUCLEOTIDE_SYMBOLS.length; i++) {
         const symbol = TestUtils.ALL_NUCLEOTIDE_SYMBOLS[i];
-        expect(new NucleotidePatternSymbol(symbol).matchingBases).toEqual(NUCLEOTIDE_PATTERN_SYMBOLS[symbol]);
+        const currSymbol = new NucleotidePatternSymbol(symbol);
+        //check that the matching bases are correct
+        expect(currSymbol.matchingBases).toEqual(NUCLEOTIDE_PATTERN_SYMBOLS[symbol]);
+        //check that the matching bases are all accepted by its regex
+        expect(currSymbol.matchingRegex.test(currSymbol.matchingBases.join())).toEqual(true);
     }
+});
+
+test('create valid NucleotidePatternSymbols and check matching bases regex', () => {
+    for(let i = 0; i < TestUtils.ALL_NUCLEOTIDE_SYMBOLS.length; i++) {
+        const currSymbol = new NucleotidePatternSymbol(TestUtils.ALL_NUCLEOTIDE_SYMBOLS[i]);
+        //check that the matching bases are all accepted by its regex
+        expect(currSymbol.matchingRegex.test(currSymbol.matchingBases.join())).toEqual(true);
+    }
+});
+
+test('create valid NucleotidePattern with heavy regex use', () => {
+    expect(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN).patternRegex.source).toEqual(TestUtils.NUCLEOTIDE_PATTERN_REGEX);
+});
+
+test('test valid sequences against a NucleotidePattern with heavy regex use', () => {
+    const pattern = new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN);
+    for(const passingSeq of TestUtils.NUCLEOTIDE_PATTERN_PASSING_SEQS) {
+        expect(pattern.matches(new DNA(passingSeq))).toEqual(true);
+    }
+});
+
+test('test invalid sequence against a NucleotidePattern with heavy regex use', () => {
+    expect(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN).matches(new DNA('AAATCGC'))).toEqual(false);
 });
 
 test('create invalid nucleotide pattern symbol', () => {
@@ -43,24 +70,27 @@ test('create valid NucleotidePattern', () => {
 });
 
 test('create valid NucleotidePattern and check it\'s patternString', () => {
-    expect(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS).patternString).toEqual(TestUtils.ALL_NUCLEOTIDE_SYMBOLS);
+    expect(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS).pattern).toEqual(TestUtils.ALL_NUCLEOTIDE_SYMBOLS);
 });
 
-test('create valid NucleotidePattern and check it\'s pattern', () => {
-    const pattern = new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS).pattern;
-    for(let i = 0; i < pattern.length; i++) {
-        expect(pattern[i].symbol).toEqual(TestUtils.ALL_NUCLEOTIDE_SYMBOLS[i]);
-    }
-});
-
-test('get complement NucleotidePattern', () => {
+test('get complement NucleotidePattern (all symbols, no regex)', () => {
     expect(
         getNucleotidePatternComplement(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS))
     ).toEqual(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS_COMP));
 });
 
-test('pass valid pattern string to isValidNucleotidePattern', () => {
+test('get complement NucleotidePattern (regex)', () => {
+    expect(
+        getNucleotidePatternComplement(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN))
+    ).toEqual(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN_COMP));
+});
+
+test('pass valid pattern string (all symbols) to isValidNucleotidePattern', () => {
     expect(isValidNucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS)).toEqual(true);
+});
+
+test('pass valid pattern string (heavy regex) to isValidNucleotidePattern', () => {
+    expect(isValidNucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN)).toEqual(true);
 });
 
 test('pass invalid empty pattern string to isValidNucleotidePattern', () => {

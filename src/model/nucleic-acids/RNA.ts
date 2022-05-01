@@ -33,7 +33,7 @@ export class RNA extends NucleicAcid {
      */
     setSequence(sequence: string): void {
         if(!isValidNucleicAcid(sequence, this.nucleicAcidType)){
-            throw new InvalidSequenceError('Invalid RNA sequence provided', sequence, NucleicAcidType.RNA);
+            throw new InvalidSequenceError(`Invalid RNA sequence provided: ${sequence}`, sequence, NucleicAcidType.RNA);
         }
         this.sequence = sequence.toUpperCase();
     }

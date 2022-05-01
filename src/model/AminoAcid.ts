@@ -29,7 +29,7 @@ export class AminoAcid implements AminoAcidName {
         }
         const aminoAcidName = getAminoAcidNameByCodon(codon);
         if(!aminoAcidName) {
-            throw new InvalidCodonError('No amino acid is associated with the codon', sequence);
+            throw new InvalidCodonError(`No amino acid is associated with the codon: ${sequence}`, sequence);
         }
         this.name = aminoAcidName.name;
         this.abbrv = aminoAcidName.abbrv;
