@@ -1,3 +1,6 @@
+## Version 0.7.0
+- Add full Regex support to NucleotidePattern
+
 ## Version 0.6.0
 - Change package to commonjs (remove package.json `"type": "module"`)
 
