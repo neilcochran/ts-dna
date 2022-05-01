@@ -33,7 +33,7 @@ export class DNA extends NucleicAcid {
      */
     setSequence(sequence: string): void {
         if(!isValidNucleicAcid(sequence, NucleicAcidType.DNA)){
-            throw new InvalidSequenceError('Invalid DNA sequence provided', sequence, NucleicAcidType.DNA);
+            throw new InvalidSequenceError(`Invalid DNA sequence provided: ${sequence}`, sequence, NucleicAcidType.DNA);
         }
         this.sequence = sequence.toUpperCase();
     }

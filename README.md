@@ -18,15 +18,22 @@ yarn add ts-dna
 Check out the full library documentation <a href="http://www.neilcochran.com/ts-dna/">here</a>.
 
 ## Examples
-Below is a very brief and very contrived example of how some of this library's classes and its utilities might be used.
+Below are some very brief (and contrived) examples of how some of this library's classes and its utilities might be used.
 
 ```typescript
-const dnaSequence = 'ATGTGCGACGAATTC';
-if(isValidNucleicAcid(dnaSequence, NucleicAcidType.DNA)) {
-    const dna = new DNA(dnaSequence);
-    const rna = convertToRNA(dna);
-    const polypeptide = new Polypeptide(rna);
-}
+//Create complex IUPAC nucleotide symbol pattern regular expressions
+const nucleotidePattern = new NucleotidePattern('^N*Y?A+(WY){3}$');
+const dnaMatch = new DNA('ATCGATCGATCGATCGCAAAACTCTC');
+nucleotidePattern.matches(dnaMatch); // --> true
+nucleotidePattern.patternRegex; // --> '^[AaGgCcTt]*[CcTt]?[Aa]+([AaTt][CcTt]){3}$'
+
+//Go from DNA -> RNA -> Polypeptide
+const dna = new DNA('ATGTGCGACGAATTC');
+const rna = convertToRNA(dna);
+const polypeptide = new Polypeptide(rna);
+
+
+//Get and compare amino acids
 const met1 = getAminoAcidByCodon(new RNA('AUG'));
 const met2 = new AminoAcid(new RNA('AUG'));
 met1?.equals(met2); // --> true
