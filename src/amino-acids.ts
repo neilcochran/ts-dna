@@ -150,13 +150,13 @@ export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
         throw new InvalidSequenceError('The RNA sequence cannot be undefined', '', NucleicAcidType.RNA);
     }
     if(sequence.length % 3 !== 0) {
-        throw new InvalidSequenceError('The RNA sequence length must be divisible by 3 to be comprised of only codons', sequence, NucleicAcidType.RNA);
+        throw new InvalidSequenceError(`Invalid codon: ${sequence} The RNA sequence length must be divisible by 3 to be comprised of only codons`, sequence, NucleicAcidType.RNA);
     }
     //parse sequence into groups of 3 (codons)
     sequence.match(/.{1,3}/g)?.forEach(codonSeq => {
         const aminoAcid = getAminoAcidByCodon(new RNA(codonSeq));
         if(!aminoAcid) {
-            throw new InvalidCodonError('Invalid codon encountered', codonSeq);
+            throw new InvalidCodonError(`Invalid codon encountered: ${codonSeq}`, codonSeq);
         }
         aminoAcids.push(aminoAcid);
     });

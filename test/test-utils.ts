@@ -24,6 +24,25 @@ export const ALL_AMINO_ACIDS_SLC_SEQ = 'ACDEFGHIKLMNPQRSTVWY';
 //Nucleotide pattern symbols and complement symbols strings
 export const ALL_NUCLEOTIDE_SYMBOLS = 'ATCGURYKMSWBVDHN';
 export const ALL_NUCLEOTIDE_SYMBOLS_COMP = 'TAGCAYRMKSWVBHDN';
+export const NUCLEOTIDE_PATTERN = '^N*Y?A+(WY){3}$';
+export const NUCLEOTIDE_PATTERN_COMP = '^N*R?T+(WR){3}$';
+export const NUCLEOTIDE_PATTERN_REGEX = '^[AaGgCcTt]*[CcTt]?[Aa]+([AaTt][CcTt]){3}$';
+export const NUCLEOTIDE_PATTERN_REGEX_COMP = '/^[AaGgCcTt]*[GgAa]?[Tt]+([AaTt][GgAa]){3}$/';
+//Examples of sequences that pass the above regex
+export const NUCLEOTIDE_PATTERN_PASSING_SEQS = [
+    //N*             YA+ (WY){3}
+    'ATCGATCGATCGATCGCAAATTTTTT',
+    //N*             YA+ (WY){3}
+    'ATCGATCGATCGATCGCAAAACTCTC',
+    //N*              A+(WY){3}
+    'ATCGATCGATCGATCGCAACTCTC',
+    //N*A+(WY){3}
+    'GAACTCTC',
+    //N*YA+(WY){3}
+    'GCAACTCTC',
+    //N*YA+(WY){3}
+    'GTAACTCTC'
+];
 
 export const isCorrectAminoAcid = (aminoAcid: AminoAcid, correctAminoAcidName: AminoAcidName): boolean => {
     let k: keyof  AminoAcidName;
