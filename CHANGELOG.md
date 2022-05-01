@@ -1,3 +1,6 @@
+## Version 0.7.1
+- Push updated build to NPM (not pushed in 0.7.0)
+
 ## Version 0.7.0
 - Add full Regex support to NucleotidePattern
 
