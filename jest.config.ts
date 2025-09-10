@@ -8,5 +8,13 @@ export default {
     testMatch: [
         '**/test/**/*.test.ts'
     ],
-    preset: 'ts-jest'
+    preset: 'ts-jest',
+    testEnvironment: 'node',
+    // Improve performance for TypeScript compilation
+    extensionsToTreatAsEsm: [],
+    transform: {
+        '^.+\\.ts$': ['ts-jest', {
+            useESM: false
+        }]
+    }
 };

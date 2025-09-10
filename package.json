@@ -8,8 +8,20 @@
     "email": "dev.neil.cochran@pm.me",
     "url": "https://github.com/neilcochran"
   },
+  "type": "module",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "lint": "node scripts/lint.js",
     "test": "node scripts/test.js",
@@ -21,20 +33,20 @@
     "url": "git+https://github.com/neilcochran/ts-dna.git"
   },
   "devDependencies": {
-    "@types/jest": "^27.4.1",
-    "@types/node": "^17.0.23",
-    "@typescript-eslint/eslint-plugin": "^5.18.0",
-    "@typescript-eslint/parser": "^5.18.0",
-    "cspell": "^5.19.7",
-    "eslint": "^8.13.0",
-    "eslint-plugin-tsdoc": "^0.2.16",
-    "jest": "^27.5.1",
-    "rimraf": "^3.0.2",
-    "ts-jest": "^27.1.4",
-    "ts-node": "^10.7.0",
-    "tsc-watch": "^5.0.3",
-    "typedoc": "^0.22.15",
-    "typescript": "^4.6.3"
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
+    "cspell": "^8.6.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-tsdoc": "^0.2.17",
+    "jest": "^29.7.0",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "tsc-watch": "^6.0.4",
+    "typedoc": "^0.25.12",
+    "typescript": "^5.4.2"
   },
   "keywords": [
     "dna",
@@ -48,5 +60,6 @@
   ],
   "files": [
     "dist/**/*"
-  ]
+  ],
+  "sideEffects": false
 }

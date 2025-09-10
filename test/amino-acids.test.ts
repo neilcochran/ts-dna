@@ -18,8 +18,8 @@ test('create AminoAcid (Alanine) from valid RNA codon', () => {
     ).toEqual(true);
 });
 
-test('create invalid AminoAcid (Alanine) from empty RNA', () => {
-    expect(() => new AminoAcid(new RNA())).toThrowError(InvalidCodonError);
+test('create invalid AminoAcid from RNA with wrong length', () => {
+    expect(() => new AminoAcid(new RNA('AU'))).toThrowError(InvalidCodonError);
 });
 
 test('create invalid AminoAcid (Alanine) from too long RNA', () => {
@@ -27,9 +27,10 @@ test('create invalid AminoAcid (Alanine) from too long RNA', () => {
 });
 
 test('get all AminoAcid (Alanine) alternate codons', () => {
+    const expectedCodons = SLC_ALT_CODONS_MAP['A'].map(codonStr => new RNA(codonStr));
     expect(
         new AminoAcid(TestUtils.ALANINE_RNA_CODON_2).getAllAlternateCodons()
-    ).toEqual(SLC_ALT_CODONS_MAP['A']);
+    ).toEqual(expectedCodons);
 });
 
 test('ensure alternate AminoAcids (Alanine) return the same alternate RNA codons', () => {
@@ -64,7 +65,8 @@ test('testing creation of all codon variations for each amino acid', () => {
     let slc: keyof typeof SLC_AMINO_ACID_NAME_MAP;
     for(slc in SLC_AMINO_ACID_NAME_MAP) {
         const aminoAcidName = SLC_AMINO_ACID_NAME_MAP[slc];
-        for(const codon of SLC_ALT_CODONS_MAP[slc]) {
+        for(const codonStr of SLC_ALT_CODONS_MAP[slc]) {
+            const codon = new RNA(codonStr);
             expect(TestUtils.isCorrectAminoAcid(new AminoAcid(codon), aminoAcidName)).toEqual(true);
         }
     }
@@ -74,13 +76,14 @@ test('testing AminoAcid retrieval via getAminoAcidByCodon() using all codon vari
     let slc: keyof typeof SLC_AMINO_ACID_NAME_MAP;
     for(slc in SLC_AMINO_ACID_NAME_MAP) {
         const aminoAcidName = SLC_AMINO_ACID_NAME_MAP[slc];
-        for(const codon of SLC_ALT_CODONS_MAP[slc]) {
+        for(const codonStr of SLC_ALT_CODONS_MAP[slc]) {
+            const codon = new RNA(codonStr);
             const aminoAcid = getAminoAcidByCodon(codon);
             if(aminoAcid) {
                 expect(TestUtils.isCorrectAminoAcid(aminoAcid, aminoAcidName)).toEqual(true);
             }
             else {
-                throw new Error(`Invalid codon sequence did not return an AminoAcid: ${codon.getSequence()}`);
+                throw new Error(`Invalid codon sequence did not return an AminoAcid: ${codonStr}`);
             }
         }
     }
@@ -90,7 +93,8 @@ test('testing AminoAcidName retrieval via getAminoAcidNameByCodon() using all co
     let slc: keyof typeof SLC_AMINO_ACID_NAME_MAP;
     for(slc in SLC_AMINO_ACID_NAME_MAP) {
         const correctAminoAcidName = SLC_AMINO_ACID_NAME_MAP[slc];
-        for(const codon of SLC_ALT_CODONS_MAP[slc]) {
+        for(const codonStr of SLC_ALT_CODONS_MAP[slc]) {
+            const codon = new RNA(codonStr);
             expect(getAminoAcidNameByCodon(codon)).toEqual(correctAminoAcidName);
         }
     }

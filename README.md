@@ -1,43 +1,100 @@
 # **ts-dna**
-A simple typescript utility library for working with nucleic acids, amino acids, and polypeptides. Going from DNA -> RNA -> Polypeptides has never been easier!
 
-## Description
-ts-dna aims to model and offer utilities for the biological relationship between nucleic acids, amino acids, and polypeptides. All classes are immutable, and validation is enforced on construction. Therefor, all instances of the classes will always be valid once constructed. ts-dna is a zero dependency library.
+A modern TypeScript library for working with nucleic acids, amino acids, and polypeptides. Going from DNA → RNA → Polypeptides has never been easier!
 
-## Installing
-npm:
-```
+## Features
+
+- 🧬 **Type-safe** models for DNA, RNA, amino acids, and polypeptides
+- 🛡️ **Immutable** objects with validation enforced at construction
+- 🔄 **Functional error handling** with ValidationResult pattern (no exceptions)
+- 📦 **Zero dependencies** - lightweight and secure
+- 🌐 **Dual module support** - works with both ESM and CommonJS
+- 🧪 **IUPAC compliant** nucleotide pattern matching
+
+## Requirements
+
+- Node.js ≥18.0.0
+- TypeScript ≥5.0 (recommended)
+
+## Installation
+
+```bash
 npm install ts-dna
-``` 
-
-yarn:
 ```
+
+```bash
 yarn add ts-dna
 ```
-## Library Documentation
-Check out the full library documentation <a href="http://www.neilcochran.com/ts-dna/">here</a>.
 
-## Examples
-Below are some very brief (and contrived) examples of how some of this library's classes and its utilities might be used.
+## What You Can Do
+
+### 🧬 Model Biological Sequences
 
 ```typescript
-//Create complex IUPAC nucleotide symbol pattern regular expressions
-const nucleotidePattern = new NucleotidePattern('^N*Y?A+(WY){3}$');
-const dnaMatch = new DNA('ATCGATCGATCGATCGCAAAACTCTC');
-nucleotidePattern.matches(dnaMatch); // --> true
-nucleotidePattern.patternRegex; // --> '^[AaGgCcTt]*[CcTt]?[Aa]+([AaTt][CcTt]){3}$'
+const dna = new DNA('ATGTGCGACGAATTC');
+const rna = new RNA('AUGCCCAAAUUU', RNASubType.M_RNA);
+console.log(dna.getComplement()); // "TACGCGCTCAAG"
+```
 
-//Go from DNA -> RNA -> Polypeptide
+### 🔄 Convert Between Nucleic Acids
+
+```typescript
+const dna = new DNA('ATGTGCGACGAATTC');
+const rna = convertToRNA(dna);        // DNA → RNA
+const backToDna = convertToDNA(rna);  // RNA → DNA
+```
+
+### 🧪 Work with Amino Acids & Proteins
+
+```typescript
+const rna = new RNA('AUGAAAGGG');  // 3 codons
+const polypeptide = new Polypeptide(rna);
+console.log(polypeptide.aminoAcidSequence.length); // 3
+console.log(polypeptide.aminoAcidSequence[0].name); // "Methionine"
+
+const aminoAcid = new AminoAcid(new RNA('UUU'));
+console.log(aminoAcid.getAllAlternateCodons()); // All codons for Phenylalanine
+```
+
+### 🔍 Advanced Pattern Matching
+
+```typescript
+const pattern = new NucleotidePattern('^N*Y?A+(WY){3}$');
+const dna = new DNA('ATCGATCGCAAAACTCTC');
+console.log(pattern.matches(dna)); // true
+console.log(pattern.patternRegex); // '^[AaGgCcTt]*[CcTt]?[Aa]+([AaTt][CcTt]){3}$'
+```
+
+### 🛡️ Safe Error Handling
+
+```typescript
+// No exceptions thrown - use ValidationResult pattern
+const result = DNA.create('INVALID_SEQUENCE');
+if (result.success) {
+    console.log('Valid DNA:', result.data.getSequence());
+} else {
+    console.log('Error:', result.error); // Detailed validation message
+}
+```
+
+## Quick Start
+
+```typescript
+import { DNA, RNA, AminoAcid, Polypeptide, convertToRNA } from 'ts-dna';
+
+// Basic workflow: DNA → RNA → Polypeptide
 const dna = new DNA('ATGTGCGACGAATTC');
 const rna = convertToRNA(dna);
 const polypeptide = new Polypeptide(rna);
 
-
-//Get and compare amino acids
-const met1 = getAminoAcidByCodon(new RNA('AUG'));
-const met2 = new AminoAcid(new RNA('AUG'));
-met1?.equals(met2); // --> true
+console.log(`${dna.getSequence()} → ${rna.getSequence()}`);
+console.log(`Amino acids: ${polypeptide.aminoAcidSequence.length}`);
 ```
 
+## API Documentation
+
+Full API documentation with detailed examples is available at [neilcochran.com/ts-dna](http://www.neilcochran.com/ts-dna/).
+
 ## License
-This project is licensed under the MIT License - see the <a href="/LICENSE.md">LICENSE.md</a> file for details
+
+MIT License - see [LICENSE.md](LICENSE.md) for details.
