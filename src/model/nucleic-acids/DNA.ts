@@ -1,49 +1,75 @@
 import { NucleicAcid } from './NucleicAcid';
-import { NucleicAcidType, isValidNucleicAcid } from '../../nucleic-acids';
+import { validateNucleicAcid, unwrap } from '../../validation';
+import { NucleicAcidType } from '../../NucleicAcidType';
+import { ValidationResult } from '../../ValidationResult';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError';
 
 /**
- * A class representing DNA. An DNA object can either have an unset (undefined) sequence, or a valid sequence.
- * Both the constructor and setSequence() enforce validation, and the backing sequence is a private member. Therefor, all DNA
- * objects can only exist in a valid state.
+ * A class representing DNA with a valid sequence.
+ * The constructor enforces validation, and the sequence is immutable after construction.
+ * All DNA objects are guaranteed to be in a valid state.
  */
 export class DNA extends NucleicAcid {
-    private sequence?: string;
+    private readonly sequence: string;
 
     /**
-     * @param sequence - Optional string representing the DNA sequence
+     * @param sequence - String representing the DNA sequence (required)
      *
      * @throws {@link InvalidSequenceError}
      * Thrown if the sequence is invalid
+     *
+     * @example
+     * ```typescript
+     * const dna = new DNA('ATCG'); // Valid
+     * const dna = new DNA('atcg'); // Valid - normalized to uppercase
+     * const dna = new DNA(''); // Throws InvalidSequenceError
+     * const dna = new DNA('ATUX'); // Throws InvalidSequenceError - invalid characters
+     * ```
      */
-    constructor(sequence?: string) {
+    constructor(sequence: string) {
         super(NucleicAcidType.DNA);
-        if(sequence !== undefined){
-            this.setSequence(sequence);
+        const validationResult = validateNucleicAcid(sequence, NucleicAcidType.DNA);
+
+        if (!validationResult.success) {
+            throw new InvalidSequenceError(validationResult.error, sequence, NucleicAcidType.DNA);
         }
+
+        this.sequence = validationResult.data;
     }
 
     /**
-     * Set a new DNA sequence
+     * Creates a DNA instance from a sequence, returning a ValidationResult instead of throwing
      *
      * @param sequence - String representing the DNA sequence
+     * @returns ValidationResult containing DNA instance or error message
      *
-     * @throws {@link InvalidSequenceError}
-     * Thrown if the sequence is invalid
+     * @example
+     * ```typescript
+     * const result = DNA.create('ATCG');
+     * if (result.success) {
+     *     console.log('Valid DNA:', result.data.getSequence());
+     * } else {
+     *     console.log('Error:', result.error);
+     * }
+     * ```
      */
-    setSequence(sequence: string): void {
-        if(!isValidNucleicAcid(sequence, NucleicAcidType.DNA)){
-            throw new InvalidSequenceError(`Invalid DNA sequence provided: ${sequence}`, sequence, NucleicAcidType.DNA);
+    static create(sequence: string): ValidationResult<DNA> {
+        const validationResult = validateNucleicAcid(sequence, NucleicAcidType.DNA);
+
+        if (!validationResult.success) {
+            return validationResult;
         }
-        this.sequence = sequence.toUpperCase();
+
+        // Use unwrap since we know validation succeeded
+        return { success: true as const, data: new DNA(unwrap(validationResult)) };
     }
 
     /**
-     * Returns the DNA sequence string if it is set
+     * Returns the DNA sequence string
      *
-     * @returns The DNA sequence string or undefined if it is not set
+     * @returns The DNA sequence string
      */
-    getSequence(): string | undefined {
+    getSequence(): string {
         return this.sequence;
     }
 }

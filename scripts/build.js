@@ -1,23 +1,39 @@
-const child_process = require('child_process');
+import { execSync } from 'child_process';
+import { existsSync, copyFileSync } from 'fs';
 
 (function main() {
     //lint
-    child_process.execSync('node scripts/lint.js', {stdio: 'inherit'});
+    execSync('node scripts/lint.js', {stdio: 'inherit'});
     //test
-    child_process.execSync('node scripts/test.js', {stdio: 'inherit'});
+    execSync('node scripts/test.js', {stdio: 'inherit'});
     //remove old build
     console.log('\n*** Clearing previous build ***\n');
-    child_process.execSync('rimraf dist/');
-    console.log('\n*** Compiling new build ***\n');
-    //build
+    execSync('rimraf dist/ dist-cjs/');
+    console.log('\n*** Compiling ESM build ***\n');
+    //build ESM
     try {
-        //with tsc we lose the specific compilation error occurrences if we dont pass {stdio: 'inherit'}
-        child_process.execSync('tsc', {stdio: 'inherit'});
+        //with tsc we lose the specific compilation error occurrences if we don't pass {stdio: 'inherit'}
+        execSync('tsc', {stdio: 'inherit'});
     } catch(error) {
         //remove any code that may have been compiled before the error was encountered
-        console.log('\n*** Cleaning failed build ***\n');
-        child_process.execSync('rimraf dist/');
+        console.log('\n*** Cleaning failed ESM build ***\n');
+        execSync('rimraf dist/');
         //suppress the node error and print a much simpler one since all the needed error info is printed by tsc
-        throw new Error('tsc failed to compile.');
+        throw new Error('tsc failed to compile ESM build.');
+    }
+    
+    console.log('\n*** Compiling CommonJS build ***\n');
+    //build CommonJS
+    try {
+        execSync('tsc -p tsconfig.cjs.json', {stdio: 'inherit'});
+        // Rename the main CommonJS file to .cjs extension
+        if (existsSync('dist-cjs/index.js')) {
+            copyFileSync('dist-cjs/index.js', 'dist/index.cjs');
+        }
+        execSync('rimraf dist-cjs/');
+    } catch(error) {
+        console.log('\n*** Cleaning failed CommonJS build ***\n');
+        execSync('rimraf dist-cjs/');
+        throw new Error('tsc failed to compile CommonJS build.');
     }
 })();

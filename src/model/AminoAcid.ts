@@ -1,5 +1,5 @@
 import { RNA } from './nucleic-acids';
-import { NucleicAcidType } from '../nucleic-acids';
+import { NucleicAcidType } from '../NucleicAcidType';
 import { AminoAcidName, getAminoAcidNameByCodon, SLC_ALT_CODONS_MAP } from '../amino-acids';
 import { isDeepStrictEqual } from 'util';
 import { InvalidCodonError } from './errors/InvalidCodonError';
@@ -24,8 +24,8 @@ export class AminoAcid implements AminoAcidName {
      */
     constructor(codon: RNA){
         const sequence = codon.getSequence();
-        if(!sequence || sequence.length !== 3){
-            throw new InvalidCodonError(`Invalid codon length of: ${codon.getSequence()?.length ?? 0}`, sequence ?? '');
+        if(sequence.length !== 3){
+            throw new InvalidCodonError(`Invalid codon length of: ${sequence.length}`, sequence);
         }
         const aminoAcidName = getAminoAcidNameByCodon(codon);
         if(!aminoAcidName) {
@@ -44,8 +44,7 @@ export class AminoAcid implements AminoAcidName {
      * @returns The codon nucleotide sequence
      */
     getCodonSequence(): string {
-        //due to our constructor enforced logic getSequence() should never return undefined
-        return this.codon.getSequence() ?? '';
+        return this.codon.getSequence();
     }
 
     /**
@@ -54,7 +53,7 @@ export class AminoAcid implements AminoAcidName {
      * @returns All codons that code for this amino acid
      */
     getAllAlternateCodons(): RNA[] {
-        return SLC_ALT_CODONS_MAP[this.slc];
+        return SLC_ALT_CODONS_MAP[this.slc].map(codonStr => new RNA(codonStr));
     }
 
     /**

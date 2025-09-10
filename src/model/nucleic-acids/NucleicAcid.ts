@@ -1,5 +1,6 @@
 import { isDeepStrictEqual } from 'util';
-import { getComplementSequence, NucleicAcidType } from '../../nucleic-acids';
+import { getComplementSequence } from '../../validation';
+import { NucleicAcidType } from '../../NucleicAcidType';
 
 /**
  * An abstract class representing a general nucleic acid (a sequence of nucleotides)
@@ -14,17 +15,15 @@ export abstract class NucleicAcid {
         this.nucleicAcidType = nucleicAcidType;
     }
 
-    abstract setSequence(sequence: string): void;
-
-    abstract getSequence(): string | undefined;
+    abstract getSequence(): string;
 
     /**
-     * Returns the complement of the sequence if the sequence is set
+     * Returns the complement of the sequence
      *
-     * @returns String representing the complement of the sequence or undefined if there is no sequence
+     * @returns String representing the complement of the sequence
      */
-    getComplementSequence(): string | undefined {
-        return getComplementSequence(this.getSequence(), this.nucleicAcidType);
+    getComplementSequence(): string {
+        return getComplementSequence(this.getSequence(), this.nucleicAcidType) ?? '';
     }
 
     /**

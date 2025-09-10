@@ -15,12 +15,19 @@ import {
     getDNABaseComplement,
     getRNABaseComplement,
     isValidNucleicAcid,
-    NucleicAcidType,
-    RNASubType,
     NUCLEOTIDE_PATTERN_SYMBOLS,
     isValidNucleotidePattern,
     getNucleotidePatternComplement
 } from '../src/nucleic-acids';
+import { NucleicAcidType } from '../src/NucleicAcidType';
+import { RNASubType } from '../src/RNASubType';
+import {
+    success,
+    failure,
+    isSuccess,
+    isFailure,
+    validateNucleicAcid
+} from '../src';
 import * as TestUtils from './test-utils';
 
 /*
@@ -142,19 +149,19 @@ test('invalid RNA match for a NucleotidePattern', () => {
 */
 
 test('check DNA -> isDNA type guard', () => {
-    expect(isDNA(new DNA())).toEqual(true);
+    expect(isDNA(new DNA(TestUtils.DNA_SEQ))).toEqual(true);
 });
 
 test('check RNA -> isDNA type guard', () => {
-    expect(isDNA(new RNA())).toEqual(false);
+    expect(isDNA(new RNA(TestUtils.RNA_SEQ))).toEqual(false);
 });
 
 test('check RNA -> isRNA type guard', () => {
-    expect(isRNA(new RNA())).toEqual(true);
+    expect(isRNA(new RNA(TestUtils.RNA_SEQ))).toEqual(true);
 });
 
 test('check DNA -> isRNA type guard', () => {
-    expect(isRNA(new DNA())).toEqual(false);
+    expect(isRNA(new DNA(TestUtils.DNA_SEQ))).toEqual(false);
 });
 
 /*
@@ -165,8 +172,8 @@ test('construct valid DNA sequence', () => {
     expect(new DNA(TestUtils.DNA_SEQ).getSequence()).toEqual(TestUtils.DNA_SEQ);
 });
 
-test('construct valid undefined DNA sequence', () => {
-    expect(new DNA(undefined).getSequence()).toBeUndefined();
+test('construct DNA with lowercase sequence (normalized to uppercase)', () => {
+    expect(new DNA('atcg').getSequence()).toEqual('ATCG');
 });
 
 test('construct invalid DNA sequence', () => {
@@ -177,14 +184,15 @@ test('construct invalid empty string DNA sequence', () => {
     expect(() => new DNA('')).toThrowError(InvalidSequenceError);
 });
 
-test('call DNA\'s .setSequence() with a valid sequence', () => {
-    const dna = new DNA();
-    dna.setSequence(TestUtils.DNA_SEQ);
+test('DNA sequences are immutable after construction', () => {
+    const dna = new DNA(TestUtils.DNA_SEQ);
+    // Verify getSequence returns the same value consistently
+    expect(dna.getSequence()).toEqual(TestUtils.DNA_SEQ);
     expect(dna.getSequence()).toEqual(TestUtils.DNA_SEQ);
 });
 
-test('call DNA\'s .setSequence() with an invalid empty string', () => {
-    expect(() => new DNA().setSequence('')).toThrowError(InvalidSequenceError);
+test('construct DNA with invalid characters throws error', () => {
+    expect(() => new DNA('ATCGX')).toThrowError(InvalidSequenceError);
 });
 
 test('get DNA complement sequence', () => {
@@ -200,13 +208,13 @@ test('check DNA equality', () => {
 
 test('check DNA inequality', () => {
     const dna = new DNA(TestUtils.DNA_SEQ);
-    const dna2 = new DNA();
+    const dna2 = new DNA('GGGG');
     expect(dna.equals(dna2)).toEqual(false);
 });
 
 test('check DNA/RNA inequality', () => {
-    const dna = new DNA();
-    const rna = new RNA();
+    const dna = new DNA(TestUtils.DNA_SEQ);
+    const rna = new RNA(TestUtils.RNA_SEQ);
     expect(dna.equals(rna)).toEqual(false);
 });
 
@@ -218,16 +226,16 @@ test('construct valid RNA sequence', () => {
     expect(new RNA(TestUtils.RNA_SEQ).getSequence()).toEqual(TestUtils.RNA_SEQ);
 });
 
-test('construct valid empty RNA', () => {
-    expect(new RNA().getSequence()).toBeUndefined();
+test('construct RNA with lowercase sequence (normalized to uppercase)', () => {
+    expect(new RNA('aucg').getSequence()).toEqual('AUCG');
 });
 
 test('construct valid RNA with RNASubType PRE_M_RNA', () => {
-    expect(new RNA(undefined, RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
+    expect(new RNA(TestUtils.RNA_SEQ, RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
 });
 
 test('construct valid RNA with RNASubType M_RNA', () => {
-    expect(new RNA(undefined, RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
+    expect(new RNA(TestUtils.RNA_SEQ, RNASubType.M_RNA).rnaSubType).toEqual(RNASubType.M_RNA);
 });
 
 test('construct invalid RNA sequence', () => {
@@ -235,17 +243,18 @@ test('construct invalid RNA sequence', () => {
 });
 
 test('construct invalid empty string RNA', () => {
-    expect(() => new RNA('').getSequence()).toThrowError(InvalidSequenceError);
+    expect(() => new RNA('')).toThrowError(InvalidSequenceError);
 });
 
-test('call RNA\'s .setSequence() with a valid sequence', () => {
-    const rna = new RNA();
-    rna.setSequence(TestUtils.RNA_SEQ);
+test('RNA sequences are immutable after construction', () => {
+    const rna = new RNA(TestUtils.RNA_SEQ);
+    // Verify getSequence returns the same value consistently
+    expect(rna.getSequence()).toEqual(TestUtils.RNA_SEQ);
     expect(rna.getSequence()).toEqual(TestUtils.RNA_SEQ);
 });
 
-test('call RNA\'s .setSequence() with an invalid empty string', () => {
-    expect(() =>  new RNA().setSequence('')).toThrowError(InvalidSequenceError);
+test('construct RNA with invalid characters throws error', () => {
+    expect(() => new RNA('AUCGX')).toThrowError(InvalidSequenceError);
 });
 
 test('get RNA complement sequence', () => {
@@ -261,13 +270,13 @@ test('check RNA equality', () => {
 
 test('check RNA inequality', () => {
     const rna = new RNA(TestUtils.RNA_SEQ);
-    const rna2 = new RNA();
+    const rna2 = new RNA('GGGG');
     expect(rna.equals(rna2)).toEqual(false);
 });
 
 test('check RNA/DNA inequality', () => {
-    const rna = new RNA();
-    const dna = new DNA();
+    const rna = new RNA(TestUtils.RNA_SEQ);
+    const dna = new DNA(TestUtils.DNA_SEQ);
     expect(rna.equals(dna)).toEqual(false);
 });
 
@@ -303,24 +312,26 @@ test('convert DNA -> RNA convertToRNA', () => {
     expect(convertToRNA(new DNA(TestUtils.DNA_SEQ))).toEqual(new RNA(TestUtils.RNA_SEQ));
 });
 
-test('convert empty DNA -> RNA convertToRNA', () => {
-    expect(convertToRNA(new DNA())).toEqual(new RNA());
+test('convert DNA with subtype -> RNA convertToRNA', () => {
+    const result = convertToRNA(new DNA(TestUtils.DNA_SEQ), RNASubType.M_RNA);
+    expect(result.getSequence()).toEqual(TestUtils.RNA_SEQ);
+    expect(result.rnaSubType).toEqual(RNASubType.M_RNA);
 });
 
 test('convert DNA -> RNA with RNASubType PRE_M_RNA convertToRNA', () => {
-    expect(convertToRNA(new DNA(), RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
+    expect(convertToRNA(new DNA(TestUtils.DNA_SEQ), RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
 });
 
 test('convert DNA -> RNA with RNASubType M_RNA convertToRNA', () => {
-    expect(convertToRNA(new DNA(), RNASubType.M_RNA).rnaSubType).toEqual(RNASubType.M_RNA);
+    expect(convertToRNA(new DNA(TestUtils.DNA_SEQ), RNASubType.M_RNA).rnaSubType).toEqual(RNASubType.M_RNA);
 });
 
 test('convert RNA -> DNA convertToDNA', () => {
     expect(convertToDNA(new RNA(TestUtils.RNA_SEQ))).toEqual(new DNA(TestUtils.DNA_SEQ));
 });
 
-test('convert empty RNA -> DNA convertToDNA', () => {
-    expect(convertToDNA(new RNA())).toEqual(new DNA());
+test('convert RNA with different sequence -> DNA convertToDNA', () => {
+    expect(convertToDNA(new RNA('AUGCCC'))).toEqual(new DNA('ATGCCC'));
 });
 
 test('get DNA base complement for A', () => {
@@ -369,4 +380,207 @@ test('get RNA base complement for invalid base \'x\'', () => {
 
 test('get RNA base complement for empty string', () => {
     expect(getRNABaseComplement('')).toBeUndefined();
+});
+
+/*
+    --- ValidationResult Pattern Tests ---
+*/
+
+test('validateNucleicAcid returns success for valid DNA', () => {
+    const result = validateNucleicAcid('ATCG', NucleicAcidType.DNA);
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+        expect(result.data).toEqual('ATCG');
+    }
+});
+
+test('validateNucleicAcid returns success for valid RNA', () => {
+    const result = validateNucleicAcid('AUCG', NucleicAcidType.RNA);
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+        expect(result.data).toEqual('AUCG');
+    }
+});
+
+test('validateNucleicAcid normalizes lowercase to uppercase', () => {
+    const result = validateNucleicAcid('atcg', NucleicAcidType.DNA);
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+        expect(result.data).toEqual('ATCG');
+    }
+});
+
+test('validateNucleicAcid returns failure for empty sequence', () => {
+    const result = validateNucleicAcid('', NucleicAcidType.DNA);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Sequence cannot be empty');
+    }
+});
+
+test('validateNucleicAcid returns failure with detailed error for invalid DNA characters', () => {
+    const result = validateNucleicAcid('ATCGUX', NucleicAcidType.DNA);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Invalid DNA sequence: contains invalid characters U, X');
+    }
+});
+
+test('validateNucleicAcid returns failure with detailed error for invalid RNA characters', () => {
+    const result = validateNucleicAcid('AUCGTY', NucleicAcidType.RNA);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Invalid RNA sequence: contains invalid characters T, Y');
+    }
+});
+
+test('validateNucleicAcid returns failure for RNA sequence with T', () => {
+    const result = validateNucleicAcid('ATCG', NucleicAcidType.RNA);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Invalid RNA sequence: contains invalid characters T');
+    }
+});
+
+test('validateNucleicAcid returns failure for DNA sequence with U', () => {
+    const result = validateNucleicAcid('AUCG', NucleicAcidType.DNA);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Invalid DNA sequence: contains invalid characters U');
+    }
+});
+
+/*
+    --- Static Factory Method Tests ---
+*/
+
+test('DNA.create returns success for valid sequence', () => {
+    const result = DNA.create('ATCG');
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+        expect(result.data.getSequence()).toEqual('ATCG');
+        expect(isDNA(result.data)).toBe(true);
+    }
+});
+
+test('DNA.create returns success for lowercase sequence', () => {
+    const result = DNA.create('atcg');
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+        expect(result.data.getSequence()).toEqual('ATCG');
+    }
+});
+
+test('DNA.create returns failure for empty sequence', () => {
+    const result = DNA.create('');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Sequence cannot be empty');
+    }
+});
+
+test('DNA.create returns failure for invalid characters', () => {
+    const result = DNA.create('ATCGX');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Invalid DNA sequence: contains invalid characters X');
+    }
+});
+
+test('DNA.create returns failure for RNA characters', () => {
+    const result = DNA.create('AUCG');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Invalid DNA sequence: contains invalid characters U');
+    }
+});
+
+test('RNA.create returns success for valid sequence', () => {
+    const result = RNA.create('AUCG');
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+        expect(result.data.getSequence()).toEqual('AUCG');
+        expect(isRNA(result.data)).toBe(true);
+    }
+});
+
+test('RNA.create returns success for valid sequence with subtype', () => {
+    const result = RNA.create('AUCG', RNASubType.M_RNA);
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+        expect(result.data.getSequence()).toEqual('AUCG');
+        expect(result.data.rnaSubType).toEqual(RNASubType.M_RNA);
+    }
+});
+
+test('RNA.create returns success for lowercase sequence', () => {
+    const result = RNA.create('aucg');
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+        expect(result.data.getSequence()).toEqual('AUCG');
+    }
+});
+
+test('RNA.create returns failure for empty sequence', () => {
+    const result = RNA.create('');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Sequence cannot be empty');
+    }
+});
+
+test('RNA.create returns failure for invalid characters', () => {
+    const result = RNA.create('AUCGX');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Invalid RNA sequence: contains invalid characters X');
+    }
+});
+
+test('RNA.create returns failure for DNA characters', () => {
+    const result = RNA.create('ATCG');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('Invalid RNA sequence: contains invalid characters T');
+    }
+});
+
+/*
+    --- ValidationResult Utility Tests ---
+*/
+
+test('success creates successful ValidationResult', () => {
+    const result = success('test data');
+    expect(isSuccess(result)).toBe(true);
+    expect(isFailure(result)).toBe(false);
+    if (isSuccess(result)) {
+        expect(result.data).toEqual('test data');
+    }
+});
+
+test('failure creates failed ValidationResult', () => {
+    const result = failure('test error');
+    expect(isFailure(result)).toBe(true);
+    expect(isSuccess(result)).toBe(false);
+    if (isFailure(result)) {
+        expect(result.error).toEqual('test error');
+    }
+});
+
+test('empty sequence validation fails consistently across functions', () => {
+    // Constructor should throw
+    expect(() => new DNA('')).toThrowError(InvalidSequenceError);
+    expect(() => new RNA('')).toThrowError(InvalidSequenceError);
+
+    // Static factory should return failure
+    const dnaResult = DNA.create('');
+    const rnaResult = RNA.create('');
+    expect(isFailure(dnaResult)).toBe(true);
+    expect(isFailure(rnaResult)).toBe(true);
+
+    // Validation function should return failure
+    const validateDNA = validateNucleicAcid('', NucleicAcidType.DNA);
+    const validateRNA = validateNucleicAcid('', NucleicAcidType.RNA);
+    expect(isFailure(validateDNA)).toBe(true);
+    expect(isFailure(validateRNA)).toBe(true);
 });

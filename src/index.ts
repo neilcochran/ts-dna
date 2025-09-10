@@ -1,8 +1,25 @@
 export * from './model';
 
+export { NucleicAcidType } from './NucleicAcidType';
+export { RNASubType } from './RNASubType';
+
 export {
-    NucleicAcidType,
-    RNASubType,
+    ValidationResult,
+    success,
+    failure,
+    isSuccess,
+    isFailure,
+    map,
+    chain,
+    unwrap,
+    unwrapOr
+} from './ValidationResult';
+
+export {
+    validateNucleicAcid
+} from './validation';
+
+export {
     isDNA,
     isRNA,
     isValidNucleotidePattern,
