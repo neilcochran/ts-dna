@@ -2,6 +2,9 @@
 
   - Add NucleotidePattern search methods: findMatches(), findFirst(), and matchesEitherStrand()
   - Fix line ending consistency issues (CRLF → LF) and update .gitattributes
+  - Add Gene class extending DNA with exon/intron structure and splice site validation
+  - Add GenomicRegion interface with overlap detection algorithms
+  - Add splice site validation utilities with GT-AG consensus sequence checking
 
 ## Version 0.9.0
 
