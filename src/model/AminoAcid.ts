@@ -1,9 +1,9 @@
 import { RNA } from './nucleic-acids';
-import { NucleicAcidType } from '../NucleicAcidType';
-import { getAminoAcidDataByCodon, SLC_ALT_CODONS_MAP } from '../amino-acids';
-import { AminoAcidPolarity } from '../AminoAcidPolarity';
-import { AminoAcidCharge } from '../AminoAcidCharge';
-import { AminoAcidSideChainType } from '../AminoAcidSideChainType';
+import { NucleicAcidType } from '../enums/nucleic-acid-type';
+import { getAminoAcidDataByCodon, SLC_ALT_CODONS_MAP } from '../utils/amino-acids';
+import { AminoAcidPolarity } from '../enums/amino-acid-polarity';
+import { AminoAcidCharge } from '../enums/amino-acid-charge';
+import { AminoAcidSideChainType } from '../enums/amino-acid-side-chain-type';
 import { isDeepStrictEqual } from 'util';
 import { InvalidCodonError } from './errors/InvalidCodonError';
 

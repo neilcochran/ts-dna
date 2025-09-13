@@ -1,6 +1,6 @@
 import { RNA } from './nucleic-acids';
 import { AminoAcid } from './AminoAcid';
-import { RNAtoAminoAcids } from '../amino-acids';
+import { RNAtoAminoAcids } from '../utils/amino-acids';
 
 /**
  * A class representing a polypeptide. It has a sequence of amino acids and an RNA sequence that contains the full coding sequence.

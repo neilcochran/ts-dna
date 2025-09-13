@@ -1,7 +1,7 @@
-import { RNA, Polypeptide, InvalidSequenceError, InvalidCodonError } from '../src/model';
-import { RNAtoAminoAcids  } from '../src/amino-acids';
-import { STOP_CODONS } from '../src/nucleic-acids';
-import * as TestUtils from './test-utils';
+import { RNA, Polypeptide, InvalidSequenceError, InvalidCodonError } from '../../src/model';
+import { RNAtoAminoAcids  } from '../../src/utils/amino-acids';
+import { STOP_CODONS } from '../../src/utils/nucleic-acids';
+import * as TestUtils from '../utils/test-utils';
 
 test('create invalid polypeptide from RNA with wrong length', () => {
     expect(() => {

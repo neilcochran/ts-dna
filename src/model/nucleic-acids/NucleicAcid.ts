@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from 'util';
-import { getComplementSequence } from '../../validation';
-import { NucleicAcidType } from '../../NucleicAcidType';
+import { getComplementSequence } from '../../utils/validation';
+import { NucleicAcidType } from '../../enums/nucleic-acid-type';
 
 /**
  * An abstract class representing a general nucleic acid (a sequence of nucleotides)

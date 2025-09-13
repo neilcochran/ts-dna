@@ -1,18 +1,18 @@
 
-import { RNA, AminoAcid, InvalidCodonError } from '../src/model';
+import { RNA, AminoAcid, InvalidCodonError } from '../../src/model';
 import {
     getAminoAcidByCodon,
     getAminoAcidDataByCodon,
     SLC_ALT_CODONS_MAP,
     SLC_AMINO_ACID_DATA_MAP
-} from '../src/amino-acids';
+} from '../../src/utils/amino-acids';
 import {
     STOP_CODON_UAA,
     STOP_CODON_UAG,
     STOP_CODON_UGA,
     STOP_CODONS
-} from '../src/nucleic-acids';
-import { AminoAcidPolarity, AminoAcidCharge, AminoAcidSideChainType } from '../src';
+} from '../../src/utils/nucleic-acids';
+import { AminoAcidPolarity, AminoAcidCharge, AminoAcidSideChainType } from '../../src';
 import * as TestUtils from './test-utils';
 
 /*

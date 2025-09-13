@@ -5,9 +5,9 @@ import {
     DNA,
     RNA,
     InvalidNucleotidePatternError
-} from './model';
-import { NucleicAcidType } from './NucleicAcidType';
-import { RNASubType } from './RNASubType';
+} from '../model';
+import { NucleicAcidType } from '../enums/nucleic-acid-type';
+import { RNASubType } from '../enums/rna-sub-type';
 
 /**
  * helper regex for validating nucleotide patters

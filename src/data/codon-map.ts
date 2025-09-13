@@ -2,9 +2,9 @@
  * Static codon-to-amino acid mapping for efficient lookups.
  */
 
-import { AminoAcidPolarity } from './AminoAcidPolarity';
-import { AminoAcidCharge } from './AminoAcidCharge';
-import { AminoAcidSideChainType } from './AminoAcidSideChainType';
+import { AminoAcidPolarity } from '../enums/amino-acid-polarity';
+import { AminoAcidCharge } from '../enums/amino-acid-charge';
+import { AminoAcidSideChainType } from '../enums/amino-acid-side-chain-type';
 
 /**
  * Complete amino acid data mapping with biochemical characteristics

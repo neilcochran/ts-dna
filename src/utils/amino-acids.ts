@@ -1,13 +1,13 @@
-import { AminoAcid, RNA } from './model';
-import { InvalidCodonError } from './model/errors/InvalidCodonError';
-import { InvalidSequenceError } from './model/errors/InvalidSequenceError';
-import { NucleicAcidType } from './NucleicAcidType';
+import { AminoAcid, RNA } from '../model';
+import { InvalidCodonError } from '../model/errors/InvalidCodonError';
+import { InvalidSequenceError } from '../model/errors/InvalidSequenceError';
+import { NucleicAcidType } from '../enums/nucleic-acid-type';
 import {
     SLC_AMINO_ACID_DATA_MAP,
     CODON_TO_SLC_MAP
-} from './CodonMap';
+} from '../data/codon-map';
 
-export { SLC_AMINO_ACID_DATA_MAP, SLC_ALT_CODONS_MAP } from './CodonMap';
+export { SLC_AMINO_ACID_DATA_MAP, SLC_ALT_CODONS_MAP } from '../data/codon-map';
 
 /**
  * Given a valid RNA codon, return the corresponding amino acid

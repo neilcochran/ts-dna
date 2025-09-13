@@ -1,10 +1,10 @@
 export * from './model';
 
-export { NucleicAcidType } from './NucleicAcidType';
-export { RNASubType } from './RNASubType';
-export { AminoAcidPolarity } from './AminoAcidPolarity';
-export { AminoAcidCharge } from './AminoAcidCharge';
-export { AminoAcidSideChainType } from './AminoAcidSideChainType';
+export { NucleicAcidType } from './enums/nucleic-acid-type';
+export { RNASubType } from './enums/rna-sub-type';
+export { AminoAcidPolarity } from './enums/amino-acid-polarity';
+export { AminoAcidCharge } from './enums/amino-acid-charge';
+export { AminoAcidSideChainType } from './enums/amino-acid-side-chain-type';
 
 export {
     ValidationResult,
@@ -16,11 +16,11 @@ export {
     chain,
     unwrap,
     unwrapOr
-} from './ValidationResult';
+} from './types/validation-result';
 
 export {
     validateNucleicAcid
-} from './validation';
+} from './utils/validation';
 
 export {
     isDNA,
@@ -36,9 +36,9 @@ export {
     STOP_CODON_UAG,
     STOP_CODON_UGA,
     STOP_CODONS
-} from './nucleic-acids';
+} from './utils/nucleic-acids';
 
 export {
     getAminoAcidByCodon,
     RNAtoAminoAcids
-} from './amino-acids';
+} from './utils/amino-acids';

@@ -5,7 +5,7 @@ import {
     RNA,
     InvalidNucleotidePatternError,
     InvalidSequenceError
-} from '../src/model';
+} from '../../src/model';
 import {
     isDNA,
     isRNA,
@@ -22,16 +22,16 @@ import {
     STOP_CODON_UAG,
     STOP_CODON_UGA,
     STOP_CODONS
-} from '../src/nucleic-acids';
-import { NucleicAcidType } from '../src/NucleicAcidType';
-import { RNASubType } from '../src/RNASubType';
+} from '../../src/utils/nucleic-acids';
+import { NucleicAcidType } from '../../src/enums/nucleic-acid-type';
+import { RNASubType } from '../../src/enums/rna-sub-type';
 import {
     success,
     failure,
     isSuccess,
     isFailure,
     validateNucleicAcid
-} from '../src';
+} from '../../src';
 import * as TestUtils from './test-utils';
 
 /*

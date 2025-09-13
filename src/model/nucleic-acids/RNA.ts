@@ -1,7 +1,7 @@
-import { validateNucleicAcid, unwrap } from '../../validation';
-import { NucleicAcidType } from '../../NucleicAcidType';
-import { RNASubType } from '../../RNASubType';
-import { ValidationResult } from '../../ValidationResult';
+import { validateNucleicAcid, unwrap } from '../../utils/validation';
+import { NucleicAcidType } from '../../enums/nucleic-acid-type';
+import { RNASubType } from '../../enums/rna-sub-type';
+import { ValidationResult } from '../../types/validation-result';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError';
 import { NucleicAcid } from '../nucleic-acids';
 

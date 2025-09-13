@@ -1,5 +1,5 @@
-import { NucleicAcidType } from './NucleicAcidType';
-import { ValidationResult, success, failure, unwrap } from './ValidationResult';
+import { NucleicAcidType } from '../enums/nucleic-acid-type';
+import { ValidationResult, success, failure, unwrap } from '../types/validation-result';
 
 // Re-export for convenience
 export { unwrap };

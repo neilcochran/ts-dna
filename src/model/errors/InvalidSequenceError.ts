@@ -1,4 +1,4 @@
-import { NucleicAcidType } from '../../NucleicAcidType';
+import { NucleicAcidType } from '../../enums/nucleic-acid-type';
 
 /**
  * A class representing an invalid nucleic acid sequence
