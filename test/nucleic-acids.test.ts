@@ -17,7 +17,11 @@ import {
     isValidNucleicAcid,
     NUCLEOTIDE_PATTERN_SYMBOLS,
     isValidNucleotidePattern,
-    getNucleotidePatternComplement
+    getNucleotidePatternComplement,
+    STOP_CODON_UAA,
+    STOP_CODON_UAG,
+    STOP_CODON_UGA,
+    STOP_CODONS
 } from '../src/nucleic-acids';
 import { NucleicAcidType } from '../src/NucleicAcidType';
 import { RNASubType } from '../src/RNASubType';
@@ -583,4 +587,26 @@ test('empty sequence validation fails consistently across functions', () => {
     const validateRNA = validateNucleicAcid('', NucleicAcidType.RNA);
     expect(isFailure(validateDNA)).toBe(true);
     expect(isFailure(validateRNA)).toBe(true);
+});
+
+/*
+    --- Stop Codon Constants ---
+*/
+
+test('stop codon constants have correct values', () => {
+    expect(STOP_CODON_UAA).toBe('UAA');
+    expect(STOP_CODON_UAG).toBe('UAG');
+    expect(STOP_CODON_UGA).toBe('UGA');
+});
+
+test('STOP_CODONS array contains all stop codons', () => {
+    expect(STOP_CODONS).toEqual(['UAA', 'UAG', 'UGA']);
+    expect(STOP_CODONS.length).toBe(3);
+});
+
+test('stop codon constants are valid RNA sequences', () => {
+    for (const stopCodon of STOP_CODONS) {
+        expect(() => new RNA(stopCodon)).not.toThrow();
+        expect(new RNA(stopCodon).getSequence()).toBe(stopCodon);
+    }
 });

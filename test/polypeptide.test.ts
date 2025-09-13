@@ -1,5 +1,6 @@
-import { RNA, Polypeptide, InvalidSequenceError } from '../src/model';
+import { RNA, Polypeptide, InvalidSequenceError, InvalidCodonError } from '../src/model';
 import { RNAtoAminoAcids  } from '../src/amino-acids';
+import { STOP_CODONS } from '../src/nucleic-acids';
 import * as TestUtils from './test-utils';
 
 test('create invalid polypeptide from RNA with wrong length', () => {
@@ -48,6 +49,35 @@ test('RNAtoAminoAcids() from invalid (short) length RNA sequence', () => {
     expect(() => {
         RNAtoAminoAcids(new RNA('AU'));
     }).toThrowError(InvalidSequenceError);
+});
+
+test('RNAtoAminoAcids() throws InvalidCodonError for stop codons', () => {
+    for (const stopCodon of STOP_CODONS) {
+        expect(() => {
+            RNAtoAminoAcids(new RNA(stopCodon));
+        }).toThrowError(InvalidCodonError);
+    }
+});
+
+test('RNAtoAminoAcids() throws InvalidCodonError for RNA containing stop codon', () => {
+    // Valid codon followed by stop codon
+    expect(() => {
+        RNAtoAminoAcids(new RNA('AUGUAA')); // Met + Stop(UAA)
+    }).toThrowError(InvalidCodonError);
+});
+
+test('Polypeptide constructor throws InvalidCodonError for stop codons', () => {
+    for (const stopCodon of STOP_CODONS) {
+        expect(() => {
+            new Polypeptide(new RNA(stopCodon));
+        }).toThrowError(InvalidCodonError);
+    }
+});
+
+test('Polypeptide constructor throws InvalidCodonError for RNA containing stop codon', () => {
+    expect(() => {
+        new Polypeptide(new RNA('AUGUAG')); // Met + Stop(UAG)
+    }).toThrowError(InvalidCodonError);
 });
 
 test('RNAtoAminoAcids() from RNA_ALL_AMINO_ACIDS_1', () => {

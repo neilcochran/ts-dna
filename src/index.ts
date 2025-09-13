@@ -28,7 +28,11 @@ export {
     isValidNucleicAcid,
     convertNucleicAcid,
     convertToDNA,
-    convertToRNA
+    convertToRNA,
+    STOP_CODON_UAA,
+    STOP_CODON_UAG,
+    STOP_CODON_UGA,
+    STOP_CODONS
 } from './nucleic-acids';
 
 export {

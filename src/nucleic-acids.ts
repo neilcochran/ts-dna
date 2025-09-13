@@ -300,3 +300,23 @@ export const convertToDNA = (rna: RNA): DNA => {
     return new DNA(sequence.replaceAll('U', 'T'));
 };
 
+/**
+ * Stop codon UAA - does not code for an amino acid
+ */
+export const STOP_CODON_UAA = 'UAA' as const;
+
+/**
+ * Stop codon UAG - does not code for an amino acid
+ */
+export const STOP_CODON_UAG = 'UAG' as const;
+
+/**
+ * Stop codon UGA - does not code for an amino acid
+ */
+export const STOP_CODON_UGA = 'UGA' as const;
+
+/**
+ * Array of all stop codons
+ */
+export const STOP_CODONS = [STOP_CODON_UAA, STOP_CODON_UAG, STOP_CODON_UGA] as const;
+

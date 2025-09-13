@@ -6,6 +6,12 @@ import {
     SLC_ALT_CODONS_MAP,
     SLC_AMINO_ACID_NAME_MAP
 } from '../src/amino-acids';
+import {
+    STOP_CODON_UAA,
+    STOP_CODON_UAG,
+    STOP_CODON_UGA,
+    STOP_CODONS
+} from '../src/nucleic-acids';
 import * as TestUtils from './test-utils';
 
 /*
@@ -24,6 +30,30 @@ test('create invalid AminoAcid from RNA with wrong length', () => {
 
 test('create invalid AminoAcid (Alanine) from too long RNA', () => {
     expect(() => new AminoAcid(new RNA('AUCG'))).toThrowError(InvalidCodonError);
+});
+
+test('create invalid AminoAcid from stop codon UAA', () => {
+    expect(() => new AminoAcid(new RNA(STOP_CODON_UAA))).toThrowError(InvalidCodonError);
+});
+
+test('create invalid AminoAcid from stop codon UAG', () => {
+    expect(() => new AminoAcid(new RNA(STOP_CODON_UAG))).toThrowError(InvalidCodonError);
+});
+
+test('create invalid AminoAcid from stop codon UGA', () => {
+    expect(() => new AminoAcid(new RNA(STOP_CODON_UGA))).toThrowError(InvalidCodonError);
+});
+
+test('getAminoAcidByCodon returns undefined for all stop codons', () => {
+    for (const stopCodon of STOP_CODONS) {
+        expect(getAminoAcidByCodon(new RNA(stopCodon))).toBeUndefined();
+    }
+});
+
+test('getAminoAcidNameByCodon returns undefined for all stop codons', () => {
+    for (const stopCodon of STOP_CODONS) {
+        expect(getAminoAcidNameByCodon(new RNA(stopCodon))).toBeUndefined();
+    }
 });
 
 test('get all AminoAcid (Alanine) alternate codons', () => {
