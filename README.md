@@ -53,6 +53,9 @@ console.log(polypeptide.aminoAcidSequence.length); // 3
 console.log(polypeptide.aminoAcidSequence[0].name); // "Methionine"
 
 const aminoAcid = new AminoAcid(new RNA('UUU'));
+console.log(aminoAcid.name); // "Phenylalanine"
+console.log(aminoAcid.molecularWeight); // 165.19
+console.log(aminoAcid.polarity); // AminoAcidPolarity.NONPOLAR
 console.log(aminoAcid.getAllAlternateCodons()); // All codons for Phenylalanine
 ```
 
