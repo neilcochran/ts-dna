@@ -1,4 +1,4 @@
-import { getNucleotidePattern } from '../../utils/nucleic-acids';
+import { getNucleotidePattern, getComplementSequence } from '../../utils/nucleic-acids';
 import { InvalidNucleotidePatternError } from '../errors/InvalidNucleotidePatternError';
 import { NucleicAcid } from './NucleicAcid';
 
@@ -61,5 +61,119 @@ export class NucleotidePattern {
             return false;
         }
         return this.patternRegex.test(sequence);
+    }
+
+    /**
+     * Finds all occurrences of the pattern within a nucleic acid sequence
+     *
+     * @param nucleicAcid - The NucleicAcid to search within
+     *
+     * @returns Array of match objects with start position, end position, and matched sequence
+     *
+     * @example
+     * ```typescript
+     *  const pattern = new NucleotidePattern('RY');
+     *  const dna = new DNA('ATGAGCGATC');
+     *  const matches = pattern.findMatches(dna);
+     *  // Returns: [{ start: 2, end: 4, match: 'GA' }, { start: 5, end: 7, match: 'GC' }]
+     * ```
+     */
+    findMatches(nucleicAcid: NucleicAcid): Array<{ start: number; end: number; match: string }> {
+        const sequence = nucleicAcid.getSequence();
+        if (!sequence) {
+            return [];
+        }
+
+        const matches: Array<{ start: number; end: number; match: string }> = [];
+        const globalRegex = new RegExp(this.patternRegex.source, 'g');
+        let match;
+
+        while ((match = globalRegex.exec(sequence)) !== null) {
+            matches.push({
+                start: match.index,
+                end: match.index + match[0].length,
+                match: match[0]
+            });
+        }
+
+        return matches;
+    }
+
+    /**
+     * Finds the first occurrence of the pattern within a nucleic acid sequence
+     *
+     * @param nucleicAcid - The NucleicAcid to search within
+     *
+     * @returns Match object with start position, end position, and matched sequence, or null if no match found
+     *
+     * @example
+     * ```typescript
+     *  const pattern = new NucleotidePattern('RY');
+     *  const dna = new DNA('ATGAGCGATC');
+     *  const match = pattern.findFirst(dna);
+     *  // Returns: { start: 2, end: 4, match: 'GA' }
+     * ```
+     */
+    findFirst(nucleicAcid: NucleicAcid): { start: number; end: number; match: string } | null {
+        const sequence = nucleicAcid.getSequence();
+        if (!sequence) {
+            return null;
+        }
+
+        const match = this.patternRegex.exec(sequence);
+        if (!match) {
+            return null;
+        }
+
+        return {
+            start: match.index,
+            end: match.index + match[0].length,
+            match: match[0]
+        };
+    }
+
+    /**
+     * Checks if the pattern matches either the forward strand or reverse complement strand
+     * of the given nucleic acid sequence
+     *
+     * @param nucleicAcid - The NucleicAcid to check against both strands
+     *
+     * @returns True if the pattern matches either the forward or reverse complement strand
+     *
+     * @example
+     * ```typescript
+     *  const pattern = new NucleotidePattern('GAATTC'); // EcoRI restriction site
+     *  const dna = new DNA('CTTAAG'); // Reverse complement of GAATTC
+     *  console.log(pattern.matches(dna)); // false
+     *  console.log(pattern.matchesEitherStrand(dna)); // true
+     * ```
+     */
+    matchesEitherStrand(nucleicAcid: NucleicAcid): boolean {
+        // Check forward strand - does the pattern match the sequence directly?
+        if (this.matches(nucleicAcid)) {
+            return true;
+        }
+
+        // Check reverse complement strand - would the pattern match if we were looking
+        // at the opposite strand of the DNA double helix?
+        // This means: does the reverse complement of the pattern match the sequence?
+        const originalSequence = nucleicAcid.getSequence();
+        const patternSequence = this.pattern;
+
+        // Get reverse complement of the pattern
+        const reversedPattern = patternSequence.split('').reverse().join('');
+        const reverseComplementPattern = getComplementSequence(reversedPattern, nucleicAcid.nucleicAcidType);
+
+        if (!reverseComplementPattern) {
+            return false;
+        }
+
+        // Create a new pattern from the reverse complement and test it
+        try {
+            const rcPatternRegex = getNucleotidePattern(reverseComplementPattern) as RegExp;
+            return rcPatternRegex.test(originalSequence);
+        } catch {
+            return false;
+        }
     }
 }

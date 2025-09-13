@@ -1,3 +1,8 @@
+## Version 0.10.0
+
+  - Add NucleotidePattern search methods: findMatches(), findFirst(), and matchesEitherStrand()
+  - Fix line ending consistency issues (CRLF → LF) and update .gitattributes
+
 ## Version 0.9.0
 
 - Add stop codon constants (STOP_CODON_UAA, STOP_CODON_UAG, STOP_CODON_UGA, STOP_CODONS)

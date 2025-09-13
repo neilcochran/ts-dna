@@ -149,6 +149,100 @@ test('invalid RNA match for a NucleotidePattern', () => {
 });
 
 /*
+    -- NucleotidePattern Search Methods --
+*/
+
+test('findMatches returns all pattern matches in DNA sequence', () => {
+    const pattern = new NucleotidePattern('RY');
+    const dna = new DNA('ATGAGCGATC');
+    const matches = pattern.findMatches(dna);
+
+    expect(matches).toHaveLength(3);
+    expect(matches[0]).toEqual({ start: 0, end: 2, match: 'AT' });
+    expect(matches[1]).toEqual({ start: 4, end: 6, match: 'GC' });
+    expect(matches[2]).toEqual({ start: 7, end: 9, match: 'AT' });
+});
+
+test('findMatches returns empty array when no matches found', () => {
+    const pattern = new NucleotidePattern('AAAA');
+    const dna = new DNA('CCCCGGGG');
+    const matches = pattern.findMatches(dna);
+
+    expect(matches).toHaveLength(0);
+});
+
+test('findMatches works with complex regex patterns', () => {
+    const pattern = new NucleotidePattern('N+AT');
+    const dna = new DNA('GGGGATCCCAAT');
+    const matches = pattern.findMatches(dna);
+
+    expect(matches).toHaveLength(1);
+    expect(matches[0]).toEqual({ start: 0, end: 12, match: 'GGGGATCCCAAT' });
+});
+
+test('findFirst returns first pattern match in DNA sequence', () => {
+    const pattern = new NucleotidePattern('RY');
+    const dna = new DNA('ATGAGCGATC');
+    const match = pattern.findFirst(dna);
+
+    expect(match).toEqual({ start: 0, end: 2, match: 'AT' });
+});
+
+test('findFirst returns null when no match found', () => {
+    const pattern = new NucleotidePattern('AAAA');
+    const dna = new DNA('CCCCGGGG');
+    const match = pattern.findFirst(dna);
+
+    expect(match).toBeNull();
+});
+
+test('findFirst works with RNA sequences', () => {
+    const pattern = new NucleotidePattern('RY');
+    const rna = new RNA('AUGAGCGAUC');
+    const match = pattern.findFirst(rna);
+
+    expect(match).toEqual({ start: 4, end: 6, match: 'GC' });
+});
+
+test('matchesEitherStrand returns true for forward strand match', () => {
+    const pattern = new NucleotidePattern('GAATTC');
+    const dna = new DNA('GAATTC');
+
+    expect(pattern.matchesEitherStrand(dna)).toBe(true);
+});
+
+test('matchesEitherStrand returns true for reverse complement match', () => {
+    const pattern = new NucleotidePattern('ATCG');
+    const reverseCompDna = new DNA('CGAT'); // Reverse complement of ATCG
+
+    expect(pattern.matches(reverseCompDna)).toBe(false);
+    expect(pattern.matchesEitherStrand(reverseCompDna)).toBe(true);
+});
+
+test('matchesEitherStrand returns false when neither strand matches', () => {
+    const pattern = new NucleotidePattern('GAATTC');
+    const dna = new DNA('AAATTT');
+
+    expect(pattern.matchesEitherStrand(dna)).toBe(false);
+});
+
+test('matchesEitherStrand works with RNA sequences', () => {
+    const pattern = new NucleotidePattern('AUCG');
+    const rna = new RNA('AUCG');
+    const reverseCompRna = new RNA('CGAU'); // Reverse complement of AUCG
+
+    expect(pattern.matchesEitherStrand(rna)).toBe(true);
+    expect(pattern.matchesEitherStrand(reverseCompRna)).toBe(true);
+});
+
+test('matchesEitherStrand works with IUPAC ambiguous patterns', () => {
+    const pattern = new NucleotidePattern('RYKM'); // [GA][CT][GT][AC]
+    const dna = new DNA('ACTA'); // Matches pattern: A[GA] C[CT] T[GT] A[AC]
+
+    expect(pattern.matchesEitherStrand(dna)).toBe(true);
+});
+
+/*
     -- DNA/RNA type guards ---
 */
 
