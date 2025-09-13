@@ -57,3 +57,23 @@ export {
     SPLICE_DONOR_SEQUENCES,
     SPLICE_ACCEPTOR_SEQUENCES
 } from './utils/splice-sites';
+
+export {
+    findPromoters,
+    identifyTSS
+} from './utils/promoter-recognition';
+
+export {
+    TATA_BOX,
+    INITIATOR,
+    DOWNSTREAM_PROMOTER_ELEMENT,
+    CAAT_BOX,
+    GC_BOX,
+    CEBP_SITE,
+    E_BOX,
+    AP1_SITE,
+    STANDARD_PROMOTER_ELEMENTS,
+    CORE_PROMOTER_ELEMENTS,
+    PROXIMAL_PROMOTER_ELEMENTS,
+    PROMOTER_ELEMENT_COMBINATIONS
+} from './data/promoter-elements';
