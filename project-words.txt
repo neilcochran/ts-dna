@@ -14,6 +14,7 @@ AUGAAAGGG
 AUUCG
 GCAUGCGAC
 Glutamic
+imino
 intron
 introns
 IUPAC

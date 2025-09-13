@@ -2,44 +2,187 @@
  * Static codon-to-amino acid mapping for efficient lookups.
  */
 
+import { AminoAcidPolarity } from './AminoAcidPolarity';
+import { AminoAcidCharge } from './AminoAcidCharge';
+import { AminoAcidSideChainType } from './AminoAcidSideChainType';
+
 /**
- * An interface representing an amino acid name.
- * It has all the standard representations of an amino acid name: the full name (name), the 3 letter abbreviation (abbrv), and the single letter code (slc).
+ * Complete amino acid data mapping with biochemical characteristics
  */
-export interface AminoAcidName {
+export const SLC_AMINO_ACID_DATA_MAP: Record<string, {
     readonly name: string;
     readonly abbrv: string;
     readonly slc: string;
-}
-
-/**
- * Static mapping of single letter codes to amino acid names
- */
-export const SLC_AMINO_ACID_NAME_MAP: Record<string, AminoAcidName> = {
-    A: { name: 'Alanine', abbrv: 'Ala', slc: 'A' },
-    C: { name: 'Cysteine', abbrv: 'Cys', slc: 'C' },
-    D: { name: 'Aspartic acid', abbrv: 'Asp', slc: 'D' },
-    E: { name: 'Glutamic acid', abbrv: 'Glu', slc: 'E' },
-    F: { name: 'Phenylalanine', abbrv: 'Phe', slc: 'F' },
-    G: { name: 'Glycine', abbrv: 'Gly', slc: 'G' },
-    H: { name: 'Histidine', abbrv: 'His', slc: 'H' },
-    I: { name: 'Isoleucine', abbrv: 'Ile', slc: 'I' },
-    K: { name: 'Lysine', abbrv: 'Lys', slc: 'K' },
-    L: { name: 'Leucine', abbrv: 'Leu', slc: 'L' },
-    M: { name: 'Methionine', abbrv: 'Met', slc: 'M' },
-    N: { name: 'Asparagine', abbrv: 'Asn', slc: 'N' },
-    P: { name: 'Proline', abbrv: 'Pro', slc: 'P' },
-    Q: { name: 'Glutamine', abbrv: 'Gln', slc: 'Q' },
-    R: { name: 'Arginine', abbrv: 'Arg', slc: 'R' },
-    S: { name: 'Serine', abbrv: 'Ser', slc: 'S' },
-    T: { name: 'Threonine', abbrv: 'Thr', slc: 'T' },
-    V: { name: 'Valine', abbrv: 'Val', slc: 'V' },
-    W: { name: 'Tryptophan', abbrv: 'Trp', slc: 'W' },
-    Y: { name: 'Tyrosine', abbrv: 'Tyr', slc: 'Y' }
+    readonly molecularWeight: number;
+    readonly polarity: AminoAcidPolarity;
+    readonly charge: AminoAcidCharge;
+    readonly hydrophobicity: number;
+    readonly sideChainType: AminoAcidSideChainType;
+}> = {
+    A: {
+        name: 'Alanine', abbrv: 'Ala', slc: 'A',
+        molecularWeight: 89.094,
+        polarity: AminoAcidPolarity.NONPOLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: 1.8,
+        sideChainType: AminoAcidSideChainType.ALIPHATIC
+    },
+    C: {
+        name: 'Cysteine', abbrv: 'Cys', slc: 'C',
+        molecularWeight: 121.154,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: 2.5,
+        sideChainType: AminoAcidSideChainType.SULFUR_CONTAINING
+    },
+    D: {
+        name: 'Aspartic acid', abbrv: 'Asp', slc: 'D',
+        molecularWeight: 133.104,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.NEGATIVE,
+        hydrophobicity: -3.5,
+        sideChainType: AminoAcidSideChainType.ACIDIC
+    },
+    E: {
+        name: 'Glutamic acid', abbrv: 'Glu', slc: 'E',
+        molecularWeight: 147.131,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.NEGATIVE,
+        hydrophobicity: -3.5,
+        sideChainType: AminoAcidSideChainType.ACIDIC
+    },
+    F: {
+        name: 'Phenylalanine', abbrv: 'Phe', slc: 'F',
+        molecularWeight: 165.192,
+        polarity: AminoAcidPolarity.NONPOLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: 2.8,
+        sideChainType: AminoAcidSideChainType.AROMATIC
+    },
+    G: {
+        name: 'Glycine', abbrv: 'Gly', slc: 'G',
+        molecularWeight: 75.067,
+        polarity: AminoAcidPolarity.NONPOLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: -0.4,
+        sideChainType: AminoAcidSideChainType.ALIPHATIC
+    },
+    H: {
+        name: 'Histidine', abbrv: 'His', slc: 'H',
+        molecularWeight: 155.156,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.POSITIVE,
+        hydrophobicity: -3.2,
+        sideChainType: AminoAcidSideChainType.BASIC
+    },
+    I: {
+        name: 'Isoleucine', abbrv: 'Ile', slc: 'I',
+        molecularWeight: 131.175,
+        polarity: AminoAcidPolarity.NONPOLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: 4.5,
+        sideChainType: AminoAcidSideChainType.ALIPHATIC
+    },
+    K: {
+        name: 'Lysine', abbrv: 'Lys', slc: 'K',
+        molecularWeight: 146.189,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.POSITIVE,
+        hydrophobicity: -3.9,
+        sideChainType: AminoAcidSideChainType.BASIC
+    },
+    L: {
+        name: 'Leucine', abbrv: 'Leu', slc: 'L',
+        molecularWeight: 131.175,
+        polarity: AminoAcidPolarity.NONPOLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: 3.8,
+        sideChainType: AminoAcidSideChainType.ALIPHATIC
+    },
+    M: {
+        name: 'Methionine', abbrv: 'Met', slc: 'M',
+        molecularWeight: 149.208,
+        polarity: AminoAcidPolarity.NONPOLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: 1.9,
+        sideChainType: AminoAcidSideChainType.SULFUR_CONTAINING
+    },
+    N: {
+        name: 'Asparagine', abbrv: 'Asn', slc: 'N',
+        molecularWeight: 132.119,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: -3.5,
+        sideChainType: AminoAcidSideChainType.AMIDE
+    },
+    P: {
+        name: 'Proline', abbrv: 'Pro', slc: 'P',
+        molecularWeight: 115.132,
+        polarity: AminoAcidPolarity.NONPOLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: -1.6,
+        sideChainType: AminoAcidSideChainType.IMINO
+    },
+    Q: {
+        name: 'Glutamine', abbrv: 'Gln', slc: 'Q',
+        molecularWeight: 146.146,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: -3.5,
+        sideChainType: AminoAcidSideChainType.AMIDE
+    },
+    R: {
+        name: 'Arginine', abbrv: 'Arg', slc: 'R',
+        molecularWeight: 174.203,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.POSITIVE,
+        hydrophobicity: -4.5,
+        sideChainType: AminoAcidSideChainType.BASIC
+    },
+    S: {
+        name: 'Serine', abbrv: 'Ser', slc: 'S',
+        molecularWeight: 105.093,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: -0.8,
+        sideChainType: AminoAcidSideChainType.HYDROXYL_CONTAINING
+    },
+    T: {
+        name: 'Threonine', abbrv: 'Thr', slc: 'T',
+        molecularWeight: 119.119,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: -0.7,
+        sideChainType: AminoAcidSideChainType.HYDROXYL_CONTAINING
+    },
+    V: {
+        name: 'Valine', abbrv: 'Val', slc: 'V',
+        molecularWeight: 131.175,
+        polarity: AminoAcidPolarity.NONPOLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: 4.2,
+        sideChainType: AminoAcidSideChainType.ALIPHATIC
+    },
+    W: {
+        name: 'Tryptophan', abbrv: 'Trp', slc: 'W',
+        molecularWeight: 204.228,
+        polarity: AminoAcidPolarity.NONPOLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: -0.9,
+        sideChainType: AminoAcidSideChainType.AROMATIC
+    },
+    Y: {
+        name: 'Tyrosine', abbrv: 'Tyr', slc: 'Y',
+        molecularWeight: 181.191,
+        polarity: AminoAcidPolarity.POLAR,
+        charge: AminoAcidCharge.NEUTRAL,
+        hydrophobicity: -1.3,
+        sideChainType: AminoAcidSideChainType.AROMATIC
+    }
 } as const;
 
 /**
- * Direct codon-to-single-letter-code mapping for O(1) lookups.
+ * Direct codon-to-single-letter-code mapping for lookups.
  * This is much more efficient than creating RNA objects and iterating through arrays.
  */
 export const CODON_TO_SLC_MAP: Record<string, string> = {

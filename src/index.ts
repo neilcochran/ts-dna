@@ -2,6 +2,9 @@ export * from './model';
 
 export { NucleicAcidType } from './NucleicAcidType';
 export { RNASubType } from './RNASubType';
+export { AminoAcidPolarity } from './AminoAcidPolarity';
+export { AminoAcidCharge } from './AminoAcidCharge';
+export { AminoAcidSideChainType } from './AminoAcidSideChainType';
 
 export {
     ValidationResult,
@@ -36,7 +39,6 @@ export {
 } from './nucleic-acids';
 
 export {
-    AminoAcidName,
     getAminoAcidByCodon,
     RNAtoAminoAcids
 } from './amino-acids';

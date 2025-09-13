@@ -3,13 +3,11 @@ import { InvalidCodonError } from './model/errors/InvalidCodonError';
 import { InvalidSequenceError } from './model/errors/InvalidSequenceError';
 import { NucleicAcidType } from './NucleicAcidType';
 import {
-    SLC_AMINO_ACID_NAME_MAP,
-    CODON_TO_SLC_MAP,
-    AminoAcidName
+    SLC_AMINO_ACID_DATA_MAP,
+    CODON_TO_SLC_MAP
 } from './CodonMap';
 
-// Re-export for backward compatibility
-export { AminoAcidName, SLC_AMINO_ACID_NAME_MAP, SLC_ALT_CODONS_MAP } from './CodonMap';
+export { SLC_AMINO_ACID_DATA_MAP, SLC_ALT_CODONS_MAP } from './CodonMap';
 
 /**
  * Given a valid RNA codon, return the corresponding amino acid
@@ -39,27 +37,26 @@ export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
 };
 
 /**
- * Given a valid codon, return the corresponding amino acid name
+ * Given a valid codon, return the corresponding amino acid data
  *
  * @param codon - The RNA codon that codes for an amino acid
  *
- * @returns The corresponding amino acid name or undefined if the codon is invalid
+ * @returns The corresponding amino acid data or undefined if the codon is invalid
  *
  * @internal
  */
-export const getAminoAcidNameByCodon = (codon: RNA): AminoAcidName | undefined => {
+export const getAminoAcidDataByCodon = (codon: RNA) => {
     const sequence = codon.getSequence();
     if(sequence.length !== 3) {
         return undefined;
     }
 
-    // O(1) lookup using static codon map
     const slc = CODON_TO_SLC_MAP[sequence];
     if (!slc) {
         return undefined;
     }
 
-    return SLC_AMINO_ACID_NAME_MAP[slc];
+    return SLC_AMINO_ACID_DATA_MAP[slc];
 };
 
 /**

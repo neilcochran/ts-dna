@@ -1,20 +1,28 @@
 import { RNA } from './nucleic-acids';
 import { NucleicAcidType } from '../NucleicAcidType';
-import { AminoAcidName, getAminoAcidNameByCodon, SLC_ALT_CODONS_MAP } from '../amino-acids';
+import { getAminoAcidDataByCodon, SLC_ALT_CODONS_MAP } from '../amino-acids';
+import { AminoAcidPolarity } from '../AminoAcidPolarity';
+import { AminoAcidCharge } from '../AminoAcidCharge';
+import { AminoAcidSideChainType } from '../AminoAcidSideChainType';
 import { isDeepStrictEqual } from 'util';
 import { InvalidCodonError } from './errors/InvalidCodonError';
 
 /**
  * A class representing an amino acid instance with its backing RNA codon.
- * The constructor enforces validation, and all members are readonly. Therefor, all AminoAcid
+ * The constructor enforces validation, and all members are readonly. Therefore, all AminoAcid
  * objects can only exist in a valid state.
  */
-export class AminoAcid implements AminoAcidName {
+export class AminoAcid {
     public readonly codon: RNA;
     public readonly acidType: NucleicAcidType;
     public readonly name: string;
     public readonly abbrv: string;
     public readonly slc: string;
+    public readonly molecularWeight: number;
+    public readonly polarity: AminoAcidPolarity;
+    public readonly charge: AminoAcidCharge;
+    public readonly hydrophobicity: number;
+    public readonly sideChainType: AminoAcidSideChainType;
 
     /**
      * @param codon - An RNA codon that codes for an amino acid
@@ -27,13 +35,18 @@ export class AminoAcid implements AminoAcidName {
         if(sequence.length !== 3){
             throw new InvalidCodonError(`Invalid codon length of: ${sequence.length}`, sequence);
         }
-        const aminoAcidName = getAminoAcidNameByCodon(codon);
-        if(!aminoAcidName) {
+        const aminoAcidData = getAminoAcidDataByCodon(codon);
+        if(!aminoAcidData) {
             throw new InvalidCodonError(`No amino acid is associated with the codon: ${sequence}`, sequence);
         }
-        this.name = aminoAcidName.name;
-        this.abbrv = aminoAcidName.abbrv;
-        this.slc = aminoAcidName.slc;
+        this.name = aminoAcidData.name;
+        this.abbrv = aminoAcidData.abbrv;
+        this.slc = aminoAcidData.slc;
+        this.molecularWeight = aminoAcidData.molecularWeight;
+        this.polarity = aminoAcidData.polarity;
+        this.charge = aminoAcidData.charge;
+        this.hydrophobicity = aminoAcidData.hydrophobicity;
+        this.sideChainType = aminoAcidData.sideChainType;
         this.acidType = codon.nucleicAcidType;
         this.codon = codon;
     }
