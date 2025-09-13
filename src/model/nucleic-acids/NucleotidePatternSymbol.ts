@@ -1,4 +1,4 @@
-import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../../nucleic-acids';
+import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../../utils/nucleic-acids';
 import { InvalidNucleotidePatternError } from '../../model';
 /**
  * A class representing a single nucleotide IUPAC notation symbol.

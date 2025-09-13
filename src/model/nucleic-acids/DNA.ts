@@ -1,7 +1,7 @@
 import { NucleicAcid } from './NucleicAcid';
-import { validateNucleicAcid, unwrap } from '../../validation';
-import { NucleicAcidType } from '../../NucleicAcidType';
-import { ValidationResult } from '../../ValidationResult';
+import { validateNucleicAcid, unwrap } from '../../utils/validation';
+import { NucleicAcidType } from '../../enums/nucleic-acid-type';
+import { ValidationResult } from '../../types/validation-result';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError';
 
 /**

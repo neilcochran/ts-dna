@@ -1,5 +1,4 @@
-import { AminoAcidName } from '../src/amino-acids';
-import { RNA, DNA, AminoAcid } from '../src/model';
+import { RNA, DNA, AminoAcid } from '../../src/model';
 
 //ensure RNA and DNA sequences are the same (excluding base differences) since some tests rely it
 export const RNA_SEQ = 'AUCGGCUA';
@@ -44,10 +43,10 @@ export const NUCLEOTIDE_PATTERN_PASSING_SEQS = [
     'GTAACTCTC'
 ];
 
-export const isCorrectAminoAcid = (aminoAcid: AminoAcid, correctAminoAcidName: AminoAcidName): boolean => {
-    let k: keyof  AminoAcidName;
-    for(k in correctAminoAcidName) {
-        if(aminoAcid[k] !== correctAminoAcidName[k]) {
+export const isCorrectAminoAcid = (aminoAcid: AminoAcid, correctAminoAcidData: { name: string; abbrv: string; slc: string }): boolean => {
+    const keysToCheck: (keyof { name: string; abbrv: string; slc: string })[] = ['name', 'abbrv', 'slc'];
+    for(const k of keysToCheck) {
+        if(aminoAcid[k as keyof AminoAcid] !== correctAminoAcidData[k]) {
             return false;
         }
     }

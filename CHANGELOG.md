@@ -1,3 +1,13 @@
+## Version 0.9.0
+
+- Add stop codon constants (STOP_CODON_UAA, STOP_CODON_UAG, STOP_CODON_UGA, STOP_CODONS)
+- Add biochemical properties to AminoAcid class: molecularWeight, polarity, charge, hydrophobicity, sideChainType
+- Add supporting enums: AminoAcidPolarity, AminoAcidCharge, AminoAcidSideChainType
+- BREAKING: Remove AminoAcidProperties and AminoAcidName interfaces - consolidated into AminoAcid class
+- BREAKING: Reorganize file structure with new folder conventions (enums/, types/, data/, utils/, model/)
+- Update file naming conventions: PascalCase.ts for classes, kebab-case.ts for utilities
+- Reorganize test files to match new src structure
+
 ## Version 0.8.0
 
 - BREAKING: Remove support for empty DNA/RNA objects - sequences now required in constructors

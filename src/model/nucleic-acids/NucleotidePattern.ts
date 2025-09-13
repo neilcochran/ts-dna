@@ -1,4 +1,4 @@
-import { getNucleotidePattern } from '../../nucleic-acids';
+import { getNucleotidePattern } from '../../utils/nucleic-acids';
 import { InvalidNucleotidePatternError } from '../errors/InvalidNucleotidePatternError';
 import { NucleicAcid } from './NucleicAcid';
 
