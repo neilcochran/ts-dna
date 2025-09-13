@@ -1,1 +1,14 @@
-* text=auto
+# Ensure consistent line endings across all platforms
+* text=auto eol=lf
+
+# TypeScript/JavaScript files should always use LF
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+
+# Documentation files
+*.md text eol=lf
+
+# Configuration files
+.*rc text eol=lf
+.*rc.* text eol=lf

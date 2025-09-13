@@ -1,3 +1,11 @@
+## Version 0.10.0
+
+  - Add NucleotidePattern search methods: findMatches(), findFirst(), and matchesEitherStrand()
+  - Fix line ending consistency issues (CRLF → LF) and update .gitattributes
+  - Add Gene class extending DNA with exon/intron structure and splice site validation
+  - Add GenomicRegion interface with overlap detection algorithms
+  - Add splice site validation utilities with GT-AG consensus sequence checking
+
 ## Version 0.9.0
 
 - Add stop codon constants (STOP_CODON_UAA, STOP_CODON_UAG, STOP_CODON_UGA, STOP_CODONS)

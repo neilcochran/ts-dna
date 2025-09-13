@@ -19,6 +19,13 @@ export {
 } from './types/validation-result';
 
 export {
+    GenomicRegion,
+    isValidGenomicRegion,
+    regionsOverlap,
+    validateNonOverlappingRegions
+} from './types/genomic-region';
+
+export {
     validateNucleicAcid
 } from './utils/validation';
 
@@ -42,3 +49,11 @@ export {
     getAminoAcidByCodon,
     RNAtoAminoAcids
 } from './utils/amino-acids';
+
+export {
+    validateSpliceSites,
+    findPotentialSpliceSites,
+    validateGeneSpliceSites,
+    SPLICE_DONOR_SEQUENCES,
+    SPLICE_ACCEPTOR_SEQUENCES
+} from './utils/splice-sites';
