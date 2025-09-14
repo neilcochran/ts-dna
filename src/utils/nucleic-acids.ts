@@ -8,37 +8,9 @@ import {
 } from '../model';
 import { NucleicAcidType } from '../enums/nucleic-acid-type';
 import { RNASubType } from '../enums/rna-sub-type';
+import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../data/iupac-symbols';
 
-/**
- * helper regex for validating nucleotide patters
- *
- * @internal
- */
-const NUCLEOTIDE_PATTERN_SYMBOLS_REGEX =  /^[AaTtCcGgUuRrYyKkMmSsWwBbVvDdHhNn]+$/;
 
-/**
- * helper record that maps a nucleotide pattern symbol to its list of matching bases
- *
- * @internal
- */
-export const NUCLEOTIDE_PATTERN_SYMBOLS: Record<string, string[]> = {
-    A: ['A'], //Adenine
-    T: ['T'], //Thymine
-    C: ['C'], //Cytosine
-    G: ['G'], //Guanine
-    U: ['U'], //Uracil
-    R: ['G', 'A'], //Purine
-    Y: ['C', 'T'], //Pyrimidine
-    K: ['G', 'T'], //Ketone
-    M: ['A', 'C'], //Amino
-    S: ['G', 'C'], //Strong
-    W: ['A', 'T'], //Weak
-    B: ['G', 'T', 'C'], //Not A
-    V: ['G', 'C', 'A'], //Not T
-    D: ['G', 'A', 'T'], //Not C
-    H: ['A', 'C', 'T'], //Not G
-    N: ['A', 'G', 'C', 'T'] //Any one base
-};
 
 /**
  * Checks if a string is a valid nucleotide pattern
@@ -164,7 +136,7 @@ export const getNucleotidePattern = (pattern: string, getComplement = false, get
         const currChar = pattern[i];
         //check if it's an alpha character. If so, it either has to be a valid IUPAC nucleotide symbol or part of an escape sequence
         if(/[a-zA-Z]/.test(currChar)) {
-            const isValidNucleotideSymbol = NUCLEOTIDE_PATTERN_SYMBOLS_REGEX.test(currChar);
+            const isValidNucleotideSymbol = /^[AaTtCcGgUuRrYyKkMmSsWwBbVvDdHhNn]$/.test(currChar);
             const isEscapeSeq = (i > 0 && pattern[i - 1] === '\\') ? true : false;
             if(isEscapeSeq) {
                 result += currChar;

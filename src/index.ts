@@ -64,6 +64,13 @@ export {
 } from './utils/promoter-recognition';
 
 export {
+    transcribe,
+    dnaToRNA,
+    simpleTranscribe,
+    TranscriptionOptions
+} from './utils/transcription';
+
+export {
     TATA_BOX,
     INITIATOR,
     DOWNSTREAM_PROMOTER_ELEMENT,
