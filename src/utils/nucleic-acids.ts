@@ -1,5 +1,5 @@
+import { NucleotidePatternSymbol } from '../model/nucleic-acids/NucleotidePatternSymbol';
 import {
-    NucleotidePatternSymbol,
     NucleotidePattern,
     NucleicAcid,
     DNA,
@@ -8,7 +8,6 @@ import {
 } from '../model';
 import { NucleicAcidType } from '../enums/nucleic-acid-type';
 import { RNASubType } from '../enums/rna-sub-type';
-import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../data/iupac-symbols';
 
 
 

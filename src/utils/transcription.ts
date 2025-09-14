@@ -140,24 +140,17 @@ function findTranscriptionStartSite(
         const searchEnd = firstExon.start + 100; // Include some downstream region
 
         const searchRegion = gene.getSequence().substring(searchStart, searchEnd);
-        const searchDNA = new DNA(searchRegion);
+        // TODO: Use searchDNA when findPromoters is implemented
+        // const searchDNA = new DNA(searchRegion);
 
         // Find promoters in the search region
+        // TODO: Implement actual promoter finding when available
         // const promoters = findPromoters(searchDNA, {
         //     minStrengthScore: options.minPromoterStrength
         // });
-        const promoters: any[] = [];
 
-        if (promoters.length === 0) {
-            return failure(`No promoters found upstream of gene within ${options.maxPromoterSearchDistance}bp`);
-        }
-
-        // Use the strongest promoter
-        const bestPromoter = promoters[0]; // findPromoters returns sorted by strength
-        const tssInSearchRegion = bestPromoter.transcriptionStartSite;
-        const tssInGene = searchStart + tssInSearchRegion;
-
-        return success(tssInGene);
+        // Placeholder: For now, return failure since no promoter system is implemented
+        return failure(`No promoters found upstream of gene within ${options.maxPromoterSearchDistance}bp (promoter system not yet implemented)`);
 
     } catch (error) {
         return failure(`TSS search failed: ${error instanceof Error ? error.message : String(error)}`);
