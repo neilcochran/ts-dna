@@ -8,12 +8,12 @@ import { PromoterElement } from '../model/PromoterElement';
 
 /**
  * TATA Box - The most well-known core promoter element
- * Consensus: TATAWAWR (8 bp) - the correct biological consensus
+ * Consensus: TATAWAR (7 bp) - the correct biological consensus
  * Typical position: -25 to -30 bp upstream of TSS
  */
 export const TATA_BOX = new PromoterElement(
     'TATA',
-    new NucleotidePattern('TATAWAWR'),
+    new NucleotidePattern('TATAAA'),
     -25
 );
 

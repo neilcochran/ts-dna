@@ -11,6 +11,7 @@ import { NucleicAcidType } from '../../enums/nucleic-acid-type';
 export class Gene extends DNA {
     private readonly exons: readonly GenomicRegion[];
     private readonly introns: readonly GenomicRegion[];
+    private readonly name?: string;
 
     /**
      * Creates a Gene instance with the specified DNA sequence and exon definitions.
@@ -18,6 +19,7 @@ export class Gene extends DNA {
      *
      * @param sequence - The complete gene DNA sequence
      * @param exons - Array of GenomicRegion objects defining exon locations
+     * @param name - Optional name for the gene
      *
      * @throws {@link InvalidSequenceError}
      * Thrown if the sequence is invalid, exons are invalid, or exons extend beyond sequence
@@ -27,11 +29,11 @@ export class Gene extends DNA {
      * const gene = new Gene('ATGCCCGGGAAATTT', [
      *     { start: 0, end: 3, name: 'exon1' },
      *     { start: 9, end: 15, name: 'exon2' }
-     * ]);
+     * ], 'BRCA1');
      * // Introns automatically calculated: [{ start: 3, end: 9 }]
      * ```
      */
-    constructor(sequence: string, exons: GenomicRegion[]) {
+    constructor(sequence: string, exons: GenomicRegion[], name?: string) {
         super(sequence);
 
         // Validate exons
@@ -43,6 +45,7 @@ export class Gene extends DNA {
         // Store immutable copies
         this.exons = Object.freeze([...exons]);
         this.introns = Object.freeze(this.calculateIntrons(exons));
+        this.name = name;
     }
 
     /**
@@ -50,11 +53,12 @@ export class Gene extends DNA {
      *
      * @param sequence - The complete gene DNA sequence
      * @param exons - Array of GenomicRegion objects defining exon locations
+     * @param name - Optional name for the gene
      * @returns ValidationResult containing Gene instance or error message
      */
-    static createGene(sequence: string, exons: GenomicRegion[]): ValidationResult<Gene> {
+    static createGene(sequence: string, exons: GenomicRegion[], name?: string): ValidationResult<Gene> {
         try {
-            const gene = new Gene(sequence, exons);
+            const gene = new Gene(sequence, exons, name);
             return { success: true as const, data: gene };
         } catch (error) {
             if (error instanceof InvalidSequenceError) {
@@ -62,6 +66,14 @@ export class Gene extends DNA {
             }
             return { success: false as const, error: 'Unknown error creating Gene' };
         }
+    }
+
+    /**
+     * Gets the name of this gene, if provided.
+     * @returns The gene name, or undefined if no name was provided
+     */
+    getName(): string | undefined {
+        return this.name;
     }
 
     /**
@@ -180,7 +192,6 @@ export class Gene extends DNA {
                 });
             }
         }
-
         return introns;
     }
 }

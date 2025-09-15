@@ -15,7 +15,6 @@ import {
     getDNABaseComplement,
     getRNABaseComplement,
     isValidNucleicAcid,
-    NUCLEOTIDE_PATTERN_SYMBOLS,
     isValidNucleotidePattern,
     getNucleotidePatternComplement,
     STOP_CODON_UAA,
@@ -25,6 +24,7 @@ import {
 } from '../../src/utils/nucleic-acids';
 import { NucleicAcidType } from '../../src/enums/nucleic-acid-type';
 import { RNASubType } from '../../src/enums/rna-sub-type';
+import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../../src/data/iupac-symbols';
 import {
     success,
     failure,

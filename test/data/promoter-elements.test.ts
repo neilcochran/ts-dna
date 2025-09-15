@@ -18,7 +18,7 @@ describe('promoter-elements', () => {
         test('TATA_BOX has correct properties', () => {
             expect(TATA_BOX.name).toBe('TATA');
             expect(TATA_BOX.position).toBe(-25);
-            expect(TATA_BOX.pattern.pattern).toBe('TATAWAWR');
+            expect(TATA_BOX.pattern.pattern).toBe('TATAAA');
         });
 
         test('INITIATOR has correct properties', () => {

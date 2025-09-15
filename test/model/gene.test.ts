@@ -3,7 +3,7 @@ import { GenomicRegion } from '../../src/types/genomic-region';
 import { InvalidSequenceError } from '../../src/model/errors/InvalidSequenceError';
 
 describe('Gene', () => {
-    describe('constructor', () => {
+    describe('constructor without name', () => {
         test('creates valid gene with single exon', () => {
             const sequence = 'ATGCCCGGG';
             const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
@@ -273,6 +273,152 @@ describe('Gene', () => {
             expect(gene.getExonSequence(1)).toBe('T');
             expect(gene.getMatureSequence()).toBe('AT');
             expect(gene.getIntronSequence(0)).toBe('GTCCCAG');
+        });
+    });
+
+    describe('gene name functionality', () => {
+        test('creates gene without name', () => {
+            const sequence = 'ATGCCCGGG';
+            const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+            const gene = new Gene(sequence, exons);
+
+            expect(gene.getName()).toBeUndefined();
+        });
+
+        test('creates gene with name', () => {
+            const sequence = 'ATGCCCGGG';
+            const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+            const geneName = 'BRCA1';
+            const gene = new Gene(sequence, exons, geneName);
+
+            expect(gene.getName()).toBe(geneName);
+        });
+
+        test('creates gene with empty string name', () => {
+            const sequence = 'ATGCCCGGG';
+            const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+            const gene = new Gene(sequence, exons, '');
+
+            expect(gene.getName()).toBe('');
+        });
+
+        test('gene name is immutable', () => {
+            const sequence = 'ATGCCCGGG';
+            const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+            const geneName = 'TP53';
+            const gene = new Gene(sequence, exons, geneName);
+
+            expect(gene.getName()).toBe(geneName);
+            // Name should remain unchanged
+            expect(gene.getName()).toBe('TP53');
+        });
+
+        test('handles various gene name formats', () => {
+            const sequence = 'ATGCCCGGG';
+            const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+
+            // Human gene names
+            const humanGene = new Gene(sequence, exons, 'BRCA1');
+            expect(humanGene.getName()).toBe('BRCA1');
+
+            // Mouse gene names
+            const mouseGene = new Gene(sequence, exons, 'Brca1');
+            expect(mouseGene.getName()).toBe('Brca1');
+
+            // Complex names with numbers and dashes
+            const complexGene = new Gene(sequence, exons, 'HLA-DQB1');
+            expect(complexGene.getName()).toBe('HLA-DQB1');
+
+            // Names with spaces (though not standard)
+            const spacedGene = new Gene(sequence, exons, 'Gene Name 1');
+            expect(spacedGene.getName()).toBe('Gene Name 1');
+        });
+
+        test('createGene static method without name', () => {
+            const sequence = 'ATGCCCGGG';
+            const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+            const result = Gene.createGene(sequence, exons);
+
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.data.getName()).toBeUndefined();
+            }
+        });
+
+        test('createGene static method with name', () => {
+            const sequence = 'ATGCCCGGG';
+            const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+            const geneName = 'EGFR';
+            const result = Gene.createGene(sequence, exons, geneName);
+
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.data.getName()).toBe(geneName);
+            }
+        });
+
+        test('createGene static method with invalid sequence but valid name', () => {
+            const sequence = 'INVALID_SEQUENCE';
+            const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+            const geneName = 'TestGene';
+            const result = Gene.createGene(sequence, exons, geneName);
+
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error).toContain('invalid');
+            }
+        });
+
+        test('gene name in toString representation', () => {
+            const sequence = 'ATGCCCGGG';
+            const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+
+            const namedGene = new Gene(sequence, exons, 'TestGene');
+            const unnamedGene = new Gene(sequence, exons);
+
+            // Both should work regardless of name presence
+            expect(typeof namedGene.toString()).toBe('string');
+            expect(typeof unnamedGene.toString()).toBe('string');
+        });
+
+        test('gene name with special characters', () => {
+            const sequence = 'ATGCCCGGG';
+            const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+
+            // Test with various special characters that might appear in gene names
+            const specialNames = [
+                'α-globin',
+                'β-tubulin',
+                'IL-1β',
+                'TNF-α',
+                'CD8α',
+                'γ-actin'
+            ];
+
+            specialNames.forEach(name => {
+                const gene = new Gene(sequence, exons, name);
+                expect(gene.getName()).toBe(name);
+            });
+        });
+
+        test('gene name persistence through operations', () => {
+            const sequence = 'ATGGTCCCAGTTTAAA';
+            const exons: GenomicRegion[] = [
+                { start: 0, end: 3, name: 'exon1' },
+                { start: 11, end: 16, name: 'exon2' }
+            ];
+            const geneName = 'PersistentGene';
+            const gene = new Gene(sequence, exons, geneName);
+
+            // Name should persist through various method calls
+            gene.getSequence();
+            gene.getExons();
+            gene.getIntrons();
+            gene.getMatureSequence();
+            gene.getExonSequence(0);
+            gene.getIntronSequence(0);
+
+            expect(gene.getName()).toBe(geneName);
         });
     });
 });

@@ -3,7 +3,7 @@ import { NucleicAcidType } from '../../enums/nucleic-acid-type';
 import { RNASubType } from '../../enums/rna-sub-type';
 import { ValidationResult } from '../../types/validation-result';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError';
-import { NucleicAcid } from '../nucleic-acids';
+import { NucleicAcid } from './NucleicAcid';
 
 /**
  * A class representing RNA with a valid sequence.

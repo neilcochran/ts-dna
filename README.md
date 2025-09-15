@@ -80,18 +80,50 @@ if (result.success) {
 }
 ```
 
-## Quick Start
+## Complete Transcription Example
+
+Here's a comprehensive example showing gene transcription with promoter recognition, exon/intron structure, and pre-mRNA processing:
 
 ```typescript
-import { DNA, RNA, AminoAcid, Polypeptide, convertToRNA } from 'ts-dna';
+import { DNA, Gene, NucleotidePattern, transcribe, isSuccess } from 'ts-dna';
 
-// Basic workflow: DNA → RNA → Polypeptide
-const dna = new DNA('ATGTGCGACGAATTC');
-const rna = convertToRNA(dna);
-const polypeptide = new Polypeptide(rna);
+// Create a gene with TATA box promoter and exon structure
+const geneSequence =
+    // Promoter region with TATA box
+    'GCGCGCGCGCGCGCGCGCGCGCGCGCTATAAAAGGCGCGCGCGCGCGCGCGC' +
+    // Transcription start site and first exon
+    'ATGAAGGCCTACGTGAAGCTG' +
+    // First intron with GT...AG splice sites
+    'GTAAGTGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCAG' +
+    // Second exon
+    'TCCGAGCTGAAGATCGTG' +
+    // Second intron
+    'GTAAGTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG' +
+    // Third exon with polyadenylation signal
+    'CCCAAGTGCAAGCTGAATAAAAGGCGCGCGCGC';
 
-console.log(`${dna.getSequence()} → ${rna.getSequence()}`);
-console.log(`Amino acids: ${polypeptide.aminoAcidSequence.length}`);
+// Define exon boundaries
+const exons = [
+    { start: 50, end: 71, name: 'exon1' },
+    { start: 118, end: 136, name: 'exon2' },
+    { start: 181, end: 213, name: 'exon3' }
+];
+
+// Create gene and transcribe it
+const gene = new Gene(geneSequence, exons);
+const tataPattern = new NucleotidePattern('TATAAA');
+const result = transcribe(gene, tataPattern);
+
+if (isSuccess(result)) {
+    const preMRNA = result.data;
+    console.log(`Pre-mRNA length: ${preMRNA.getSequence().length} bp`);
+    console.log(`Exons: ${preMRNA.getExonRegions().length}`);
+    console.log(`Introns: ${preMRNA.getIntronRegions().length}`);
+    console.log(`Coding sequence: ${preMRNA.getCodingSequence()}`);
+
+    // Shows: DNA→RNA transcription, promoter recognition,
+    // splice site detection, and polyadenylation signals
+}
 ```
 
 ## API Documentation
