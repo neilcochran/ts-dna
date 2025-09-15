@@ -13,7 +13,7 @@ import { PromoterElement } from '../model/PromoterElement';
  */
 export const TATA_BOX = new PromoterElement(
     'TATA',
-    new NucleotidePattern('TATAAA'),
+    new NucleotidePattern('TATAWAR'),
     -25
 );
 
