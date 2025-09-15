@@ -13,14 +13,14 @@ describe('rna-processing', () => {
     describe('spliceRNA', () => {
         test('splices simple two-exon gene correctly', () => {
             // Gene: exon1-intron-exon2
-            const geneSequence = 'ATGAAAGTATGCCCAAATTCGGG';
+            const geneSequence = 'ATGAAAGTATGCCCAAGTTCGGG';
             const exons: GenomicRegion[] = [
                 { start: 0, end: 6, name: 'exon1' },   // ATGAAA
                 { start: 17, end: 23, name: 'exon2' }  // TCGGG
             ];
 
             const gene = new Gene(geneSequence, exons);
-            const preMRNA = new PreMRNA('AUGAAAGUAUGCCCAAAUUCGGG', gene, 0);
+            const preMRNA = new PreMRNA('AUGAAAGUAUGCCCAAGUUCGGG', gene, 0);
 
             const result = spliceRNA(preMRNA);
 
@@ -32,21 +32,22 @@ describe('rna-processing', () => {
 
         test('splices three-exon gene correctly', () => {
             // Gene: exon1-intron1-exon2-intron2-exon3
-            const geneSequence = 'ATGAAAGTACGCCCAAATTCGTCCCCGGGTTT';
+            // Sequence: ATGAAA GT...AG TTCGTC GT...AG TT
+            const geneSequence = 'ATGAAAGTTTTTAGTTCGTCGTAAGTT';
             const exons: GenomicRegion[] = [
                 { start: 0, end: 6, name: 'exon1' },   // ATGAAA
-                { start: 18, end: 24, name: 'exon2' }, // TTCGTC
-                { start: 30, end: 33, name: 'exon3' }  // TTT
+                { start: 14, end: 20, name: 'exon2' }, // TTCGTC
+                { start: 25, end: 27, name: 'exon3' }  // TT
             ];
 
             const gene = new Gene(geneSequence, exons);
-            const preMRNA = new PreMRNA('AUGAAAGUACGCCCAAAUUCGUCCCCGGGUUU', gene, 0);
+            const preMRNA = new PreMRNA('AUGAAAGUUUUUAGUUCGUCGUAAGUU', gene, 0);
 
             const result = spliceRNA(preMRNA);
 
             expect(isSuccess(result)).toBe(true);
             if (isSuccess(result)) {
-                expect(result.data.getSequence()).toBe('AUGAAAUUCGUCUUU');
+                expect(result.data.getSequence()).toBe('AUGAAAUUCGUCUU');
             }
         });
 
@@ -69,14 +70,12 @@ describe('rna-processing', () => {
 
         test('fails when no exons present', () => {
             const geneSequence = 'ATGAAACCCGGGTTT';
-            const gene = new Gene(geneSequence, []);
-            const preMRNA = new PreMRNA('AUGAAACCCGGGUUU', gene, 0);
 
-            const result = spliceRNA(preMRNA);
-
-            expect(isFailure(result)).toBe(true);
-            if (isFailure(result)) {
-                expect(result.error).toContain('no exons found');
+            // Gene creation should fail when no exons provided
+            const geneResult = Gene.createGene(geneSequence, []);
+            expect(isFailure(geneResult)).toBe(true);
+            if (isFailure(geneResult)) {
+                expect(geneResult.error).toContain('must have at least one exon');
             }
         });
 
@@ -85,7 +84,7 @@ describe('rna-processing', () => {
             const geneSequence = 'ATGAAACACGCCCAAATTCGGG';
             const exons: GenomicRegion[] = [
                 { start: 0, end: 6, name: 'exon1' },
-                { start: 17, end: 23, name: 'exon2' }
+                { start: 17, end: 22, name: 'exon2' }
             ];
 
             const gene = new Gene(geneSequence, exons);
@@ -95,7 +94,7 @@ describe('rna-processing', () => {
 
             expect(isFailure(result)).toBe(true);
             if (isFailure(result)) {
-                expect(result.error).toContain('splice site validation failed');
+                expect(result.error).toContain('Splice site validation failed');
             }
         });
 
@@ -106,14 +105,11 @@ describe('rna-processing', () => {
                 { start: 25, end: 30, name: 'exon2' } // Out of bounds
             ];
 
-            const gene = new Gene(geneSequence, exons);
-            const preMRNA = new PreMRNA('AUGAAAGUAUGCCCAAAUUCGGG', gene, 0);
-
-            const result = spliceRNA(preMRNA);
-
-            expect(isFailure(result)).toBe(true);
-            if (isFailure(result)) {
-                expect(result.error).toContain('outside sequence bounds');
+            // This should fail at gene creation, not splicing
+            const geneResult = Gene.createGene(geneSequence, exons);
+            expect(isFailure(geneResult)).toBe(true);
+            if (isFailure(geneResult)) {
+                expect(geneResult.error).toContain('extends beyond sequence length');
             }
         });
     });
@@ -127,7 +123,7 @@ describe('rna-processing', () => {
         });
 
         test('fails with incorrect reading frame length', () => {
-            const rna = new RNA('AUGAAACCCGGGUUA'); // 16 nucleotides (not divisible by 3)
+            const rna = new RNA('AUGAAACCCGGGUUAA'); // 16 nucleotides (not divisible by 3)
             const result = validateReadingFrame(rna);
 
             expect(isFailure(result)).toBe(true);

@@ -37,7 +37,7 @@ export interface CleavageSiteOptions {
     /** Pattern for downstream sequence elements (DSE) */
     readonly downstreamDSE?: string;
 
-    /** Nucleotide preference at cleavage site: A > U > C >> G */
+    /** Nucleotide preference at cleavage site: A \> U \> C \>\> G */
     readonly cleavagePreference?: readonly string[];
 
     /** Distance range from poly-A signal to cleavage site [min, max] */

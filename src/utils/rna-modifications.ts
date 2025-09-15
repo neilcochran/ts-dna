@@ -4,21 +4,57 @@ import { PolyadenylationSite } from '../types/polyadenylation-site';
 import { ValidationResult, success, failure } from '../types/validation-result';
 
 /**
- * Adds a 5' cap structure to an RNA molecule.
- * The 5' cap (7-methylguanosine) is essential for mRNA stability,
- * nuclear export, and ribosome binding during translation.
+ * Represents a processed mRNA with 5' cap and 3' poly-A tail modifications.
+ * This is a temporary class until we implement the full MRNA class in Phase 5.
  */
-export function add5PrimeCap(rna: RNA): RNA {
-    const sequence = rna.getSequence();
+export class ProcessedRNA extends RNA {
+    constructor(
+        sequence: string,
+        rnaSubType?: RNASubType,
+        public readonly hasFivePrimeCap: boolean = false,
+        public readonly polyATail: string = ''
+    ) {
+        super(sequence, rnaSubType);
+    }
 
-    // Add symbolic representation of 5' cap
-    // In reality, this is a 7-methylguanosine linked via 5'-5' triphosphate
-    // We represent it as a special prefix to maintain string-based sequence handling
-    const cappedSequence = `5CAP_${sequence}`;
+    /**
+     * Gets the total length including poly-A tail.
+     */
+    getTotalLength(): number {
+        return this.getSequence().length + this.polyATail.length;
+    }
 
-    // Create new RNA with capped sequence
-    // Note: We maintain the same subtype as the input RNA
-    return new RNA(cappedSequence, rna.rnaSubType);
+    /**
+     * Gets the core sequence without poly-A tail.
+     */
+    getCoreSequence(): string {
+        return this.getSequence();
+    }
+
+    /**
+     * Gets the length of the poly-A tail.
+     */
+    getPolyATailLength(): number {
+        return this.polyATail.length;
+    }
+
+    /**
+     * Checks if this RNA is fully processed (has both cap and poly-A tail).
+     */
+    isFullyProcessed(): boolean {
+        return this.hasFivePrimeCap && this.polyATail.length > 0;
+    }
+}
+
+/**
+ * Adds a 5' cap structure to an RNA molecule.
+ * Returns a ProcessedRNA instance with the cap flag set.
+ */
+export function add5PrimeCap(rna: RNA): ProcessedRNA {
+    if (rna instanceof ProcessedRNA) {
+        return new ProcessedRNA(rna.getSequence(), rna.rnaSubType, true, rna.polyATail);
+    }
+    return new ProcessedRNA(rna.getSequence(), rna.rnaSubType, true, '');
 }
 
 /**
@@ -29,14 +65,17 @@ export function add3PrimePolyATail(
     rna: RNA,
     cleavageSite: number,
     tailLength: number = 200
-): ValidationResult<RNA> {
+): ValidationResult<ProcessedRNA> {
     try {
         const sequence = rna.getSequence();
 
         // Validate cleavage site
-        if (cleavageSite < 0 || cleavageSite > sequence.length) {
-            return failure(`Invalid cleavage site ${cleavageSite}: must be between 0 and ${sequence.length}`);
+        if (cleavageSite < 0) {
+            return failure(`Invalid cleavage site ${cleavageSite}: must be >= 0`);
         }
+
+        // Truncate cleavage site to sequence length if beyond end
+        const effectiveCleavageSite = Math.min(cleavageSite, sequence.length);
 
         // Validate tail length
         if (tailLength < 0 || tailLength > 1000) {
@@ -46,11 +85,12 @@ export function add3PrimePolyATail(
         // Create poly-A tail
         const polyATail = 'A'.repeat(tailLength);
 
-        // Insert poly-A tail at cleavage site
-        const processedSequence = sequence.substring(0, cleavageSite) + polyATail;
+        // Cleave sequence at effective site
+        const cleavedSequence = sequence.substring(0, effectiveCleavageSite);
 
-        // Create new RNA with poly-A tail
-        const processedRNA = new RNA(processedSequence, rna.rnaSubType);
+        // Create ProcessedRNA with poly-A tail
+        const hasCap = rna instanceof ProcessedRNA ? rna.hasFivePrimeCap : false;
+        const processedRNA = new ProcessedRNA(cleavedSequence, rna.rnaSubType, hasCap, polyATail);
         return success(processedRNA);
 
     } catch (error) {
@@ -66,7 +106,7 @@ export function add3PrimePolyATailAtSite(
     rna: RNA,
     polySite: PolyadenylationSite,
     tailLength: number = 200
-): ValidationResult<RNA> {
+): ValidationResult<ProcessedRNA> {
     const cleavageSite = polySite.cleavageSite ?? (polySite.position + polySite.signal.length + 15);
     return add3PrimePolyATail(rna, cleavageSite, tailLength);
 }
@@ -75,11 +115,18 @@ export function add3PrimePolyATailAtSite(
  * Removes the 3' poly-A tail from an RNA sequence.
  * This can be useful for analysis or simulating deadenylation.
  */
-export function remove3PrimePolyATail(rna: RNA): ValidationResult<RNA> {
+export function remove3PrimePolyATail(rna: RNA): ValidationResult<ProcessedRNA> {
     try {
-        let sequence = rna.getSequence();
+        if (rna instanceof ProcessedRNA) {
+            if (rna.polyATail.length === 0) {
+                return failure('No poly-A tail found to remove');
+            }
+            // Return ProcessedRNA without poly-A tail
+            return success(new ProcessedRNA(rna.getSequence(), rna.rnaSubType, rna.hasFivePrimeCap, ''));
+        }
 
-        // Remove trailing A's (poly-A tail)
+        // For regular RNA, check if sequence ends with A's
+        let sequence = rna.getSequence();
         const originalLength = sequence.length;
         sequence = sequence.replace(/A+$/, '');
 
@@ -87,7 +134,7 @@ export function remove3PrimePolyATail(rna: RNA): ValidationResult<RNA> {
             return failure('No poly-A tail found to remove');
         }
 
-        const processedRNA = new RNA(sequence, rna.rnaSubType);
+        const processedRNA = new ProcessedRNA(sequence, rna.rnaSubType, false, '');
         return success(processedRNA);
 
     } catch (error) {
@@ -98,15 +145,14 @@ export function remove3PrimePolyATail(rna: RNA): ValidationResult<RNA> {
 /**
  * Removes the 5' cap from an RNA sequence.
  */
-export function remove5PrimeCap(rna: RNA): ValidationResult<RNA> {
+export function remove5PrimeCap(rna: RNA): ValidationResult<ProcessedRNA> {
     try {
-        let sequence = rna.getSequence();
-
-        // Remove 5' cap prefix if present
-        if (sequence.startsWith('5CAP_')) {
-            sequence = sequence.substring(5);
-            const processedRNA = new RNA(sequence, rna.rnaSubType);
-            return success(processedRNA);
+        if (rna instanceof ProcessedRNA) {
+            if (!rna.hasFivePrimeCap) {
+                return failure('No 5\' cap found to remove');
+            }
+            // Return ProcessedRNA without 5' cap
+            return success(new ProcessedRNA(rna.getSequence(), rna.rnaSubType, false, rna.polyATail));
         }
 
         return failure('No 5\' cap found to remove');
@@ -120,7 +166,10 @@ export function remove5PrimeCap(rna: RNA): ValidationResult<RNA> {
  * Checks if an RNA molecule has a 5' cap structure.
  */
 export function has5PrimeCap(rna: RNA): boolean {
-    return rna.getSequence().startsWith('5CAP_');
+    if (rna instanceof ProcessedRNA) {
+        return rna.hasFivePrimeCap;
+    }
+    return false;
 }
 
 /**
@@ -128,6 +177,9 @@ export function has5PrimeCap(rna: RNA): boolean {
  * This is a basic check that looks for at least 10 consecutive A's at the 3' end.
  */
 export function has3PrimePolyATail(rna: RNA, minLength: number = 10): boolean {
+    if (rna instanceof ProcessedRNA) {
+        return rna.polyATail.length >= minLength;
+    }
     const sequence = rna.getSequence();
     const pattern = new RegExp(`A{${minLength},}$`);
     return pattern.test(sequence);
@@ -137,6 +189,9 @@ export function has3PrimePolyATail(rna: RNA, minLength: number = 10): boolean {
  * Gets the length of the 3' poly-A tail.
  */
 export function get3PrimePolyATailLength(rna: RNA): number {
+    if (rna instanceof ProcessedRNA) {
+        return rna.polyATail.length;
+    }
     const sequence = rna.getSequence();
     const match = sequence.match(/A+$/);
     return match ? match[0].length : 0;
@@ -147,16 +202,13 @@ export function get3PrimePolyATailLength(rna: RNA): number {
  * This returns the essential mRNA sequence for analysis.
  */
 export function getCoreSequence(rna: RNA): string {
-    let sequence = rna.getSequence();
-
-    // Remove 5' cap if present
-    if (sequence.startsWith('5CAP_')) {
-        sequence = sequence.substring(5);
+    if (rna instanceof ProcessedRNA) {
+        return rna.getCoreSequence();
     }
 
+    let sequence = rna.getSequence();
     // Remove poly-A tail if present
     sequence = sequence.replace(/A+$/, '');
-
     return sequence;
 }
 
@@ -164,6 +216,9 @@ export function getCoreSequence(rna: RNA): string {
  * Checks if an RNA molecule is fully processed (has both 5' cap and 3' poly-A tail).
  */
 export function isFullyProcessed(rna: RNA): boolean {
+    if (rna instanceof ProcessedRNA) {
+        return rna.isFullyProcessed();
+    }
     return has5PrimeCap(rna) && has3PrimePolyATail(rna);
 }
 

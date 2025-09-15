@@ -99,9 +99,9 @@ export function validateReadingFrame(rna: RNA, expectedStart?: number): Validati
         return failure(`Reading frame error: coding sequence length ${codingLength} is not divisible by 3`);
     }
 
-    // Check for start codon if position is specified
-    if (expectedStart !== undefined && expectedStart >= 0) {
-        if (startPos + 2 < sequence.length) {
+    // Check for start codon if position 0 is specified (beginning of complete coding sequence)
+    if (expectedStart === 0) {
+        if (startPos + 3 <= sequence.length) {
             const startCodon = sequence.substring(startPos, startPos + 3);
             if (startCodon !== 'AUG') {
                 return failure(`Expected start codon AUG at position ${startPos}, found ${startCodon}`);

@@ -105,6 +105,7 @@ export {
 } from './utils/rna-processing';
 
 export {
+    ProcessedRNA,
     add5PrimeCap,
     add3PrimePolyATail,
     add3PrimePolyATailAtSite,

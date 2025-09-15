@@ -59,3 +59,11 @@ AUGCGU
 TATAAA
 AATAAA
 BRCA
+AUUAAA
+UGUA
+AGUAAA
+AAUAUA
+AAUACA
+ugua
+deadenylation
+frameshift

@@ -1,5 +1,6 @@
 import { RNA } from '../../src/model/nucleic-acids/RNA';
 import {
+    ProcessedRNA,
     add5PrimeCap,
     add3PrimePolyATail,
     add3PrimePolyATailAtSite,
@@ -21,15 +22,19 @@ describe('rna-modifications', () => {
             const rna = new RNA('AUGAAACCCGGG');
             const cappedRNA = add5PrimeCap(rna);
 
-            expect(cappedRNA.getSequence()).toBe('5CAP_AUGAAACCCGGG');
+            expect(cappedRNA).toBeInstanceOf(ProcessedRNA);
+            expect(cappedRNA.getSequence()).toBe('AUGAAACCCGGG');
+            expect(cappedRNA.hasFivePrimeCap).toBe(true);
             expect(cappedRNA.rnaSubType).toBe(rna.rnaSubType);
         });
 
-        test('adds cap to empty sequence', () => {
+        test('adds cap to minimal sequence', () => {
             const rna = new RNA('A'); // Minimal valid RNA
             const cappedRNA = add5PrimeCap(rna);
 
-            expect(cappedRNA.getSequence()).toBe('5CAP_A');
+            expect(cappedRNA).toBeInstanceOf(ProcessedRNA);
+            expect(cappedRNA.getSequence()).toBe('A');
+            expect(cappedRNA.hasFivePrimeCap).toBe(true);
         });
 
         test('preserves RNA subtype', () => {
@@ -47,7 +52,10 @@ describe('rna-modifications', () => {
 
             expect(isSuccess(result)).toBe(true);
             if (isSuccess(result)) {
-                expect(result.data.getSequence()).toBe('AUGAAACCCGGGAAUAAAAAAAAAA');
+                expect(result.data).toBeInstanceOf(ProcessedRNA);
+                expect(result.data.getSequence()).toBe('AUGAAACCCGGGAAU');
+                expect(result.data.polyATail).toBe('AAAAAAAAAA');
+                expect(result.data.getTotalLength()).toBe(25); // 15 + 10
             }
         });
 
@@ -57,10 +65,10 @@ describe('rna-modifications', () => {
 
             expect(isSuccess(result)).toBe(true);
             if (isSuccess(result)) {
-                const sequence = result.data.getSequence();
-                expect(sequence.startsWith('AUGAAACCCGGG')).toBe(true);
-                expect(sequence.length).toBe(12 + 200); // Original + 200 A's
-                expect(sequence.endsWith('A'.repeat(200))).toBe(true);
+                expect(result.data.getSequence()).toBe('AUGAAACCCGGG'); // Core sequence unchanged
+                expect(result.data.getPolyATailLength()).toBe(200); // Default tail length
+                expect(result.data.polyATail).toBe('A'.repeat(200)); // Poly-A tail stored separately
+                expect(result.data.getTotalLength()).toBe(12 + 200); // Total length with tail
             }
         });
 
@@ -70,7 +78,9 @@ describe('rna-modifications', () => {
 
             expect(isSuccess(result)).toBe(true);
             if (isSuccess(result)) {
-                expect(result.data.getSequence()).toBe('AUGAAACCCGGG' + 'A'.repeat(50));
+                expect(result.data.getSequence()).toBe('AUGAAACCCGGG'); // Core sequence unchanged
+                expect(result.data.getPolyATailLength()).toBe(50); // Custom tail length
+                expect(result.data.polyATail).toBe('A'.repeat(50)); // Poly-A tail stored separately
             }
         });
 
@@ -84,13 +94,15 @@ describe('rna-modifications', () => {
             }
         });
 
-        test('fails with cleavage site beyond sequence', () => {
+        test('truncates cleavage site beyond sequence', () => {
             const rna = new RNA('AUGAAACCCGGG');
-            const result = add3PrimePolyATail(rna, 100);
+            const result = add3PrimePolyATail(rna, 100, 5);
 
-            expect(isFailure(result)).toBe(true);
-            if (isFailure(result)) {
-                expect(result.error).toContain('Invalid cleavage site');
+            expect(isSuccess(result)).toBe(true);
+            if (isSuccess(result)) {
+                // Should cleave at sequence end (12) instead of 100
+                expect(result.data.getSequence()).toBe('AUGAAACCCGGG');
+                expect(result.data.getPolyATailLength()).toBe(5);
             }
         });
 
@@ -129,7 +141,9 @@ describe('rna-modifications', () => {
 
             expect(isSuccess(result)).toBe(true);
             if (isSuccess(result)) {
-                expect(result.data.getSequence()).toBe('AUGAAACCCGGGAAUAAACCAAAAAAAAAA');
+                expect(result.data.getSequence()).toBe('AUGAAACCCGGGAAUAAACC'); // Cleaved at site 20
+                expect(result.data.getPolyATailLength()).toBe(10); // Custom tail length
+                expect(result.data.polyATail).toBe('A'.repeat(10)); // Poly-A tail stored separately
             }
         });
 
@@ -147,21 +161,23 @@ describe('rna-modifications', () => {
             expect(isSuccess(result)).toBe(true);
             if (isSuccess(result)) {
                 // Should use position + signal.length + 15 = 12 + 6 + 15 = 33
-                // But sequence is only 21 long, so it will truncate appropriately
-                const sequence = result.data.getSequence();
-                expect(sequence.endsWith('AAAAA')).toBe(true);
+                // But sequence is only 21 long, so it will truncate at sequence end
+                expect(result.data.getSequence()).toBe('AUGAAACCCGGGAAUAAACCC'); // Full sequence preserved
+                expect(result.data.getPolyATailLength()).toBe(5); // Poly-A tail length
+                expect(result.data.polyATail).toBe('AAAAA'); // Poly-A tail stored separately
             }
         });
     });
 
     describe('remove5PrimeCap', () => {
         test('removes 5\' cap from capped RNA', () => {
-            const rna = new RNA('5CAP_AUGAAACCCGGG');
-            const result = remove5PrimeCap(rna);
+            const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
+            const result = remove5PrimeCap(processedRNA);
 
             expect(isSuccess(result)).toBe(true);
             if (isSuccess(result)) {
                 expect(result.data.getSequence()).toBe('AUGAAACCCGGG');
+                expect(result.data.hasFivePrimeCap).toBe(false);
             }
         });
 
@@ -200,7 +216,7 @@ describe('rna-modifications', () => {
 
     describe('has5PrimeCap', () => {
         test('detects 5\' cap presence', () => {
-            const cappedRNA = new RNA('5CAP_AUGAAACCCGGG');
+            const cappedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
             const uncappedRNA = new RNA('AUGAAACCCGGG');
 
             expect(has5PrimeCap(cappedRNA)).toBe(true);
@@ -250,14 +266,14 @@ describe('rna-modifications', () => {
 
     describe('getCoreSequence', () => {
         test('removes both cap and poly-A tail', () => {
-            const rna = new RNA('5CAP_AUGAAACCCGGGAAAAAAAAAA');
+            const rna = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAAAAA');
             const core = getCoreSequence(rna);
 
             expect(core).toBe('AUGAAACCCGGG');
         });
 
         test('removes only cap when no poly-A tail', () => {
-            const rna = new RNA('5CAP_AUGAAACCCGGGCCC');
+            const rna = new ProcessedRNA('AUGAAACCCGGGCCC', undefined, true, '');
             const core = getCoreSequence(rna);
 
             expect(core).toBe('AUGAAACCCGGGCCC');
@@ -280,9 +296,9 @@ describe('rna-modifications', () => {
 
     describe('isFullyProcessed', () => {
         test('detects fully processed RNA', () => {
-            const fullyProcessed = new RNA('5CAP_AUGAAACCCGGGAAAAAAAAAA');
-            const onlyCapped = new RNA('5CAP_AUGAAACCCGGGCCC');
-            const onlyPolyA = new RNA('AUGAAACCCGGGAAAAAAAAAA');
+            const fullyProcessed = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAAAAA');
+            const onlyCapped = new ProcessedRNA('AUGAAACCCGGGCCC', undefined, true, '');
+            const onlyPolyA = new ProcessedRNA('AUGAAACCCGGG', undefined, false, 'AAAAAAAAAA');
             const unprocessed = new RNA('AUGAAACCCGGGCCC');
 
             expect(isFullyProcessed(fullyProcessed)).toBe(true);
@@ -294,7 +310,7 @@ describe('rna-modifications', () => {
 
     describe('analyzeRNAProcessing', () => {
         test('analyzes fully processed RNA', () => {
-            const rna = new RNA('5CAP_AUGAAACCCGGGAAAAAAAAAA'); // 10 A's at end
+            const rna = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAAAAA'); // 10 A's in polyATail
             const analysis = analyzeRNAProcessing(rna);
 
             expect(analysis.hasFivePrimeCap).toBe(true);
@@ -305,7 +321,7 @@ describe('rna-modifications', () => {
         });
 
         test('analyzes partially processed RNA', () => {
-            const rna = new RNA('5CAP_AUGAAACCCGGGCCC');
+            const rna = new ProcessedRNA('AUGAAACCCGGGCCC', undefined, true, '');
             const analysis = analyzeRNAProcessing(rna);
 
             expect(analysis.hasFivePrimeCap).toBe(true);

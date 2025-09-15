@@ -91,7 +91,6 @@ describe('polyadenylation', () => {
 
             // Should prefer A nucleotides for cleavage
             const cleavageSite = sites[0].cleavageSite!;
-            const sequence = rna.getSequence();
             expect(cleavageSite).toBeGreaterThan(sites[0].position + 6);
             expect(cleavageSite).toBeLessThan(sites[0].position + 30);
         });

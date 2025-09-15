@@ -3,6 +3,9 @@ import { GenomicRegion, isValidGenomicRegion, validateNonOverlappingRegions } fr
 import { ValidationResult } from '../../types/validation-result';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type';
+// Import types for future alternative splicing support (Phase 4.5)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { AlternativeSplicingProfile, SpliceVariant } from '../../types/alternative-splicing';
 
 /**
  * A class representing a Gene with exons and introns.
