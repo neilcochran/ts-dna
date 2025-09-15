@@ -84,3 +84,37 @@ export {
     PROXIMAL_PROMOTER_ELEMENTS,
     PROMOTER_ELEMENT_COMBINATIONS
 } from './data/promoter-elements';
+
+export {
+    PolyadenylationSite,
+    CleavageSiteOptions,
+    DEFAULT_CLEAVAGE_OPTIONS
+} from './types/polyadenylation-site';
+
+export {
+    findPolyadenylationSites,
+    getStrongestPolyadenylationSite,
+    filterPolyadenylationSites
+} from './utils/polyadenylation';
+
+export {
+    spliceRNA,
+    validateReadingFrame,
+    analyzeSplicingQuality,
+    SplicingQualityMetrics
+} from './utils/rna-processing';
+
+export {
+    add5PrimeCap,
+    add3PrimePolyATail,
+    add3PrimePolyATailAtSite,
+    remove5PrimeCap,
+    remove3PrimePolyATail,
+    has5PrimeCap,
+    has3PrimePolyATail,
+    get3PrimePolyATailLength,
+    getCoreSequence,
+    isFullyProcessed,
+    analyzeRNAProcessing,
+    RNAProcessingInfo
+} from './utils/rna-modifications';
