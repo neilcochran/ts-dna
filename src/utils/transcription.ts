@@ -3,7 +3,7 @@ import { PreMRNA } from '../model/nucleic-acids/PreMRNA';
 import { DNA } from '../model/nucleic-acids/DNA';
 import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern';
 import { ValidationResult, success, failure, isFailure, isSuccess } from '../types/validation-result';
-// import { findPromoters } from './promoter-recognition';
+import { findPromoters, identifyTSS, PromoterSearchOptions } from './promoter-recognition';
 
 /**
  * Configuration options for transcription.
@@ -140,17 +140,38 @@ function findTranscriptionStartSite(
         const searchEnd = firstExon.start + 100; // Include some downstream region
 
         const searchRegion = gene.getSequence().substring(searchStart, searchEnd);
-        // TODO: Use searchDNA when findPromoters is implemented
-        // const searchDNA = new DNA(searchRegion);
+        const searchDNA = new DNA(searchRegion);
+
+        // Configure promoter search options
+        const promoterOptions: PromoterSearchOptions = {
+            maxUpstreamDistance: options.maxPromoterSearchDistance,
+            maxDownstreamDistance: 100,
+            minStrengthScore: options.minPromoterStrength,
+            minElements: 1
+        };
 
         // Find promoters in the search region
-        // TODO: Implement actual promoter finding when available
-        // const promoters = findPromoters(searchDNA, {
-        //     minStrengthScore: options.minPromoterStrength
-        // });
+        const promoters = findPromoters(searchDNA, promoterOptions);
 
-        // Placeholder: For now, return failure since no promoter system is implemented
-        return failure(`No promoters found upstream of gene within ${options.maxPromoterSearchDistance}bp (promoter system not yet implemented)`);
+        if (promoters.length === 0) {
+            return failure(`No promoters found upstream of gene within ${options.maxPromoterSearchDistance}bp`);
+        }
+
+        // Use the strongest promoter (they're returned sorted by strength)
+        const bestPromoter = promoters[0];
+
+        // Get TSS positions for this promoter
+        const tssPositions = identifyTSS(bestPromoter, searchDNA);
+
+        if (tssPositions.length === 0) {
+            return failure('Could not determine transcription start site from promoter');
+        }
+
+        // Use the first TSS and adjust for the search region offset
+        const tssInSearchRegion = tssPositions[0];
+        const tssInGene = searchStart + tssInSearchRegion;
+
+        return success(tssInGene);
 
     } catch (error) {
         return failure(`TSS search failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -158,7 +179,7 @@ function findTranscriptionStartSite(
 }
 
 /**
- * Searches for polyadenylation signals (AAUAAA) to determine transcript end.
+ * Searches for polyadenylation signals (AATAAA in DNA, which becomes AAUAAA in RNA) to determine transcript end.
  *
  * @param gene - The gene to analyze
  * @param tss - Transcription start site position
@@ -169,21 +190,21 @@ function findPolyadenylationSite(gene: Gene, tss: number): ValidationResult<numb
         const sequence = gene.getSequence();
         const searchStart = tss;
 
-        // Convert to RNA for pattern matching
-        const rnaSequence = sequence.substring(searchStart).replace(/T/g, 'U');
+        // Search for DNA polyadenylation signal AATAAA (becomes AAUAAA in RNA)
+        const searchRegion = sequence.substring(searchStart);
+        const searchDNA = new DNA(searchRegion);
 
-        // Look for canonical polyadenylation signal AAUAAA
-        const polyAPattern = new NucleotidePattern('AAUAAA');
-        const dnaForSearch = new DNA(rnaSequence.replace(/U/g, 'T')); // Convert back for DNA search
-
-        const matches = polyAPattern.findMatches(dnaForSearch);
+        // Look for canonical polyadenylation signal AATAAA in DNA
+        const polyAPattern = new NucleotidePattern('AATAAA');
+        const matches = polyAPattern.findMatches(searchDNA);
 
         if (matches.length === 0) {
             return failure('No polyadenylation signal found');
         }
 
         // Use the first (closest to TSS) polyadenylation site
-        const polyASite = searchStart + matches[0].start;
+        // Add 6 to get past the AATAAA signal itself
+        const polyASite = searchStart + matches[0].start + 6;
 
         return success(polyASite);
 

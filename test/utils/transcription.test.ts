@@ -274,13 +274,10 @@ describe('transcription', () => {
 
     describe('error handling', () => {
         test('handles gene with no exons', () => {
-            const emptyGene = new Gene('ATGAAATTTGGG', []);
-            const result = transcribe(emptyGene);
-
-            // Should handle gracefully
-            if (isSuccess(result)) {
-                expect(result.data.getExonRegions()).toHaveLength(0);
-            }
+            // Gene constructor should throw for no exons (biologically invalid)
+            expect(() => {
+                new Gene('ATGAAATTTGGG', []);
+            }).toThrow('Gene must have at least one exon');
         });
 
         test('handles malformed gene structure', () => {

@@ -91,7 +91,7 @@ describe('NucleotidePattern Core Functionality', () => {
             const emptySequenceDNA = {
                 getSequence: () => '',
                 nucleicAcidType: 'DNA'
-            } as any;
+            } as unknown as DNA;
             expect(pattern.matches(emptySequenceDNA)).toBe(false);
         });
 
@@ -100,7 +100,7 @@ describe('NucleotidePattern Core Functionality', () => {
             const nullSequenceDNA = {
                 getSequence: () => null,
                 nucleicAcidType: 'DNA'
-            } as any;
+            } as unknown as DNA;
             expect(pattern.matches(nullSequenceDNA)).toBe(false);
         });
 
@@ -147,7 +147,7 @@ describe('NucleotidePattern Core Functionality', () => {
             const emptySequenceDNA = {
                 getSequence: () => '',
                 nucleicAcidType: 'DNA'
-            } as any;
+            } as unknown as DNA;
             expect(pattern.findMatches(emptySequenceDNA)).toEqual([]);
         });
 
@@ -156,7 +156,7 @@ describe('NucleotidePattern Core Functionality', () => {
             const nullSequenceDNA = {
                 getSequence: () => null,
                 nucleicAcidType: 'DNA'
-            } as any;
+            } as unknown as DNA;
             expect(pattern.findMatches(nullSequenceDNA)).toEqual([]);
         });
 
@@ -199,7 +199,7 @@ describe('NucleotidePattern Core Functionality', () => {
             const emptySequenceDNA = {
                 getSequence: () => '',
                 nucleicAcidType: 'DNA'
-            } as any;
+            } as unknown as DNA;
             expect(pattern.findFirst(emptySequenceDNA)).toBeNull();
         });
 
@@ -208,7 +208,7 @@ describe('NucleotidePattern Core Functionality', () => {
             const nullSequenceDNA = {
                 getSequence: () => null,
                 nucleicAcidType: 'DNA'
-            } as any;
+            } as unknown as DNA;
             expect(pattern.findFirst(nullSequenceDNA)).toBeNull();
         });
 
@@ -268,8 +268,8 @@ describe('NucleotidePattern Core Functionality', () => {
             // Mock a nucleic acid that would cause getComplementSequence to return null
             const problematicDNA = {
                 getSequence: () => 'A',
-                nucleicAcidType: 'INVALID' as any
-            } as any;
+                nucleicAcidType: 'INVALID'
+            } as unknown as DNA;
 
             // Should not throw and should return false (no forward match, no valid complement)
             expect(pattern.matchesEitherStrand(problematicDNA)).toBe(false);
@@ -281,6 +281,7 @@ describe('NucleotidePattern Core Functionality', () => {
             const dna = new DNA('T');
 
             // Mock getComplementSequence to return an invalid pattern that would cause getNucleotidePattern to throw
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             jest.spyOn(require('../../../src/utils/nucleic-acids'), 'getComplementSequence')
                 .mockReturnValueOnce('INVALID_CHARS_XYZ');
 
