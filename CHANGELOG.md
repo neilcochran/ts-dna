@@ -1,13 +1,15 @@
+## Version 0.12.0
+
+- Add PreMRNA class for pre-messenger RNA with transcription metadata and processing support
+- Add complete transcription system with promoter recognition, TSS determination, and polyadenylation signal detection
+- Backfilled missing unit test coverage for some model classes.
+
 ## Version 0.11.0
 
-- Add complete promoter recognition system with biologically accurate consensus sequences
 - Add PromoterElement class for individual promoter sequence elements (TATA, Inr, DPE, CAAT, GC boxes)
 - Add Promoter class for complete promoters with multiple elements and strength scoring
 - Add findPromoters() function for promoter recognition in DNA sequences
 - Add identifyTSS() function for transcription start site prediction
-- Update TATA box to correct TATAWAWR consensus (8bp) based on biological literature
-- Update Initiator to modern BBCABW consensus based on genome-wide studies
-- Remove custom promoter elements feature (not biologically meaningful)
 
 ## Version 0.10.0
 
