@@ -46,7 +46,7 @@ export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
  *
  * @internal
  */
-export const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined => {
+const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined => {
     const sequence = codon.getSequence();
     if(sequence.length !== 3) {
         return undefined;
@@ -96,3 +96,6 @@ export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
     });
     return aminoAcids;
 };
+
+// Export for internal use by model classes
+export { getAminoAcidDataByCodon };

@@ -4,6 +4,7 @@ import { DNA } from '../model/nucleic-acids/DNA';
 import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern';
 import { ValidationResult, success, failure, isFailure, isSuccess } from '../types/validation-result';
 import { findPromoters, identifyTSS, PromoterSearchOptions } from './promoter-recognition';
+import { convertToRNA } from './nucleic-acids';
 
 /**
  * Configuration options for transcription.
@@ -100,8 +101,9 @@ export function transcribe(
         const geneSequence = gene.getSequence();
         const transcriptDNA = geneSequence.substring(transcriptionStartSite, transcriptEnd);
 
-        // Convert DNA to RNA (T -> U)
-        const transcriptRNA = transcriptDNA.replace(/T/g, 'U');
+        // Convert DNA to RNA
+        const transcriptDNAObj = new DNA(transcriptDNA);
+        const transcriptRNA = convertToRNA(transcriptDNAObj).getSequence();
 
         // Step 6: Create PreMRNA with structural information
         const preMRNA = new PreMRNA(
@@ -213,34 +215,4 @@ function findPolyadenylationSite(gene: Gene, tss: number): ValidationResult<numb
     }
 }
 
-/**
- * Converts DNA sequence to RNA by replacing all T nucleotides with U.
- *
- * @param dnaSequence - The DNA sequence to convert
- * @returns RNA sequence with T replaced by U
- *
- * @example
- * ```typescript
- * const rna = dnaToRNA('ATGCGT'); // Returns 'AUGCGU'
- * ```
- */
-export function dnaToRNA(dnaSequence: string): string {
-    return dnaSequence.replace(/T/g, 'U');
-}
 
-/**
- * Simple transcription function that directly converts a DNA sequence to RNA
- * without promoter recognition or structural analysis.
- *
- * @param dna - The DNA to transcribe
- * @returns RNA sequence
- *
- * @example
- * ```typescript
- * const dna = new DNA('ATGCGT');
- * const rna = simpleTranscribe(dna); // Returns 'AUGCGU'
- * ```
- */
-export function simpleTranscribe(dna: DNA): string {
-    return dnaToRNA(dna.getSequence());
-}

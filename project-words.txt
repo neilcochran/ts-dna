@@ -67,3 +67,4 @@ AAUACA
 ugua
 deadenylation
 frameshift
+isoforms

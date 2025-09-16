@@ -11,7 +11,6 @@ import {
     get3PrimePolyATailLength,
     getCoreSequence,
     isFullyProcessed,
-    analyzeRNAProcessing
 } from '../../src/utils/rna-modifications';
 import { PolyadenylationSite } from '../../src/types/polyadenylation-site';
 import { isSuccess, isFailure } from '../../src/types/validation-result';
@@ -308,38 +307,4 @@ describe('rna-modifications', () => {
         });
     });
 
-    describe('analyzeRNAProcessing', () => {
-        test('analyzes fully processed RNA', () => {
-            const rna = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAAAAA'); // 10 A's in polyATail
-            const analysis = analyzeRNAProcessing(rna);
-
-            expect(analysis.hasFivePrimeCap).toBe(true);
-            expect(analysis.hasThreePrimePolyA).toBe(true);
-            expect(analysis.polyATailLength).toBe(10);
-            expect(analysis.coreSequenceLength).toBe(12); // AUGAAACCCGGG
-            expect(analysis.isFullyProcessed).toBe(true);
-        });
-
-        test('analyzes partially processed RNA', () => {
-            const rna = new ProcessedRNA('AUGAAACCCGGGCCC', undefined, true, '');
-            const analysis = analyzeRNAProcessing(rna);
-
-            expect(analysis.hasFivePrimeCap).toBe(true);
-            expect(analysis.hasThreePrimePolyA).toBe(false);
-            expect(analysis.polyATailLength).toBe(0);
-            expect(analysis.coreSequenceLength).toBe(15); // AUGAAACCCGGGCCC
-            expect(analysis.isFullyProcessed).toBe(false);
-        });
-
-        test('analyzes unprocessed RNA', () => {
-            const rna = new RNA('AUGAAACCCGGGCCC');
-            const analysis = analyzeRNAProcessing(rna);
-
-            expect(analysis.hasFivePrimeCap).toBe(false);
-            expect(analysis.hasThreePrimePolyA).toBe(false);
-            expect(analysis.polyATailLength).toBe(0);
-            expect(analysis.coreSequenceLength).toBe(15);
-            expect(analysis.isFullyProcessed).toBe(false);
-        });
-    });
 });

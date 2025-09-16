@@ -225,30 +225,3 @@ export function isFullyProcessed(rna: RNA): boolean {
 /**
  * Information about RNA processing modifications.
  */
-export interface RNAProcessingInfo {
-    readonly hasFivePrimeCap: boolean;
-    readonly hasThreePrimePolyA: boolean;
-    readonly polyATailLength: number;
-    readonly coreSequenceLength: number;
-    readonly isFullyProcessed: boolean;
-}
-
-/**
- * Analyzes the processing state of an RNA molecule.
- */
-export function analyzeRNAProcessing(rna: RNA): RNAProcessingInfo {
-    const hasFivePrimeCap = has5PrimeCap(rna);
-    const hasThreePrimePolyA = has3PrimePolyATail(rna);
-    const polyATailLength = get3PrimePolyATailLength(rna);
-    const coreSequence = getCoreSequence(rna);
-    const coreSequenceLength = coreSequence.length;
-    const fullyProcessed = isFullyProcessed(rna);
-
-    return {
-        hasFivePrimeCap,
-        hasThreePrimePolyA,
-        polyATailLength,
-        coreSequenceLength,
-        isFullyProcessed: fullyProcessed
-    };
-}

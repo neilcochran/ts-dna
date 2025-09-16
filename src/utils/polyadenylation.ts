@@ -128,10 +128,15 @@ function findUpstreamUSE(
 
     try {
         // Look for U-rich regions or UGUA motifs
-        const uRichMatches = searchRegion.match(/U{3,}/g);
-        const uguaMatches = searchRegion.match(/UGUA/g);
+        const uRichPattern = new NucleotidePattern('U{3,}');
+        const uguaPattern = new NucleotidePattern('UGUA');
 
-        if (uRichMatches || uguaMatches) {
+        // Create temporary RNA object to use with pattern matching
+        const searchRNA = new RNA(searchRegion);
+        const uRichMatches = uRichPattern.findMatches(searchRNA);
+        const uguaMatches = uguaPattern.findMatches(searchRNA);
+
+        if (uRichMatches.length > 0 || uguaMatches.length > 0) {
             return {
                 start: searchStart,
                 end: signalPosition,

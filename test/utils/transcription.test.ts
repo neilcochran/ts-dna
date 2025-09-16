@@ -1,6 +1,5 @@
-import { transcribe, dnaToRNA, simpleTranscribe, TranscriptionOptions } from '../../src/utils/transcription';
+import { transcribe, TranscriptionOptions } from '../../src/utils/transcription';
 import { Gene } from '../../src/model/nucleic-acids/Gene';
-import { DNA } from '../../src/model/nucleic-acids/DNA';
 import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
 import { isSuccess, isFailure } from '../../src/types/validation-result';
 
@@ -131,56 +130,7 @@ describe('transcription', () => {
         });
     });
 
-    describe('dnaToRNA', () => {
-        test('converts T to U in DNA sequence', () => {
-            const dna = 'ATGCGT';
-            const rna = dnaToRNA(dna);
-            expect(rna).toBe('AUGCGU');
-        });
 
-        test('leaves other nucleotides unchanged', () => {
-            const dna = 'AAGCGACCAA';
-            const rna = dnaToRNA(dna);
-            expect(rna).toBe('AAGCGACCAA'); // No T, so no change
-        });
-
-        test('handles empty string', () => {
-            expect(dnaToRNA('')).toBe('');
-        });
-
-        test('handles string with no T', () => {
-            const dna = 'AAGCGACCAA';
-            expect(dnaToRNA(dna)).toBe('AAGCGACCAA');
-        });
-
-        test('handles string with only T', () => {
-            const dna = 'TTTTTT';
-            expect(dnaToRNA(dna)).toBe('UUUUUU');
-        });
-    });
-
-    describe('simpleTranscribe', () => {
-        test('transcribes DNA to RNA without analysis', () => {
-            const dna = new DNA('ATGCGT');
-            const rna = simpleTranscribe(dna);
-            expect(rna).toBe('AUGCGU');
-        });
-
-        test('handles complex sequences', () => {
-            const dna = new DNA('ATGAAACCCAAATTTGGG');
-            const rna = simpleTranscribe(dna);
-            expect(rna).toBe('AUGAAACCCAAAUUUGGG');
-        });
-
-        test('preserves sequence length', () => {
-            const sequence = 'ATGCGTTATCGAA';
-            const dna = new DNA(sequence);
-            const rna = simpleTranscribe(dna);
-
-            expect(rna.length).toBe(sequence.length);
-            expect(rna).toBe('AUGCGUUAUCGAA');
-        });
-    });
 
     describe('integration with promoter system', () => {
         test('uses promoter recognition to find realistic TSS', () => {
