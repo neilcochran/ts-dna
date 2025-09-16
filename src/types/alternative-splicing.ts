@@ -104,13 +104,33 @@ export interface AlternativeSplicingOptions {
     /** Minimum number of exons required per variant */
     readonly minimumExonCount?: number;
 
-    /** Whether to validate that variants maintain start/stop codons */
+    /**
+     * Whether to validate that variants maintain proper start/stop codons.
+     *
+     * When true, validates:
+     * - Start codon (AUG) at the beginning of the coding sequence
+     * - Stop codon (UAA, UAG, UGA) at the end of the coding sequence
+     *
+     * Use false for research on partial sequences, alternative start sites,
+     * or when studying nonsense mutations with premature stops.
+     */
     readonly validateCodons?: boolean;
 
     /** Whether to allow variants that skip the first exon */
     readonly allowSkipFirstExon?: boolean;
 
-    /** Whether to allow variants that skip the last exon */
+    /**
+     * Whether to allow variants that skip the last exon.
+     *
+     * Biologically relevant for:
+     * - Alternative polyadenylation (early termination with different 3' UTR)
+     * - Nonsense-mediated decay escape mechanisms
+     * - Research into truncated protein isoforms
+     *
+     * When false, enforces that functional proteins retain proper C-terminus
+     * and termination signals. Use true for modeling alternative polyadenylation
+     * or studying naturally occurring truncated isoforms.
+     */
     readonly allowSkipLastExon?: boolean;
 }
 

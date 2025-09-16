@@ -25,7 +25,10 @@ export {
 export {
     SpliceVariant,
     AlternativeSplicingProfile,
-    AlternativeSplicingOptions
+    AlternativeSplicingOptions,
+    SplicingOutcome,
+    SpliceVariantPatterns,
+    DEFAULT_ALTERNATIVE_SPLICING_OPTIONS
 } from './types/alternative-splicing';
 
 export {
@@ -130,3 +133,11 @@ export {
     analyzeRNAProcessing,
     RNAProcessingInfo
 } from './utils/rna-modifications';
+
+export {
+    spliceRNAWithVariant,
+    processAllSplicingVariants,
+    validateSpliceVariant,
+    processDefaultSpliceVariant,
+    findVariantsByProteinLength
+} from './utils/alternative-splicing';

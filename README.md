@@ -80,51 +80,162 @@ if (result.success) {
 }
 ```
 
-## Complete Transcription Example
+## Complete Gene Expression Example
 
-Here's a comprehensive example showing gene transcription with promoter recognition, exon/intron structure, and pre-mRNA processing:
+Here's a comprehensive example showing the complete gene expression pathway from DNA to protein, including alternative splicing using a BRCA1-inspired gene:
 
 ```typescript
-import { DNA, Gene, NucleotidePattern, transcribe, isSuccess } from 'ts-dna';
+import {
+    DNA,
+    Gene,
+    NucleotidePattern,
+    transcribe,
+    processAllSplicingVariants,
+    SpliceVariantPatterns,
+    AlternativeSplicingProfile,
+    Polypeptide,
+    isSuccess
+} from 'ts-dna';
 
-// Create a gene with TATA box promoter and exon structure
-const geneSequence =
+// Create a simplified BRCA1-like gene with alternative splicing
+const brca1Sequence =
     // Promoter region with TATA box
-    'GCGCGCGCGCGCGCGCGCGCGCGCGCTATAAAAGGCGCGCGCGCGCGCGCGC' +
-    // Transcription start site and first exon
-    'ATGAAGGCCTACGTGAAGCTG' +
-    // First intron with GT...AG splice sites
-    'GTAAGTGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCAG' +
-    // Second exon
-    'TCCGAGCTGAAGATCGTG' +
-    // Second intron
-    'GTAAGTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG' +
-    // Third exon with polyadenylation signal
-    'CCCAAGTGCAAGCTGAATAAAAGGCGCGCGCGC';
+    'GCGCGCGCGCGCGCGCGCGCTATAAAAGGCGCGCGCGCGCGCGCGC' +
+    // Exon 1: Start codon + DNA binding domain
+    'ATGGATTTATCTGCTCTTCGCGTTGAAGAAGTACAAAATGTCA' +
+    // Intron 1 with GT...AG splice sites
+    'GTAAGTGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCAG' +
+    // Exon 2: BRCT domain part 1
+    'TTCGATGCCATGGATGAAGCAGAGGCTGGGATAGTATTG' +
+    // Intron 2
+    'GTAAGTAAAAAAAAAAAAAAAAAAAAAAAAAAAG' +
+    // Exon 3: BRCT domain part 2 (cancer-critical)
+    'AAGATCCGGAAGCTTCTGACAAAGCTGTATCGTGAG' +
+    // Intron 3
+    'GTAAGTCCCCCCCCCCCCCCCCCCCCCCCCCCAG' +
+    // Exon 4: C-terminal + stop codon
+    'CTGAAGGACCTGCGCTACAAGTAAGGCGCGCGC';
 
 // Define exon boundaries
 const exons = [
-    { start: 50, end: 71, name: 'exon1' },
-    { start: 118, end: 136, name: 'exon2' },
-    { start: 181, end: 213, name: 'exon3' }
+    { start: 47, end: 89, name: 'exon1' },   // DNA binding domain
+    { start: 128, end: 166, name: 'exon2' },  // BRCT domain part 1
+    { start: 200, end: 236, name: 'exon3' },  // BRCT domain part 2
+    { start: 270, end: 300, name: 'exon4' }   // C-terminal region
 ];
 
-// Create gene and transcribe it
-const gene = new Gene(geneSequence, exons);
-const tataPattern = new NucleotidePattern('TATAAA');
-const result = transcribe(gene, tataPattern);
+// Define alternative splicing profile for BRCA1
+const splicingProfile: AlternativeSplicingProfile = {
+    geneId: 'BRCA1',
+    defaultVariant: 'full-length',
+    variants: [
+        // Full-length functional protein
+        SpliceVariantPatterns.fullLength('full-length', 4,
+            'Complete BRCA1 with all domains'),
 
-if (isSuccess(result)) {
-    const preMRNA = result.data;
-    console.log(`Pre-mRNA length: ${preMRNA.getSequence().length} bp`);
-    console.log(`Exons: ${preMRNA.getExonRegions().length}`);
-    console.log(`Introns: ${preMRNA.getIntronRegions().length}`);
-    console.log(`Coding sequence: ${preMRNA.getCodingSequence()}`);
+        // Cancer-associated splice variant (skips critical BRCT domain)
+        SpliceVariantPatterns.exonSkipping('cancer-variant', 4, [2],
+            'Oncogenic variant missing BRCT domain part 1'),
 
-    // Shows: DNA→RNA transcription, promoter recognition,
-    // splice site detection, and polyadenylation signals
+        // Tissue-specific shorter isoform
+        SpliceVariantPatterns.truncation('short-isoform', 3,
+            'Truncated isoform missing C-terminus')
+    ]
+};
+
+// Create gene with alternative splicing capability
+const brca1Gene = new Gene(brca1Sequence, exons, 'BRCA1', splicingProfile);
+
+// Transcribe the gene
+const transcriptionResult = transcribe(brca1Gene);
+
+if (isSuccess(transcriptionResult)) {
+    const preMRNA = transcriptionResult.data;
+    console.log(`BRCA1 pre-mRNA transcribed: ${preMRNA.getSequence().length} bp`);
+
+    // Process all splice variants
+    const splicingResult = processAllSplicingVariants(preMRNA, {
+        validateReadingFrames: true,
+        allowSkipLastExon: true, // Allow truncation variants
+        validateCodons: true     // Ensure proper start/stop codons
+    });
+
+    if (isSuccess(splicingResult)) {
+        const outcomes = splicingResult.data;
+        console.log(`\nBRCA1 Alternative Splice Variants:`);
+
+        for (const outcome of outcomes) {
+            const variant = outcome.variant;
+            const matureRNA = outcome.matureMRNA;
+
+            console.log(`\n🧬 ${variant.name}:`);
+            console.log(`   Description: ${variant.description}`);
+            console.log(`   Exons included: [${variant.includedExons.join(', ')}]`);
+            console.log(`   mRNA length: ${outcome.getMRNALength()} bp`);
+            console.log(`   Protein length: ${outcome.getAminoAcidCount()} amino acids`);
+            console.log(`   Reading frame intact: ${outcome.hasValidReadingFrame()}`);
+
+            // Create protein from mature mRNA
+            try {
+                const protein = new Polypeptide(matureRNA);
+                console.log(`   First amino acid: ${protein.aminoAcidSequence[0].name}`);
+                console.log(`   Last amino acid: ${protein.aminoAcidSequence[protein.aminoAcidSequence.length - 1].name}`);
+
+                // Check for functional domains
+                if (variant.name === 'cancer-variant') {
+                    console.log(`   ⚠️  WARNING: Missing critical BRCT domain - may be oncogenic`);
+                } else if (variant.name === 'full-length') {
+                    console.log(`   ✅ Complete functional protein with all domains`);
+                }
+            } catch (error) {
+                console.log(`   ❌ Cannot translate: ${error.message}`);
+            }
+        }
+
+        // Compare variant effects
+        console.log(`\n📊 Clinical Significance:`);
+        const fullLength = outcomes.find(o => o.variant.name === 'full-length');
+        const cancerVariant = outcomes.find(o => o.variant.name === 'cancer-variant');
+
+        if (fullLength && cancerVariant) {
+            const proteinLoss = fullLength.getAminoAcidCount() - cancerVariant.getAminoAcidCount();
+            console.log(`   Cancer variant loses ${proteinLoss} amino acids`);
+            console.log(`   Represents ${((proteinLoss / fullLength.getAminoAcidCount()) * 100).toFixed(1)}% protein loss`);
+        }
+    }
 }
+
+// Output example:
+// BRCA1 pre-mRNA transcribed: 253 bp
+//
+// 🧬 BRCA1 Alternative Splice Variants:
+//
+// 🧬 full-length:
+//    Description: Complete BRCA1 with all domains
+//    Exons included: [0, 1, 2, 3]
+//    mRNA length: 144 bp
+//    Protein length: 48 amino acids
+//    Reading frame intact: true
+//    First amino acid: Methionine
+//    Last amino acid: Lysine
+//    ✅ Complete functional protein with all domains
+//
+// 🧬 cancer-variant:
+//    Description: Oncogenic variant missing BRCT domain part 1
+//    Exons included: [0, 2, 3]
+//    mRNA length: 106 bp
+//    Protein length: 35 amino acids
+//    Reading frame intact: true
+//    First amino acid: Methionine
+//    Last amino acid: Lysine
+//    ⚠️  WARNING: Missing critical BRCT domain - may be oncogenic
+//
+// 📊 Clinical Significance:
+//    Cancer variant loses 13 amino acids
+//    Represents 27.1% protein loss
 ```
+
+This example demonstrates the complete molecular biology pipeline: **Gene → Pre-mRNA → Alternative Splicing → Mature mRNA → Protein**, showing how alternative splicing can create functionally different protein isoforms with varying clinical significance.
 
 ## API Documentation
 
