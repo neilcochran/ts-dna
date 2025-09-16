@@ -1,3 +1,9 @@
+## Version 0.14.0
+
+- Add alternative splicing system with SpliceVariant support for generating multiple protein isoforms from single genes
+- Add comprehensive splicing validation and processing functions (spliceRNAWithVariant, processAllSplicingVariants, validateSpliceVariant)
+- Remove redundant utility functions (convertNucleicAcid, validateGeneSpliceSites, analyzeRNAProcessing) for cleaner API design
+
 ## Version 0.13.0
 
 - Add complete RNA processing pipeline with polyadenylation signal recognition (AAUAAA variants), RNA splicing with GT...AG consensus validation, 5' capping, and 3' polyadenylation
