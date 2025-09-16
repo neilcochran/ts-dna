@@ -134,3 +134,10 @@ export {
     processDefaultSpliceVariant,
     findVariantsByProteinLength
 } from './utils/alternative-splicing';
+
+export {
+    processRNA,
+    RNAProcessingOptions,
+    DEFAULT_RNA_PROCESSING_OPTIONS,
+    convertProcessedRNAToMRNA
+} from './utils/mrna-processing';
