@@ -5,6 +5,8 @@ import { AminoAcidPolarity } from '../../src/enums/amino-acid-polarity';
 import { AminoAcidCharge } from '../../src/enums/amino-acid-charge';
 import { AminoAcidSideChainType } from '../../src/enums/amino-acid-side-chain-type';
 import { NucleicAcidType } from '../../src/enums/nucleic-acid-type';
+import { AminoAcidData } from '../../src/types/amino-acid-data';
+import { SLC_AMINO_ACID_DATA_MAP } from '../../src/data/codon-map';
 
 describe('AminoAcid Class', () => {
     describe('constructor', () => {
@@ -285,6 +287,171 @@ describe('AminoAcid Class', () => {
             const amino = new AminoAcid(codon);
 
             expect(amino.codon).toBe(codon); // Same reference
+        });
+    });
+
+    describe('AminoAcidData interface implementation', () => {
+        test('implements AminoAcidData interface correctly', () => {
+            const amino = new AminoAcid(new RNA('AUG')); // Methionine
+
+            // Check that amino acid instance has all AminoAcidData properties
+            const aminoAsData: AminoAcidData = amino;
+            expect(aminoAsData.name).toBe('Methionine');
+            expect(aminoAsData.abbrv).toBe('Met');
+            expect(aminoAsData.slc).toBe('M');
+            expect(aminoAsData.molecularWeight).toBe(149.208);
+            expect(aminoAsData.polarity).toBe(AminoAcidPolarity.NONPOLAR);
+            expect(aminoAsData.charge).toBe(AminoAcidCharge.NEUTRAL);
+            expect(aminoAsData.hydrophobicity).toBe(1.9);
+            expect(aminoAsData.sideChainType).toBe(AminoAcidSideChainType.SULFUR_CONTAINING);
+        });
+
+        test('amino acid properties match data map exactly', () => {
+            const testCases = [
+                { codon: 'AUG', slc: 'M' }, // Methionine
+                { codon: 'UUU', slc: 'F' }, // Phenylalanine
+                { codon: 'AAA', slc: 'K' }, // Lysine
+                { codon: 'GAU', slc: 'D' }, // Aspartic acid
+                { codon: 'GCA', slc: 'A' }, // Alanine
+            ];
+
+            testCases.forEach(({ codon, slc }) => {
+                const amino = new AminoAcid(new RNA(codon));
+                const dataMapEntry = SLC_AMINO_ACID_DATA_MAP[slc];
+
+                expect(amino.name).toBe(dataMapEntry.name);
+                expect(amino.abbrv).toBe(dataMapEntry.abbrv);
+                expect(amino.slc).toBe(dataMapEntry.slc);
+                expect(amino.molecularWeight).toBe(dataMapEntry.molecularWeight);
+                expect(amino.polarity).toBe(dataMapEntry.polarity);
+                expect(amino.charge).toBe(dataMapEntry.charge);
+                expect(amino.hydrophobicity).toBe(dataMapEntry.hydrophobicity);
+                expect(amino.sideChainType).toBe(dataMapEntry.sideChainType);
+            });
+        });
+
+        test('all properties are populated from data map', () => {
+            // Test all 20 amino acids have complete data
+            const testCodons = [
+                'GCA', 'UGU', 'GAU', 'GAA', 'UUU', 'GGA', 'CAU', 'AUU',
+                'AAA', 'UUA', 'AUG', 'AAU', 'CCA', 'CAA', 'AGA', 'UCU',
+                'ACU', 'GUU', 'UGG', 'UAU'
+            ];
+
+            testCodons.forEach(codonSeq => {
+                const amino = new AminoAcid(new RNA(codonSeq));
+
+                expect(amino.name).toBeDefined();
+                expect(amino.name).not.toBe('');
+                expect(amino.abbrv).toBeDefined();
+                expect(amino.abbrv).not.toBe('');
+                expect(amino.slc).toBeDefined();
+                expect(amino.slc).not.toBe('');
+                expect(amino.molecularWeight).toBeGreaterThan(0);
+                expect(amino.polarity).toBeDefined();
+                expect(amino.charge).toBeDefined();
+                expect(typeof amino.hydrophobicity).toBe('number');
+                expect(amino.sideChainType).toBeDefined();
+            });
+        });
+    });
+
+    describe('data mapping consistency', () => {
+        test('alternate codons for same amino acid have identical properties', () => {
+            // Test alanine codons (GCA, GCC, GCG, GCU)
+            const alanineCodens = ['GCA', 'GCC', 'GCG', 'GCU'];
+            const alanines = alanineCodens.map(codon => new AminoAcid(new RNA(codon)));
+
+            // All should have identical properties except codon
+            for (let i = 1; i < alanines.length; i++) {
+                expect(alanines[i].name).toBe(alanines[0].name);
+                expect(alanines[i].abbrv).toBe(alanines[0].abbrv);
+                expect(alanines[i].slc).toBe(alanines[0].slc);
+                expect(alanines[i].molecularWeight).toBe(alanines[0].molecularWeight);
+                expect(alanines[i].polarity).toBe(alanines[0].polarity);
+                expect(alanines[i].charge).toBe(alanines[0].charge);
+                expect(alanines[i].hydrophobicity).toBe(alanines[0].hydrophobicity);
+                expect(alanines[i].sideChainType).toBe(alanines[0].sideChainType);
+
+                // But different codons
+                expect(alanines[i].codon.getSequence()).not.toBe(alanines[0].codon.getSequence());
+            }
+        });
+
+        test('leucine codons have consistent properties', () => {
+            // Leucine has 6 codons: UUA, UUG, CUA, CUC, CUG, CUU
+            const leucineCodens = ['UUA', 'UUG', 'CUA', 'CUC', 'CUG', 'CUU'];
+            const leucines = leucineCodens.map(codon => new AminoAcid(new RNA(codon)));
+
+            // All should be leucine with same properties
+            leucines.forEach(leu => {
+                expect(leu.name).toBe('Leucine');
+                expect(leu.slc).toBe('L');
+                expect(leu.abbrv).toBe('Leu');
+                expect(leu.sideChainType).toBe(AminoAcidSideChainType.ALIPHATIC);
+            });
+        });
+
+        test('properties come from single source of truth', () => {
+            const amino = new AminoAcid(new RNA('UUU')); // Phenylalanine
+            const dataMapEntry = SLC_AMINO_ACID_DATA_MAP['F'];
+
+            // Verify the instance gets its data from the map
+            expect(amino.name).toBe(dataMapEntry.name);
+            expect(amino.molecularWeight).toBe(dataMapEntry.molecularWeight);
+
+            // Should be same reference for the properties (not just equal values)
+            expect(amino.polarity).toBe(dataMapEntry.polarity);
+            expect(amino.charge).toBe(dataMapEntry.charge);
+            expect(amino.sideChainType).toBe(dataMapEntry.sideChainType);
+        });
+    });
+
+    describe('biochemical property validation', () => {
+        test('charged amino acids have correct charges', () => {
+            // Positive
+            const lys = new AminoAcid(new RNA('AAA')); // Lysine
+            const arg = new AminoAcid(new RNA('AGA')); // Arginine
+            const his = new AminoAcid(new RNA('CAU')); // Histidine
+
+            expect(lys.charge).toBe(AminoAcidCharge.POSITIVE);
+            expect(arg.charge).toBe(AminoAcidCharge.POSITIVE);
+            expect(his.charge).toBe(AminoAcidCharge.POSITIVE);
+
+            // Negative
+            const asp = new AminoAcid(new RNA('GAU')); // Aspartic acid
+            const glu = new AminoAcid(new RNA('GAA')); // Glutamic acid
+
+            expect(asp.charge).toBe(AminoAcidCharge.NEGATIVE);
+            expect(glu.charge).toBe(AminoAcidCharge.NEGATIVE);
+        });
+
+        test('hydrophobic amino acids have positive hydrophobicity', () => {
+            const hydrophobicCodons = ['UUU', 'AUU', 'UUA', 'GUU', 'GCA']; // Phe, Ile, Leu, Val, Ala
+
+            hydrophobicCodons.forEach(codon => {
+                const amino = new AminoAcid(new RNA(codon));
+                expect(amino.hydrophobicity).toBeGreaterThan(0);
+                expect(amino.polarity).toBe(AminoAcidPolarity.NONPOLAR);
+            });
+        });
+
+        test('polar amino acids have appropriate properties', () => {
+            const polarCodons = ['UCU', 'ACU', 'UAU', 'AAU', 'CAA']; // Ser, Thr, Tyr, Asn, Gln
+
+            polarCodons.forEach(codon => {
+                const amino = new AminoAcid(new RNA(codon));
+                expect(amino.polarity).toBe(AminoAcidPolarity.POLAR);
+            });
+        });
+
+        test('aromatic amino acids have correct side chain type', () => {
+            const aromaticCodons = ['UUU', 'UAU', 'UGG']; // Phe, Tyr, Trp
+
+            aromaticCodons.forEach(codon => {
+                const amino = new AminoAcid(new RNA(codon));
+                expect(amino.sideChainType).toBe(AminoAcidSideChainType.AROMATIC);
+            });
         });
     });
 

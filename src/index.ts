@@ -19,6 +19,10 @@ export {
 } from './types/validation-result';
 
 export {
+    AminoAcidData
+} from './types/amino-acid-data';
+
+export {
     GenomicRegion,
     isValidGenomicRegion,
     regionsOverlap,
