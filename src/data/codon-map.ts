@@ -2,23 +2,15 @@
  * Static codon-to-amino acid mapping for efficient lookups.
  */
 
-import { AminoAcidPolarity } from '../enums/amino-acid-polarity';
 import { AminoAcidCharge } from '../enums/amino-acid-charge';
+import { AminoAcidPolarity } from '../enums/amino-acid-polarity';
 import { AminoAcidSideChainType } from '../enums/amino-acid-side-chain-type';
+import { AminoAcidData } from '../types/amino-acid-data';
 
 /**
  * Complete amino acid data mapping with biochemical characteristics
  */
-export const SLC_AMINO_ACID_DATA_MAP: Record<string, {
-    readonly name: string;
-    readonly abbrv: string;
-    readonly slc: string;
-    readonly molecularWeight: number;
-    readonly polarity: AminoAcidPolarity;
-    readonly charge: AminoAcidCharge;
-    readonly hydrophobicity: number;
-    readonly sideChainType: AminoAcidSideChainType;
-}> = {
+export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
     A: {
         name: 'Alanine', abbrv: 'Ala', slc: 'A',
         molecularWeight: 89.094,

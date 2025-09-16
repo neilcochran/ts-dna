@@ -2,12 +2,13 @@ import { AminoAcid, RNA } from '../model';
 import { InvalidCodonError } from '../model/errors/InvalidCodonError';
 import { InvalidSequenceError } from '../model/errors/InvalidSequenceError';
 import { NucleicAcidType } from '../enums/nucleic-acid-type';
+import { AminoAcidData } from '../types/amino-acid-data';
 import {
     SLC_AMINO_ACID_DATA_MAP,
     CODON_TO_SLC_MAP
 } from '../data/codon-map';
 
-export { SLC_AMINO_ACID_DATA_MAP, SLC_ALT_CODONS_MAP } from '../data/codon-map';
+export { SLC_AMINO_ACID_DATA_MAP, SLC_ALT_CODONS_MAP, CODON_TO_SLC_MAP } from '../data/codon-map';
 
 /**
  * Given a valid RNA codon, return the corresponding amino acid
@@ -45,7 +46,7 @@ export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
  *
  * @internal
  */
-export const getAminoAcidDataByCodon = (codon: RNA) => {
+export const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined => {
     const sequence = codon.getSequence();
     if(sequence.length !== 3) {
         return undefined;

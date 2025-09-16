@@ -1,6 +1,6 @@
 {
   "name": "ts-dna",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "license": "MIT",
   "description": "A simple typescript utility library for working with nucleic acids, amino acids, and polypeptides",
   "author": {
