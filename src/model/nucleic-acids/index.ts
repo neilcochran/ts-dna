@@ -5,3 +5,4 @@ export * from './DNA';
 export * from './RNA';
 export * from './Gene';
 export * from './PreMRNA';
+export * from './MRNA';

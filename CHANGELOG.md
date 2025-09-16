@@ -1,3 +1,9 @@
+## Version 0.15.0
+
+- Add complete mature mRNA processing pipeline with processRNA() function that handles 5' capping, splicing, polyadenylation, and coding sequence identification
+- Add MRNA class extending RNA with mature mRNA properties including 5' cap status, poly-A tail, coding boundaries, and UTR analysis
+- Add comprehensive biological validation ensuring proper GT...AG splice sites and in-frame stop codons for realistic molecular biology modeling
+
 ## Version 0.14.0
 
 - Add alternative splicing system with SpliceVariant support for generating multiple protein isoforms from single genes
