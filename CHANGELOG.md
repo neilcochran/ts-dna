@@ -1,3 +1,10 @@
+## Version 0.13.0
+
+- Add complete RNA processing pipeline with polyadenylation signal recognition (AAUAAA variants), RNA splicing with GT...AG consensus validation, 5' capping, and 3' polyadenylation
+- Add ProcessedRNA class to properly handle RNA modifications as properties rather than sequence manipulation
+- Add Gene class with exon/intron validation, promoter recognition (TATA, Inr, DPE elements), and realistic transcription workflow from DNA → Pre-mRNA → mature RNA
+- Add AminoAcidData interface and refactor amino acid system with unified SLC_AMINO_ACID_DATA_MAP as single source of truth
+
 ## Version 0.12.0
 
 - Add PreMRNA class for pre-messenger RNA with transcription metadata and processing support

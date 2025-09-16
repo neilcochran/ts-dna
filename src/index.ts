@@ -23,6 +23,12 @@ export {
 } from './types/amino-acid-data';
 
 export {
+    SpliceVariant,
+    AlternativeSplicingProfile,
+    AlternativeSplicingOptions
+} from './types/alternative-splicing';
+
+export {
     GenomicRegion,
     isValidGenomicRegion,
     regionsOverlap,
@@ -64,7 +70,8 @@ export {
 
 export {
     findPromoters,
-    identifyTSS
+    identifyTSS,
+    PromoterSearchOptions
 } from './utils/promoter-recognition';
 
 export {
