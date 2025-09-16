@@ -1,7 +1,6 @@
 import {
     validateSpliceSites,
     findPotentialSpliceSites,
-    validateGeneSpliceSites,
     SPLICE_DONOR_SEQUENCES,
     SPLICE_ACCEPTOR_SEQUENCES
 } from '../../src/utils/splice-sites';
@@ -227,28 +226,6 @@ describe('Splice site utilities', () => {
         });
     });
 
-    describe('validateGeneSpliceSites', () => {
-        test('validates gene with valid splice sites', () => {
-            const geneSequence = 'ATGGTAAAAGCCCGGG';
-            const introns: GenomicRegion[] = [
-                { start: 3, end: 10 }  // GTAAAAG - valid GT-AG
-            ];
-
-            const result = validateGeneSpliceSites(geneSequence, introns);
-            expect(result.isValid).toBe(true);
-        });
-
-        test('identifies invalid splice sites in gene', () => {
-            const geneSequence = 'ATGATCCCATTTTAAA';
-            const introns: GenomicRegion[] = [
-                { start: 3, end: 11 }  // ATCCCATT - invalid AT-TT
-            ];
-
-            const result = validateGeneSpliceSites(geneSequence, introns);
-            expect(result.isValid).toBe(false);
-            expect(result.invalidIntrons.length).toBeGreaterThanOrEqual(1);
-        });
-    });
 
     describe('edge cases', () => {
         test('handles overlapping GT and AG sequences', () => {

@@ -2,7 +2,8 @@ import { RNA } from '../model/nucleic-acids/RNA';
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA';
 import { Gene } from '../model/nucleic-acids/Gene';
 import { GenomicRegion } from '../types/genomic-region';
-import { ValidationResult, success, failure, isSuccess, isFailure } from '../types/validation-result';
+import { ValidationResult, success, failure, isFailure } from '../types/validation-result';
+import { START_CODON } from './nucleic-acids';
 
 /**
  * Splices a pre-mRNA by removing introns and joining exons to produce mature mRNA.
@@ -103,8 +104,8 @@ export function validateReadingFrame(rna: RNA, expectedStart?: number): Validati
     if (expectedStart === 0) {
         if (startPos + 3 <= sequence.length) {
             const startCodon = sequence.substring(startPos, startPos + 3);
-            if (startCodon !== 'AUG') {
-                return failure(`Expected start codon AUG at position ${startPos}, found ${startCodon}`);
+            if (startCodon !== START_CODON) {
+                return failure(`Expected start codon ${START_CODON} at position ${startPos}, found ${startCodon}`);
             }
         }
     }
@@ -112,62 +113,3 @@ export function validateReadingFrame(rna: RNA, expectedStart?: number): Validati
     return success(true);
 }
 
-/**
- * Analyzes the quality of a splicing operation by checking various metrics.
- */
-export interface SplicingQualityMetrics {
-    readonly exonCount: number;
-    readonly totalExonLength: number;
-    readonly averageExonLength: number;
-    readonly hasValidReadingFrame: boolean;
-    readonly hasStartCodon: boolean;
-    readonly hasStopCodon: boolean;
-    readonly frameshiftRisk: boolean;
-}
-
-/**
- * Performs quality analysis of a spliced RNA sequence.
- */
-export function analyzeSplicingQuality(rna: RNA, codingStart?: number): SplicingQualityMetrics {
-    const sequence = rna.getSequence();
-    const startPos = codingStart ?? 0;
-
-    // Basic metrics
-    const exonCount = 1; // This would be enhanced with more sophisticated exon detection
-    const totalExonLength = sequence.length;
-    const averageExonLength = totalExonLength / exonCount;
-
-    // Reading frame analysis
-    const readingFrameValid = isSuccess(validateReadingFrame(rna, startPos));
-
-    // Look for start codon
-    let hasStartCodon = false;
-    if (startPos + 2 < sequence.length) {
-        const startCodon = sequence.substring(startPos, startPos + 3);
-        hasStartCodon = startCodon === 'AUG';
-    }
-
-    // Look for stop codons
-    const stopCodons = ['UAA', 'UAG', 'UGA'];
-    let hasStopCodon = false;
-    for (let i = startPos; i < sequence.length - 2; i += 3) {
-        const codon = sequence.substring(i, i + 3);
-        if (stopCodons.includes(codon)) {
-            hasStopCodon = true;
-            break;
-        }
-    }
-
-    // Check for frameshift risk (very basic check)
-    const frameshiftRisk = !readingFrameValid || (!hasStartCodon && startPos === 0);
-
-    return {
-        exonCount,
-        totalExonLength,
-        averageExonLength,
-        hasValidReadingFrame: readingFrameValid,
-        hasStartCodon,
-        hasStopCodon,
-        frameshiftRisk
-    };
-}

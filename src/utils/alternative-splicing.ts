@@ -1,8 +1,10 @@
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA';
 import { RNA } from '../model/nucleic-acids/RNA';
+import { DNA } from '../model/nucleic-acids/DNA';
 import { Gene } from '../model/nucleic-acids/Gene';
 import { RNASubType } from '../enums/rna-sub-type';
 import { ValidationResult, success, failure } from '../types/validation-result';
+import { convertToRNA, START_CODON, STOP_CODONS } from './nucleic-acids';
 import {
     SpliceVariant,
     SplicingOutcome,
@@ -46,10 +48,8 @@ export function spliceRNAWithVariant(
         const variantSequence = sourceGene.getVariantSequence(variant);
 
         // Convert DNA to RNA
-        const rnaSequence = variantSequence.replace(/T/g, 'U');
-
-        // Create mature RNA
-        const matureRNA = new RNA(rnaSequence, RNASubType.M_RNA);
+        const variantDNA = new DNA(variantSequence);
+        const matureRNA = convertToRNA(variantDNA, RNASubType.M_RNA);
 
         return success(matureRNA);
     } catch (error) {
@@ -187,19 +187,19 @@ export function validateSpliceVariant(
     if (opts.validateCodons) {
         try {
             const variantSequence = gene.getVariantSequence(variant);
-            const rnaSequence = variantSequence.replace(/T/g, 'U');
+            const variantDNA = new DNA(variantSequence);
+            const rnaSequence = convertToRNA(variantDNA).getSequence();
 
             if (rnaSequence.length >= 3) {
                 const startCodon = rnaSequence.substring(0, 3);
-                if (startCodon !== 'AUG') {
-                    return failure(`Variant '${variant.name}' does not start with start codon AUG, found '${startCodon}'`);
+                if (startCodon !== START_CODON) {
+                    return failure(`Variant '${variant.name}' does not start with start codon ${START_CODON}, found '${startCodon}'`);
                 }
             }
 
             if (rnaSequence.length >= 3) {
                 const lastCodon = rnaSequence.substring(rnaSequence.length - 3);
-                const stopCodons = ['UAA', 'UAG', 'UGA'];
-                if (!stopCodons.includes(lastCodon)) {
+                if (!STOP_CODONS.includes(lastCodon)) {
                     return failure(`Variant '${variant.name}' does not end with stop codon, found '${lastCodon}'`);
                 }
             }

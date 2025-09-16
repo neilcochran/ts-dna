@@ -141,14 +141,3 @@ export function findPotentialSpliceSites(
     return potentialIntrons.sort((a, b) => a.start - b.start);
 }
 
-/**
- * Validates that a Gene has valid splice sites at all intron boundaries.
- * This is a convenience function for validating Gene objects.
- *
- * @param geneSequence - The complete gene sequence
- * @param introns - Array of intron regions from the gene
- * @returns Validation result with detailed information
- */
-export function validateGeneSpliceSites(geneSequence: string, introns: GenomicRegion[]) {
-    return validateSpliceSites(geneSequence, introns);
-}

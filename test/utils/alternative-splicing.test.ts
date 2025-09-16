@@ -303,7 +303,7 @@ describe('Alternative Splicing Functions', () => {
                 variants: [
                     SpliceVariantPatterns.fullLength('full-length', 4),      // 24bp = 8 amino acids
                     SpliceVariantPatterns.exonSkipping('skip-exon2', 4, [1]), // 18bp = 6 amino acids
-                    SpliceVariantPatterns.truncation('short', 2)              // 12bp = 4 amino acids
+                    SpliceVariantPatterns.exonSkipping('short', 4, [2])       // 18bp = 6 amino acids (skip middle exon)
                 ]
             };
 
@@ -315,9 +315,10 @@ describe('Alternative Splicing Functions', () => {
 
             expect(result.success).toBe(true);
             if (result.success) {
-                expect(result.data).toHaveLength(1);
-                expect(result.data[0].getVariantName()).toBe('skip-exon2');
-                expect(result.data[0].getAminoAcidCount()).toBe(6);
+                expect(result.data).toHaveLength(2);
+                const variantNames = result.data.map(outcome => outcome.getVariantName()).sort();
+                expect(variantNames).toEqual(['short', 'skip-exon2']);
+                expect(result.data.every(outcome => outcome.getAminoAcidCount() === 6)).toBe(true);
             }
         });
 
@@ -326,7 +327,7 @@ describe('Alternative Splicing Functions', () => {
                 geneId: 'TEST_GENE',
                 defaultVariant: 'short',
                 variants: [
-                    SpliceVariantPatterns.truncation('short', 2) // 12bp = 4 amino acids
+                    SpliceVariantPatterns.minimal('short', [0, 3]) // Only first and last exon = 4 amino acids
                 ]
             };
 

@@ -3,8 +3,7 @@ import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
 import { Gene } from '../../src/model/nucleic-acids/Gene';
 import {
     spliceRNA,
-    validateReadingFrame,
-    analyzeSplicingQuality
+    validateReadingFrame
 } from '../../src/utils/rna-processing';
 import { GenomicRegion } from '../../src/types/genomic-region';
 import { isSuccess, isFailure } from '../../src/types/validation-result';
@@ -157,64 +156,4 @@ describe('rna-processing', () => {
         });
     });
 
-    describe('analyzeSplicingQuality', () => {
-        test('analyzes basic splicing quality metrics', () => {
-            const rna = new RNA('AUGAAACCCGGGUAA');
-            const metrics = analyzeSplicingQuality(rna);
-
-            expect(metrics.exonCount).toBe(1);
-            expect(metrics.totalExonLength).toBe(15);
-            expect(metrics.averageExonLength).toBe(15);
-            expect(metrics.hasValidReadingFrame).toBe(true);
-            expect(metrics.hasStartCodon).toBe(true);
-            expect(metrics.hasStopCodon).toBe(true); // UAA is stop codon
-            expect(metrics.frameshiftRisk).toBe(false);
-        });
-
-        test('detects missing start codon', () => {
-            const rna = new RNA('AAGAAACCCGGGUAA');
-            const metrics = analyzeSplicingQuality(rna);
-
-            expect(metrics.hasStartCodon).toBe(false);
-            expect(metrics.frameshiftRisk).toBe(true);
-        });
-
-        test('detects missing stop codon', () => {
-            const rna = new RNA('AUGAAACCCGGGAAA');
-            const metrics = analyzeSplicingQuality(rna);
-
-            expect(metrics.hasStopCodon).toBe(false);
-        });
-
-        test('detects reading frame problems', () => {
-            const rna = new RNA('AUGAAACCCGGGUU'); // 14 nucleotides (not divisible by 3)
-            const metrics = analyzeSplicingQuality(rna);
-
-            expect(metrics.hasValidReadingFrame).toBe(false);
-            expect(metrics.frameshiftRisk).toBe(true);
-        });
-
-        test('analyzes quality with custom coding start', () => {
-            const rna = new RNA('UUUAUGAAACCCGGGUAA');
-            const metrics = analyzeSplicingQuality(rna, 3);
-
-            expect(metrics.hasStartCodon).toBe(true);
-            expect(metrics.hasValidReadingFrame).toBe(true);
-            expect(metrics.frameshiftRisk).toBe(false);
-        });
-
-        test('detects all three stop codons', () => {
-            // Test UAA
-            const rna1 = new RNA('AUGAAACCCGGGUAA');
-            expect(analyzeSplicingQuality(rna1).hasStopCodon).toBe(true);
-
-            // Test UAG
-            const rna2 = new RNA('AUGAAACCCGGGUAG');
-            expect(analyzeSplicingQuality(rna2).hasStopCodon).toBe(true);
-
-            // Test UGA
-            const rna3 = new RNA('AUGAAACCCGGGUGA');
-            expect(analyzeSplicingQuality(rna3).hasStopCodon).toBe(true);
-        });
-    });
 });

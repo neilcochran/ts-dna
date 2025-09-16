@@ -9,7 +9,6 @@ import {
 import {
     isDNA,
     isRNA,
-    convertNucleicAcid,
     convertToDNA,
     convertToRNA,
     getDNABaseComplement,
@@ -398,13 +397,6 @@ test('invalid RNA sequence -> isValidNucleicAcid', () => {
     expect(isValidNucleicAcid(TestUtils.DNA_SEQ, NucleicAcidType.RNA)).toEqual(false);
 });
 
-test('convert DNA -> RNA convertNucleicAcid', () => {
-    expect(convertNucleicAcid(new DNA(TestUtils.DNA_SEQ))).toEqual(new RNA(TestUtils.RNA_SEQ));
-});
-
-test('convert RNA -> DNA convertNucleicAcid', () => {
-    expect(convertNucleicAcid(new RNA(TestUtils.RNA_SEQ))).toEqual(new DNA(TestUtils.DNA_SEQ));
-});
 
 test('convert DNA -> RNA convertToRNA', () => {
     expect(convertToRNA(new DNA(TestUtils.DNA_SEQ))).toEqual(new RNA(TestUtils.RNA_SEQ));

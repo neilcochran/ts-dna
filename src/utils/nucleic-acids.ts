@@ -126,7 +126,7 @@ export const getNucleotidePatternComplement = (nucleotidePattern: NucleotidePatt
  *
  * @internal
  */
-export const getNucleotidePattern = (pattern: string, getComplement = false, getRegex = true): RegExp | string => {
+const getNucleotidePattern = (pattern: string, getComplement = false, getRegex = true): RegExp | string => {
     if(pattern === '') {
         throw new InvalidNucleotidePatternError('Nucleotide pattern cannot be empty.', '');
     }
@@ -204,31 +204,6 @@ export {
     getRNABaseComplement
 } from './validation';
 
-/**
- * Given a nucleic acid, convert it to the opposite nucleic acid type
- *
- * @param nucleicAcid - The nucleic acid to convert
- *
- * @returns The equivalent DNA if the input was RNA, or the equivalent RNA if the input was DNA
- *
- * @example
- * ```typescript
- *  //Convert RNA to DNA
- *  convertNucleicAcid(new RNA('AUG')); //returns DNA with the sequence 'ATG'
- *
- *  //Convert DNA to RNA
- *  convertNucleicAcid(new DNA('ATG')); //returns RNA with a sequence of 'AUG'
- * ```
- */
-export const convertNucleicAcid = (nucleicAcid: NucleicAcid): DNA | RNA => {
-    const sequence = nucleicAcid.getSequence();
-    if(nucleicAcid.nucleicAcidType === NucleicAcidType.DNA) {
-        return new RNA(sequence.replaceAll('T', 'U'));
-    }
-    else {
-        return new DNA(sequence.replaceAll('U', 'T'));
-    }
-};
 
 /**
  * Convert the given DNA into RNA, optionally providing an RNA sub type
@@ -287,7 +262,15 @@ export const STOP_CODON_UAG = 'UAG' as const;
 export const STOP_CODON_UGA = 'UGA' as const;
 
 /**
+ * Start codon AUG - codes for methionine and initiates translation
+ */
+export const START_CODON = 'AUG' as const;
+
+/**
  * Array of all stop codons
  */
-export const STOP_CODONS = [STOP_CODON_UAA, STOP_CODON_UAG, STOP_CODON_UGA] as const;
+export const STOP_CODONS = [STOP_CODON_UAA, STOP_CODON_UAG, STOP_CODON_UGA] as readonly string[];
+
+// Export for internal use by model classes
+export { getNucleotidePattern };
 

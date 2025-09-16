@@ -49,9 +49,9 @@ export {
     getNucleotidePatternSymbolComplement,
     getNucleotidePatternComplement,
     isValidNucleicAcid,
-    convertNucleicAcid,
     convertToDNA,
     convertToRNA,
+    START_CODON,
     STOP_CODON_UAA,
     STOP_CODON_UAG,
     STOP_CODON_UGA,
@@ -66,7 +66,6 @@ export {
 export {
     validateSpliceSites,
     findPotentialSpliceSites,
-    validateGeneSpliceSites,
     SPLICE_DONOR_SEQUENCES,
     SPLICE_ACCEPTOR_SEQUENCES
 } from './utils/splice-sites';
@@ -79,8 +78,6 @@ export {
 
 export {
     transcribe,
-    dnaToRNA,
-    simpleTranscribe,
     TranscriptionOptions
 } from './utils/transcription';
 
@@ -113,9 +110,7 @@ export {
 
 export {
     spliceRNA,
-    validateReadingFrame,
-    analyzeSplicingQuality,
-    SplicingQualityMetrics
+    validateReadingFrame
 } from './utils/rna-processing';
 
 export {
@@ -129,9 +124,7 @@ export {
     has3PrimePolyATail,
     get3PrimePolyATailLength,
     getCoreSequence,
-    isFullyProcessed,
-    analyzeRNAProcessing,
-    RNAProcessingInfo
+    isFullyProcessed
 } from './utils/rna-modifications';
 
 export {
