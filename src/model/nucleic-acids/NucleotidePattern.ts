@@ -176,4 +176,112 @@ export class NucleotidePattern {
             return false;
         }
     }
+
+    /**
+     * Tests if a nucleic acid sequence contains the pattern.
+     *
+     * @param nucleicAcid - The nucleic acid to test
+     * @returns True if the pattern is found in the sequence
+     */
+    test(nucleicAcid: NucleicAcid): boolean {
+        const sequence = nucleicAcid.getSequence();
+        return this.patternRegex.test(sequence);
+    }
+
+    /**
+     * Tests if a string sequence contains the pattern.
+     *
+     * @param sequence - The sequence string to test
+     * @returns True if the pattern is found in the sequence
+     */
+    testString(sequence: string): boolean {
+        return this.patternRegex.test(sequence);
+    }
+
+    /**
+     * Replaces all occurrences of the pattern in a nucleic acid sequence.
+     *
+     * @param nucleicAcid - The nucleic acid containing the sequence to modify
+     * @param replacement - The replacement string
+     * @returns The modified sequence string
+     */
+    replace(nucleicAcid: NucleicAcid, replacement: string): string {
+        const sequence = nucleicAcid.getSequence();
+        return sequence.replace(this.patternRegex, replacement);
+    }
+
+    /**
+     * Replaces all occurrences of the pattern in a string sequence.
+     *
+     * @param sequence - The sequence string to modify
+     * @param replacement - The replacement string
+     * @returns The modified sequence string
+     */
+    replaceString(sequence: string, replacement: string): string {
+        return sequence.replace(this.patternRegex, replacement);
+    }
+
+    /**
+     * Splits a nucleic acid sequence by the pattern.
+     *
+     * @param nucleicAcid - The nucleic acid to split
+     * @returns Array of sequence parts split by the pattern
+     */
+    split(nucleicAcid: NucleicAcid): string[] {
+        const sequence = nucleicAcid.getSequence();
+        return sequence.split(this.patternRegex);
+    }
+
+    /**
+     * Splits a string sequence by the pattern.
+     *
+     * @param sequence - The sequence string to split
+     * @returns Array of sequence parts split by the pattern
+     */
+    splitString(sequence: string): string[] {
+        return sequence.split(this.patternRegex);
+    }
+
+    /**
+     * Finds all occurrences of the pattern within a string sequence
+     *
+     * @param sequence - The sequence string to search within
+     *
+     * @returns Array of match objects with start position, end position, and matched sequence
+     *
+     * @example
+     * ```typescript
+     *  const pattern = new NucleotidePattern('RY');
+     *  const matches = pattern.findMatchesString('ATGAGCGATC');
+     *  // Returns: [{ start: 2, end: 4, match: 'GA' }, { start: 5, end: 7, match: 'GC' }]
+     * ```
+     */
+    findMatchesString(sequence: string): Array<{ start: number; end: number; match: string }> {
+        if (!sequence) {
+            return [];
+        }
+
+        const matches: Array<{ start: number; end: number; match: string }> = [];
+        const globalRegex = new RegExp(this.patternRegex.source, 'g');
+        let match;
+
+        while ((match = globalRegex.exec(sequence)) !== null) {
+            matches.push({
+                start: match.index,
+                end: match.index + match[0].length,
+                match: match[0]
+            });
+        }
+
+        return matches;
+    }
+
+    /**
+     * Gets the underlying RegExp object for advanced usage.
+     *
+     * @returns The compiled regular expression
+     */
+    getRegex(): RegExp {
+        return this.patternRegex;
+    }
 }

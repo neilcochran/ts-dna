@@ -35,7 +35,10 @@ export {
     GenomicRegion,
     isValidGenomicRegion,
     regionsOverlap,
-    validateNonOverlappingRegions
+    validateNonOverlappingRegions,
+    validateExons,
+    buildOptimizedIntervalTree,
+    IntervalTree
 } from './types/genomic-region';
 
 export {

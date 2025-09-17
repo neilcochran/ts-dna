@@ -1,6 +1,7 @@
 import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { GenomicRegion } from '../../src/types/genomic-region';
 import { InvalidSequenceError } from '../../src/model/errors/InvalidSequenceError';
+import { SIMPLE_TWO_EXON_GENE, THREE_EXON_GENE, SINGLE_EXON_GENE } from '../test-genes';
 
 describe('Gene', () => {
     describe('constructor without name', () => {
@@ -16,31 +17,31 @@ describe('Gene', () => {
         });
 
         test('creates valid gene with multiple exons', () => {
-            const sequence = 'ATGGTCCCAGTTTAAA';
+            const sequence = 'ATGGTCCCAGTTTAAAGGGGGGGGGGGGGGGGGGGGCCCCCC';
             const exons: GenomicRegion[] = [
-                { start: 0, end: 3, name: 'exon1' },
-                { start: 11, end: 16, name: 'exon2' }
+                { start: 0, end: 12, name: 'exon1' },
+                { start: 32, end: 40, name: 'exon2' }
             ];
             const gene = new Gene(sequence, exons);
 
             expect(gene.getExons()).toHaveLength(2);
             expect(gene.getIntrons()).toHaveLength(1);
             expect(gene.getIntrons()[0]).toEqual({
-                start: 3,
-                end: 11,
+                start: 12,
+                end: 32,
                 name: 'intron1'
             });
         });
 
         test('creates valid gene with GT-AG splice sites', () => {
-            const sequence = 'ATGGTCCCAGTTTAAA';  // ATG|GTCCCAG|TTTAAA
+            const sequence = 'ATGGTCCCCCCCCCCCCCCCCCCCCAGTTTAAA';  // ATG|GT...AG|TTTAAA
             const exons: GenomicRegion[] = [
                 { start: 0, end: 3 },    // ATG
-                { start: 11, end: 16 }   // TTTAAA
+                { start: 27, end: 32 }   // TTTAA
             ];
             const gene = new Gene(sequence, exons);
 
-            expect(gene.getIntronSequence(0)).toBe('GTCCCAGT');  // GT...AG intron
+            expect(gene.getIntronSequence(0)).toBe('GTCCCCCCCCCCCCCCCCCCCCAG');  // GT...AG intron (23 bp)
         });
 
         test('throws error with no exons', () => {
@@ -131,10 +132,10 @@ describe('Gene', () => {
     });
 
     describe('exon methods', () => {
-        const sequence = 'ATGGTCCCAGTTTAAA';
+        const sequence = 'ATGGTCCCAGTTTAAAGGGGGGGGGGGGGGGGCCCCCCCC';
         const exons: GenomicRegion[] = [
-            { start: 0, end: 3, name: 'exon1' },
-            { start: 11, end: 16, name: 'exon2' }
+            { start: 0, end: 12, name: 'exon1' },
+            { start: 32, end: 40, name: 'exon2' }
         ];
         let gene: Gene;
 
@@ -145,8 +146,8 @@ describe('Gene', () => {
         test('getExons returns immutable exon array', () => {
             const exonArray = gene.getExons();
             expect(exonArray).toHaveLength(2);
-            expect(exonArray[0]).toEqual({ start: 0, end: 3, name: 'exon1' });
-            expect(exonArray[1]).toEqual({ start: 11, end: 16, name: 'exon2' });
+            expect(exonArray[0]).toEqual({ start: 0, end: 12, name: 'exon1' });
+            expect(exonArray[1]).toEqual({ start: 32, end: 40, name: 'exon2' });
 
             // Verify immutability - attempting to modify should throw
             expect(() => {
@@ -156,8 +157,8 @@ describe('Gene', () => {
         });
 
         test('getExonSequence returns correct sequence', () => {
-            expect(gene.getExonSequence(0)).toBe('ATG');
-            expect(gene.getExonSequence(1)).toBe('TTAAA');  // 11-16 in ATGGTCCCAGTTTAAA
+            expect(gene.getExonSequence(0)).toBe('ATGGTCCCAGTT');
+            expect(gene.getExonSequence(1)).toBe('CCCCCCCC');
         });
 
         test('getExonSequence throws error for invalid index', () => {
@@ -166,17 +167,13 @@ describe('Gene', () => {
         });
 
         test('getMatureSequence concatenates exons', () => {
-            expect(gene.getMatureSequence()).toBe('ATGTTAAA');  // ATG + TTAAA
+            expect(gene.getMatureSequence()).toBe('ATGGTCCCAGTTCCCCCCCC');  // ATGGTCCCAGTT + CCCCCCCC
         });
     });
 
     describe('intron methods', () => {
-        const sequence = 'ATGGTCCCAGTTTAAACCCGGGAAATAG';
-        const exons: GenomicRegion[] = [
-            { start: 0, end: 3, name: 'exon1' },     // ATG
-            { start: 11, end: 16, name: 'exon2' },   // TTTAA
-            { start: 22, end: 28, name: 'exon3' }    // AATAG
-        ];
+        const sequence = THREE_EXON_GENE.dnaSequence;
+        const exons = THREE_EXON_GENE.exons;
         let gene: Gene;
 
         beforeEach(() => {
@@ -186,13 +183,13 @@ describe('Gene', () => {
         test('getIntrons returns calculated introns', () => {
             const introns = gene.getIntrons();
             expect(introns).toHaveLength(2);
-            expect(introns[0]).toEqual({ start: 3, end: 11, name: 'intron1' });
-            expect(introns[1]).toEqual({ start: 16, end: 22, name: 'intron2' });
+            expect(introns[0]).toEqual({ start: 6, end: 26, name: 'intron1' });
+            expect(introns[1]).toEqual({ start: 32, end: 52, name: 'intron2' });
         });
 
         test('getIntronSequence returns correct sequence', () => {
-            expect(gene.getIntronSequence(0)).toBe('GTCCCAGT');  // 3-11
-            expect(gene.getIntronSequence(1)).toBe('CCCGGG');    // 16-22
+            expect(gene.getIntronSequence(0)).toBe('GTAAGGGGGGGGGGGGGGAG');  // 6-26 (20bp intron)
+            expect(gene.getIntronSequence(1)).toBe('GTAAGGGGGGGGGGGGGGAG');  // 32-52 (20bp intron)
         });
 
         test('getIntronSequence throws error for invalid index', () => {
@@ -203,38 +200,27 @@ describe('Gene', () => {
 
     describe('complex gene structures', () => {
         test('handles multiple non-adjacent exons correctly', () => {
-            const sequence = 'ATGGTAAAGCCCAGTTTAAACCCGGGAAATAG';
-            const exons: GenomicRegion[] = [
-                { start: 0, end: 3 },    // ATG
-                { start: 7, end: 12 },   // GCCCAG
-                { start: 17, end: 22 },  // ACCCGG
-                { start: 25, end: 32 }   // AATAG
-            ];
-            const gene = new Gene(sequence, exons);
-
-            expect(gene.getExons()).toHaveLength(4);
-            expect(gene.getIntrons()).toHaveLength(3);
-            expect(gene.getMatureSequence()).toBe('ATGAGCCCAAACCGAAATAG');
-
-            // Verify intron boundaries
-            expect(gene.getIntrons()[0]).toEqual({ start: 3, end: 7, name: 'intron1' });
-            expect(gene.getIntrons()[1]).toEqual({ start: 12, end: 17, name: 'intron2' });
-            expect(gene.getIntrons()[2]).toEqual({ start: 22, end: 25, name: 'intron3' });
-        });
-
-        test('handles adjacent exons (no intron between them)', () => {
-            const sequence = 'ATGCCCGGGAAATTT';
-            const exons: GenomicRegion[] = [
-                { start: 0, end: 6 },    // ATGCCC
-                { start: 6, end: 9 },    // GGG (adjacent to first)
-                { start: 12, end: 15 }   // TTT
-            ];
+            const sequence = THREE_EXON_GENE.dnaSequence;
+            const exons = THREE_EXON_GENE.exons;
             const gene = new Gene(sequence, exons);
 
             expect(gene.getExons()).toHaveLength(3);
-            expect(gene.getIntrons()).toHaveLength(1);  // Only one gap
-            expect(gene.getIntrons()[0]).toEqual({ start: 9, end: 12, name: 'intron1' });
-            expect(gene.getMatureSequence()).toBe('ATGCCCGGGTTT');
+            expect(gene.getIntrons()).toHaveLength(2);
+            expect(gene.getMatureSequence()).toBe('ATGAAATTCGTCTAGAAA');
+
+            // Verify intron boundaries
+            expect(gene.getIntrons()[0]).toEqual({ start: 6, end: 26, name: 'intron1' });
+            expect(gene.getIntrons()[1]).toEqual({ start: 32, end: 52, name: 'intron2' });
+        });
+
+        test('handles single exon gene (no introns)', () => {
+            const sequence = SINGLE_EXON_GENE.dnaSequence;
+            const exons = SINGLE_EXON_GENE.exons;
+            const gene = new Gene(sequence, exons);
+
+            expect(gene.getExons()).toHaveLength(1);
+            expect(gene.getIntrons()).toHaveLength(0);
+            expect(gene.getMatureSequence()).toBe('ATGAAACCCGGGTAG');
         });
     });
 
@@ -250,29 +236,26 @@ describe('Gene', () => {
         });
 
         test('exons can be provided in any order', () => {
-            const sequence = 'ATGGTCCCAGTTTAAA';
+            const sequence = SIMPLE_TWO_EXON_GENE.dnaSequence;
             const exons: GenomicRegion[] = [
-                { start: 11, end: 16, name: 'exon2' },   // Second exon first
-                { start: 0, end: 3, name: 'exon1' }      // First exon second
+                { start: 26, end: 34, name: 'exon2' },   // Second exon first
+                { start: 0, end: 6, name: 'exon1' }      // First exon second
             ];
             const gene = new Gene(sequence, exons);
 
-            expect(gene.getIntrons()[0]).toEqual({ start: 3, end: 11, name: 'intron1' });
-            expect(gene.getMatureSequence()).toBe('ATGTTAAA');
+            expect(gene.getIntrons()[0]).toEqual({ start: 6, end: 26, name: 'intron1' });
+            expect(gene.getMatureSequence()).toBe('ATGAAATTCTAGGG');
         });
 
-        test('minimal exon sizes', () => {
-            const sequence = 'AGTCCCAGT';
-            const exons: GenomicRegion[] = [
-                { start: 0, end: 1 },    // Single nucleotide exon
-                { start: 8, end: 9 }     // Single nucleotide exon
-            ];
+        test('minimal valid exon sizes', () => {
+            const sequence = SIMPLE_TWO_EXON_GENE.dnaSequence;
+            const exons = SIMPLE_TWO_EXON_GENE.exons;
             const gene = new Gene(sequence, exons);
 
-            expect(gene.getExonSequence(0)).toBe('A');
-            expect(gene.getExonSequence(1)).toBe('T');
-            expect(gene.getMatureSequence()).toBe('AT');
-            expect(gene.getIntronSequence(0)).toBe('GTCCCAG');
+            expect(gene.getExonSequence(0)).toBe('ATGAAA');  // 6bp exon
+            expect(gene.getExonSequence(1)).toBe('TTCTAGGG');  // 8bp exon
+            expect(gene.getMatureSequence()).toBe('ATGAAATTCTAGGG');
+            expect(gene.getIntronSequence(0)).toBe('GTATGCCCAAGTTTCGGGAG');  // 20bp intron
         });
     });
 
@@ -402,11 +385,8 @@ describe('Gene', () => {
         });
 
         test('gene name persistence through operations', () => {
-            const sequence = 'ATGGTCCCAGTTTAAA';
-            const exons: GenomicRegion[] = [
-                { start: 0, end: 3, name: 'exon1' },
-                { start: 11, end: 16, name: 'exon2' }
-            ];
+            const sequence = SIMPLE_TWO_EXON_GENE.dnaSequence;
+            const exons = SIMPLE_TWO_EXON_GENE.exons;
             const geneName = 'PersistentGene';
             const gene = new Gene(sequence, exons, geneName);
 

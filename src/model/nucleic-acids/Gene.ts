@@ -1,5 +1,5 @@
 import { DNA } from './DNA';
-import { GenomicRegion, isValidGenomicRegion, validateNonOverlappingRegions } from '../../types/genomic-region';
+import { GenomicRegion, validateExons } from '../../types/genomic-region';
 import { ValidationResult } from '../../types/validation-result';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type';
@@ -46,7 +46,7 @@ export class Gene extends DNA {
         super(sequence);
 
         // Validate exons
-        const exonValidation = this.validateExons(exons, sequence.length);
+        const exonValidation = validateExons(exons, sequence.length);
         if (!exonValidation.success) {
             throw new InvalidSequenceError(exonValidation.error, sequence, NucleicAcidType.DNA);
         }
@@ -216,37 +216,6 @@ export class Gene extends DNA {
             .join('');
     }
 
-    /**
-     * Validates exon regions to ensure they are valid and non-overlapping.
-     * @param exons - Array of GenomicRegion objects to validate
-     * @param sequenceLength - Length of the gene sequence for boundary validation
-     * @returns ValidationResult indicating success or failure with error message
-     */
-    private validateExons(exons: GenomicRegion[], sequenceLength: number): ValidationResult<void> {
-        if (exons.length === 0) {
-            return { success: false as const, error: 'Gene must have at least one exon' };
-        }
-
-        // Validate individual exons
-        for (let i = 0; i < exons.length; i++) {
-            const exon = exons[i];
-
-            if (!isValidGenomicRegion(exon)) {
-                return { success: false as const, error: `Exon ${i} has invalid coordinates: start=${exon.start}, end=${exon.end}` };
-            }
-
-            if (exon.end > sequenceLength) {
-                return { success: false as const, error: `Exon ${i} extends beyond sequence length: end=${exon.end}, sequence length=${sequenceLength}` };
-            }
-        }
-
-        // Validate non-overlapping using optimized algorithm
-        if (!validateNonOverlappingRegions(exons)) {
-            return { success: false as const, error: 'Exons must not overlap' };
-        }
-
-        return { success: true as const, data: undefined };
-    }
 
     /**
      * Calculates intron regions from exon definitions.
