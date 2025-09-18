@@ -23,10 +23,16 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "lint": "node scripts/lint.js",
-    "test": "node scripts/test.js",
-    "doc": "node scripts/documentation.js",
-    "build": "node scripts/build.js"
+    "lint": "eslint --ext .ts --fix . && cspell lint --unique --words-only \"src/**/*\"",
+    "lint:fix": "eslint --ext .ts --fix .",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "doc": "rimraf doc/ && typedoc --includeVersion --readme none --out doc src/",
+    "build": "node scripts/build.js",
+    "clean": "rimraf dist/ dist-cjs/ doc/",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\""
   },
   "repository": {
     "type": "git",
