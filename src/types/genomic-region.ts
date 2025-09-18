@@ -386,8 +386,9 @@ export class IntervalTree {
 
 /**
  * Node in the interval tree for efficient overlap detection.
+ * @internal This is an internal implementation detail and should not be used directly.
  */
-class IntervalNode {
+export class IntervalNode {
   interval: GenomicRegion;
   maxEnd: number;
   left: IntervalNode | null = null;
