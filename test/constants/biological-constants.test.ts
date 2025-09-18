@@ -49,7 +49,7 @@ import {
  * - Various research papers cited in individual tests
  */
 describe('Biological Constants Validation', () => {
-  describe('Codon and Genetic Code Constants', () => {
+    describe('Codon and Genetic Code Constants', () => {
         test('CODON_LENGTH should be 3 nucleotides', () => {
             // The genetic code is universally based on triplet codons
             // Reference: Crick et al. (1961) Nature, "General nature of the genetic code for proteins"
@@ -144,7 +144,7 @@ describe('Biological Constants Validation', () => {
             const otherSignals = Object.entries(POLYA_SIGNALS).filter(
                 ([signal]) => signal !== 'AAUAAA' && signal !== 'AUUAAA',
             );
-            otherSignals.forEach(([signal, strength]) => {
+            otherSignals.forEach(([_signal, strength]) => {
                 expect(strength).toBeLessThan(POLYA_SIGNALS.AUUAAA);
             });
         });
