@@ -14,7 +14,6 @@ import {
   getDNABaseComplement,
   getRNABaseComplement,
   isValidNucleicAcid,
-  isValidNucleotidePattern,
   getNucleotidePatternComplement,
   STOP_CODON_UAA,
   STOP_CODON_UAG,
@@ -51,7 +50,7 @@ test('create valid NucleotidePatternSymbols and check matching bases regex', () 
 });
 
 test('create valid NucleotidePattern with heavy regex use', () => {
-  expect(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN).patternRegex.source).toEqual(
+  expect(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN).getRegex().source).toEqual(
     TestUtils.NUCLEOTIDE_PATTERN_REGEX,
   );
 });
@@ -93,22 +92,6 @@ test('get complement NucleotidePattern (regex)', () => {
   expect(
     getNucleotidePatternComplement(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN)),
   ).toEqual(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN_COMP));
-});
-
-test('pass valid pattern string (all symbols) to isValidNucleotidePattern', () => {
-  expect(isValidNucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS)).toEqual(true);
-});
-
-test('pass valid pattern string (heavy regex) to isValidNucleotidePattern', () => {
-  expect(isValidNucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN)).toEqual(true);
-});
-
-test('pass invalid empty pattern string to isValidNucleotidePattern', () => {
-  expect(isValidNucleotidePattern('')).toEqual(false);
-});
-
-test('pass invalid pattern string to isValidNucleotidePattern', () => {
-  expect(isValidNucleotidePattern('invalid')).toEqual(false);
 });
 
 test("ensure each base for each symbol's getMatchingBases() matches", () => {

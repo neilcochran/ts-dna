@@ -44,7 +44,6 @@ export { validateNucleicAcid } from './utils/validation';
 export {
   isDNA,
   isRNA,
-  isValidNucleotidePattern,
   getNucleotidePatternSymbolComplement,
   getNucleotidePatternComplement,
   isValidNucleicAcid,

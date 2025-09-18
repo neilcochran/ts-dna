@@ -302,9 +302,9 @@ describe('NucleotidePattern Core Functionality', () => {
 
     test('patternRegex is accessible', () => {
       const pattern = new NucleotidePattern('ATGC');
-      expect(pattern.patternRegex).toBeInstanceOf(RegExp);
-      expect(pattern.patternRegex.test('ATGC')).toBe(true);
-      expect(pattern.patternRegex.test('CGTA')).toBe(false);
+      expect(pattern.getRegex()).toBeInstanceOf(RegExp);
+      expect(pattern.testString('ATGC')).toBe(true);
+      expect(pattern.testString('CGTA')).toBe(false);
     });
   });
 

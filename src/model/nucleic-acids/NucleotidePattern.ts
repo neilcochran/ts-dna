@@ -1,6 +1,10 @@
-import { getNucleotidePattern, getComplementSequence } from '../../utils/nucleic-acids';
+import {
+  getComplementSequence,
+  getNucleotidePatternSymbolComplement,
+} from '../../utils/nucleic-acids';
 import { InvalidNucleotidePatternError } from '../errors/InvalidNucleotidePatternError';
 import { NucleicAcid } from './NucleicAcid';
+import { NucleotidePatternSymbol } from './NucleotidePatternSymbol';
 
 /**
  * A class to represent patterns comprised of nucleotide IUPAC notation symbols.
@@ -12,7 +16,7 @@ import { NucleicAcid } from './NucleicAcid';
  * @see {@link https://en.wikipedia.org/wiki/Nucleic_acid_notation#IUPAC_notation|More info on IUPAC notation}
  */
 export class NucleotidePattern {
-  public readonly patternRegex: RegExp;
+  private readonly patternRegex: RegExp;
   public readonly pattern: string;
 
   /**
@@ -23,7 +27,7 @@ export class NucleotidePattern {
    */
   constructor(pattern: string) {
     try {
-      this.patternRegex = getNucleotidePattern(pattern) as RegExp;
+      this.patternRegex = NucleotidePattern.getNucleotidePattern(pattern) as RegExp;
     } catch (error) {
       throw new InvalidNucleotidePatternError(`Invalid nucleotide pattern: ${pattern}`, pattern);
     }
@@ -173,7 +177,9 @@ export class NucleotidePattern {
 
     // Create a new pattern from the reverse complement and test it
     try {
-      const rcPatternRegex = getNucleotidePattern(reverseComplementPattern) as RegExp;
+      const rcPatternRegex = NucleotidePattern.getNucleotidePattern(
+        reverseComplementPattern,
+      ) as RegExp;
       return rcPatternRegex.test(originalSequence);
     } catch {
       return false;
@@ -286,5 +292,68 @@ export class NucleotidePattern {
    */
   getRegex(): RegExp {
     return this.patternRegex;
+  }
+
+  /**
+   * Creates a NucleotidePattern representing the complement of the given pattern.
+   *
+   * @param nucleotidePattern - The pattern to get the complement of
+   * @returns A new NucleotidePattern representing the complement
+   */
+  static createComplement(nucleotidePattern: NucleotidePattern): NucleotidePattern {
+    const complementPattern = NucleotidePattern.getNucleotidePattern(
+      nucleotidePattern.pattern,
+      true,
+      false,
+    ) as string;
+    return new NucleotidePattern(complementPattern);
+  }
+
+  /**
+   * Internal method to convert IUPAC nucleotide patterns to regular expressions.
+   *
+   * @param pattern - The IUPAC nucleotide pattern string
+   * @param getComplement - Whether to get the complement pattern
+   * @param getRegex - Whether to return RegExp (true) or string (false)
+   * @returns Regular expression or string representation
+   *
+   * @throws {@link InvalidNucleotidePatternError}
+   * Thrown if the pattern input contains invalid alpha characters (must be a valid IUPAC nucleotide symbol) or is not a valid regex
+   */
+  private static getNucleotidePattern(
+    pattern: string,
+    getComplement = false,
+    getRegex = true,
+  ): RegExp | string {
+    if (pattern === '') {
+      throw new InvalidNucleotidePatternError('Nucleotide pattern cannot be empty.', '');
+    }
+    let result = '';
+    for (let i = 0; i < pattern.length; i++) {
+      const currChar = pattern[i];
+      //check if it's an alpha character. If so, it either has to be a valid IUPAC nucleotide symbol or part of an escape sequence
+      if (/[a-zA-Z]/.test(currChar)) {
+        const isValidNucleotideSymbol = /^[AaTtCcGgUuRrYyKkMmSsWwBbVvDdHhNn]$/.test(currChar);
+        const isEscapeSeq = i > 0 && pattern[i - 1] === '\\' ? true : false;
+        if (isEscapeSeq) {
+          result += currChar;
+        } else if (isValidNucleotideSymbol) {
+          const patternSymbol = getComplement
+            ? getNucleotidePatternSymbolComplement(new NucleotidePatternSymbol(currChar))
+            : new NucleotidePatternSymbol(currChar);
+          result += getRegex ? patternSymbol.matchingRegex.source : patternSymbol.symbol;
+        } else {
+          throw new InvalidNucleotidePatternError(
+            `Invalid nucleotide pattern character encountered: ${currChar}`,
+            currChar,
+          );
+        }
+      } else {
+        // Non-alpha character - allow all regex operators and special characters
+        // This includes: [], {}, (), +, *, ?, |, ^, $, ., \, -, ,, digits, spaces, and other regex constructs
+        result += currChar;
+      }
+    }
+    return getRegex ? new RegExp(result) : result;
   }
 }

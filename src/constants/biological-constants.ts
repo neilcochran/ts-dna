@@ -22,6 +22,7 @@ export const POLY_A_TAIL_PATTERN = /A+$/; // Regex pattern for detecting trailin
 // Polyadenylation signal constants
 export const POLYA_SIGNAL_OFFSET = 6; // Offset from AATAAA/AAUAAA to typical cleavage site
 export const DEFAULT_CLEAVAGE_OFFSET = 15; // Default cleavage site offset when not specified
+export const CANONICAL_POLYA_SIGNAL_DNA = 'AATAAA'; // Canonical polyadenylation signal in DNA (becomes AAUAAA in RNA)
 
 // Polyadenylation signal variants with their relative strengths
 export const POLYA_SIGNALS = {
@@ -84,6 +85,8 @@ export const DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE = 1000; // Default maximum ups
 export const DEFAULT_DOWNSTREAM_SEARCH_DISTANCE = 100; // Default downstream search distance for promoter elements
 export const MAX_POLY_A_TAIL_LENGTH = 1000; // Maximum allowed poly-A tail length
 export const TSS_PROXIMITY_THRESHOLD = 10; // Maximum distance between TSS candidates to consider them the same
+export const DEFAULT_MIN_PROMOTER_STRENGTH = 5; // Default minimum promoter strength for transcription
+export const FORCE_TSS_DISABLED = -1; // Value indicating forced TSS is disabled
 
 // Promoter scoring constants
 export const PROMOTER_ELEMENT_SCORE_BOOST = 10; // Score boost for finding a promoter element (TATA)

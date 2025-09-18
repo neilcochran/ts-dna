@@ -1,34 +1,7 @@
 import { NucleotidePatternSymbol } from '../model/nucleic-acids/NucleotidePatternSymbol';
-import { NucleotidePattern, NucleicAcid, DNA, RNA, InvalidNucleotidePatternError } from '../model';
+import { NucleotidePattern, NucleicAcid, DNA, RNA } from '../model';
 import { NucleicAcidType } from '../enums/nucleic-acid-type';
 import { RNASubType } from '../enums/rna-sub-type';
-
-/**
- * Checks if a string is a valid nucleotide pattern
- *
- * @see {@link NucleotidePattern}
- *
- * @param pattern - The pattern to validate
- *
- * @returns True if the pattern is a valid nucleotide pattern, false otherwise.
- *
- * @example
- * ```typescript
- *  //passing a valid pattern string
- *  isValidNucleotidePattern('RRYYATNNNN'); //returns true
- *
- *  //passing an invalid pattern string (X & Z are not a valid symbol)
- *  isValidNucleotidePattern('XXZZAANN'); //returns false
- * ```
- */
-export const isValidNucleotidePattern = (pattern: string): boolean => {
-  try {
-    new NucleotidePattern(pattern);
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
 
 /**
  * Get the complement of the given nucleotide pattern symbol
@@ -103,59 +76,7 @@ export const getNucleotidePatternSymbolComplement = (
 export const getNucleotidePatternComplement = (
   nucleotidePattern: NucleotidePattern,
 ): NucleotidePattern => {
-  const complementPattern = getNucleotidePattern(nucleotidePattern.pattern, true, false) as string;
-  return new NucleotidePattern(complementPattern);
-};
-
-/**
- * Get the (optionally complement) pattern or regex for the given pattern
- *
- * @param pattern - The nucleotide symbol pattern regex
- *
- * @param getComplement - Determines if the result is the complement of the input
- *
- * @param getRegex - Determines if the return value is a RegExp object or a nucleotide pattern string
- * @returns A nucleotide pattern string, or RegExp representing the input (or it's complement)
- *
- * @throws {@link InvalidNucleotidePatternError}
- * Thrown if the pattern input contains invalid alpha characters (must be a valid IUPAC nucleotide symbol) or is not a valid regex
- *
- * @internal
- */
-const getNucleotidePattern = (
-  pattern: string,
-  getComplement = false,
-  getRegex = true,
-): RegExp | string => {
-  if (pattern === '') {
-    throw new InvalidNucleotidePatternError('Nucleotide pattern cannot be empty.', '');
-  }
-  let result = '';
-  for (let i = 0; i < pattern.length; i++) {
-    const currChar = pattern[i];
-    //check if it's an alpha character. If so, it either has to be a valid IUPAC nucleotide symbol or part of an escape sequence
-    if (/[a-zA-Z]/.test(currChar)) {
-      const isValidNucleotideSymbol = /^[AaTtCcGgUuRrYyKkMmSsWwBbVvDdHhNn]$/.test(currChar);
-      const isEscapeSeq = i > 0 && pattern[i - 1] === '\\' ? true : false;
-      if (isEscapeSeq) {
-        result += currChar;
-      } else if (isValidNucleotideSymbol) {
-        const patternSymbol = getComplement
-          ? getNucleotidePatternSymbolComplement(new NucleotidePatternSymbol(currChar))
-          : new NucleotidePatternSymbol(currChar);
-        result += getRegex ? patternSymbol.matchingRegex.source : patternSymbol.symbol;
-      } else {
-        throw new InvalidNucleotidePatternError(
-          `Invalid nucleotide pattern character encountered: ${currChar}`,
-          currChar,
-        );
-      }
-    } else {
-      //non alpha character
-      result += currChar;
-    }
-  }
-  return getRegex ? new RegExp(result) : result;
+  return NucleotidePattern.createComplement(nucleotidePattern);
 };
 
 /**
@@ -271,6 +192,3 @@ export const START_CODON = 'AUG' as const;
  * Array of all stop codons
  */
 export const STOP_CODONS = [STOP_CODON_UAA, STOP_CODON_UAG, STOP_CODON_UGA] as readonly string[];
-
-// Export for internal use by model classes
-export { getNucleotidePattern };
