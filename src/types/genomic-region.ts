@@ -225,10 +225,10 @@ export function validateExons(
     const exonLength = exon.end - exon.start;
 
     // Minimum exon size (biological constraint)
-    if (exonLength < 3) {
+    if (exonLength < MIN_EXON_SIZE) {
       return {
         success: false,
-        error: `Exon is too small: ${exonLength} bp (minimum 3 bp required)`,
+        error: `Exon is too small: ${exonLength} bp (minimum ${MIN_EXON_SIZE} bp required)`,
       };
     }
 

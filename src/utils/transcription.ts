@@ -11,6 +11,11 @@ import {
 } from '../types/validation-result';
 import { findPromoters, identifyTSS, PromoterSearchOptions } from './promoter-recognition';
 import { convertToRNA } from './nucleic-acids';
+import {
+  DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE,
+  DEFAULT_DOWNSTREAM_SEARCH_DISTANCE,
+  POLYA_SIGNAL_OFFSET,
+} from '../constants/biological-constants';
 
 /**
  * Configuration options for transcription.
@@ -35,7 +40,7 @@ export interface TranscriptionOptions {
 function getDefaultTranscriptionOptions(): Required<TranscriptionOptions> {
   return {
     promoterPattern: new NucleotidePattern('TATAAA'), // TATA box as default
-    maxPromoterSearchDistance: 1000,
+    maxPromoterSearchDistance: DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE,
     minPromoterStrength: 5,
     forceTranscriptionStartSite: -1, // -1 means don't force
   };
@@ -146,7 +151,7 @@ function findTranscriptionStartSite(
     }
 
     const searchStart = Math.max(0, firstExon.start - options.maxPromoterSearchDistance);
-    const searchEnd = firstExon.start + 100; // Include some downstream region
+    const searchEnd = firstExon.start + DEFAULT_DOWNSTREAM_SEARCH_DISTANCE; // Include some downstream region
 
     const searchRegion = gene.getSequence().substring(searchStart, searchEnd);
     const searchDNA = new DNA(searchRegion);
@@ -154,7 +159,7 @@ function findTranscriptionStartSite(
     // Configure promoter search options
     const promoterOptions: PromoterSearchOptions = {
       maxUpstreamDistance: options.maxPromoterSearchDistance,
-      maxDownstreamDistance: 100,
+      maxDownstreamDistance: DEFAULT_DOWNSTREAM_SEARCH_DISTANCE,
       minStrengthScore: options.minPromoterStrength,
       minElements: 1,
     };
@@ -213,8 +218,8 @@ function findPolyadenylationSite(gene: Gene, tss: number): ValidationResult<numb
     }
 
     // Use the first (closest to TSS) polyadenylation site
-    // Add 6 to get past the AATAAA signal itself
-    const polyASite = searchStart + matches[0].start + 6;
+    // Add POLYA_SIGNAL_OFFSET to get past the AATAAA signal itself
+    const polyASite = searchStart + matches[0].start + POLYA_SIGNAL_OFFSET;
 
     return success(polyASite);
   } catch (error) {

@@ -1,5 +1,8 @@
 import { RNA } from '../../src/model/nucleic-acids/RNA';
-import { DEFAULT_POLY_A_TAIL_LENGTH } from '../../src/constants/biological-constants';
+import {
+  DEFAULT_POLY_A_TAIL_LENGTH,
+  MAX_POLY_A_TAIL_LENGTH,
+} from '../../src/constants/biological-constants';
 import {
   ProcessedRNA,
   add5PrimeCap,
@@ -118,7 +121,7 @@ describe('rna-modifications', () => {
 
     test('fails with excessive tail length', () => {
       const rna = new RNA('AUGAAACCCGGG');
-      const result = add3PrimePolyATail(rna, 12, 1500); // Exceeds the 1000 limit
+      const result = add3PrimePolyATail(rna, 12, MAX_POLY_A_TAIL_LENGTH + 1); // Exceeds the maximum limit
 
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {

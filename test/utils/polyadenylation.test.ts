@@ -5,6 +5,7 @@ import {
   filterPolyadenylationSites,
 } from '../../src/utils/polyadenylation';
 import { DEFAULT_CLEAVAGE_OPTIONS } from '../../src/types/polyadenylation-site';
+import { POLYA_SIGNAL_OFFSET } from '../../src/constants/biological-constants';
 
 describe('polyadenylation', () => {
   describe('findPolyadenylationSites', () => {
@@ -91,7 +92,7 @@ describe('polyadenylation', () => {
 
       // Should prefer A nucleotides for cleavage
       const cleavageSite = sites[0].cleavageSite!;
-      expect(cleavageSite).toBeGreaterThan(sites[0].position + 6);
+      expect(cleavageSite).toBeGreaterThan(sites[0].position + POLYA_SIGNAL_OFFSET);
       expect(cleavageSite).toBeLessThan(sites[0].position + 30);
     });
 

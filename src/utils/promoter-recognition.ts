@@ -6,6 +6,7 @@ import {
   MAX_PROMOTER_SEARCH_DISTANCE,
   TATA_BOX_TYPICAL_POSITION,
   DPE_TYPICAL_POSITION,
+  TSS_PROXIMITY_THRESHOLD,
 } from '../constants/biological-constants';
 
 /**
@@ -236,14 +237,16 @@ function removeDuplicatePromoters(
   const filtered: Array<{ tss: number; elements: ElementMatch[] }> = [];
 
   for (const candidate of candidates) {
-    const isDuplicate = filtered.some(existing => Math.abs(existing.tss - candidate.tss) <= 10);
+    const isDuplicate = filtered.some(
+      existing => Math.abs(existing.tss - candidate.tss) <= TSS_PROXIMITY_THRESHOLD,
+    );
 
     if (!isDuplicate) {
       filtered.push(candidate);
     } else {
       // Replace if this candidate has more elements
       const existingIndex = filtered.findIndex(
-        existing => Math.abs(existing.tss - candidate.tss) <= 10,
+        existing => Math.abs(existing.tss - candidate.tss) <= TSS_PROXIMITY_THRESHOLD,
       );
 
       if (candidate.elements.length > filtered[existingIndex].elements.length) {

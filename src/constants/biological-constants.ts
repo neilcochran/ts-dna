@@ -17,6 +17,7 @@ export const DEFAULT_MAX_INTRON_SEARCH = 10000; // Default maximum for splice si
 // RNA processing constants
 export const DEFAULT_POLY_A_TAIL_LENGTH = 200;
 export const MIN_POLY_A_DETECTION_LENGTH = 10; // Minimum consecutive A's to detect poly-A tail
+export const POLY_A_TAIL_PATTERN = /A+$/; // Regex pattern for detecting trailing poly-A sequences
 
 // Polyadenylation signal constants
 export const POLYA_SIGNAL_OFFSET = 6; // Offset from AATAAA/AAUAAA to typical cleavage site
@@ -77,3 +78,17 @@ export const MIN_POLYA_SITE_STRENGTH = 25; // Minimum total strength for valid p
 
 // Reading frame and validation constants
 export const READING_FRAME_DIVISOR = 3; // Codons are always 3 nucleotides
+
+// Transcription and promoter search constants
+export const DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE = 1000; // Default maximum upstream search for promoters
+export const DEFAULT_DOWNSTREAM_SEARCH_DISTANCE = 100; // Default downstream search distance for promoter elements
+export const MAX_POLY_A_TAIL_LENGTH = 1000; // Maximum allowed poly-A tail length
+export const TSS_PROXIMITY_THRESHOLD = 10; // Maximum distance between TSS candidates to consider them the same
+
+// Promoter scoring constants
+export const PROMOTER_ELEMENT_SCORE_BOOST = 10; // Score boost for finding a promoter element (TATA)
+export const INR_ELEMENT_SCORE_BOOST = 8; // Score boost for Initiator (Inr) elements
+export const WEAKER_ELEMENT_SCORE_BOOST = 6; // Score boost for weaker promoter elements (DPE)
+export const CAAT_ELEMENT_SCORE_BOOST = 5; // Score boost for CAAT box elements
+export const GC_ELEMENT_SCORE_BOOST = 4; // Score boost for GC box elements
+export const PROMOTER_SYNERGY_MULTIPLIER = 2; // Multiplier for multiple element synergy bonus

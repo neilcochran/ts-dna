@@ -2,7 +2,12 @@ import { RNA } from '../model/nucleic-acids/RNA';
 import { RNASubType } from '../enums/rna-sub-type';
 import { PolyadenylationSite } from '../types/polyadenylation-site';
 import { ValidationResult, success, failure } from '../types/validation-result';
-import { DEFAULT_POLY_A_TAIL_LENGTH } from '../constants/biological-constants';
+import {
+  DEFAULT_POLY_A_TAIL_LENGTH,
+  MAX_POLY_A_TAIL_LENGTH,
+  MIN_POLY_A_DETECTION_LENGTH,
+  POLY_A_TAIL_PATTERN,
+} from '../constants/biological-constants';
 
 /**
  * Represents a processed mRNA with 5' cap and 3' poly-A tail modifications.
@@ -79,8 +84,10 @@ export function add3PrimePolyATail(
     const effectiveCleavageSite = Math.min(cleavageSite, sequence.length);
 
     // Validate tail length
-    if (tailLength < 0 || tailLength > 1000) {
-      return failure(`Invalid poly-A tail length ${tailLength}: must be between 0 and 1000`);
+    if (tailLength < 0 || tailLength > MAX_POLY_A_TAIL_LENGTH) {
+      return failure(
+        `Invalid poly-A tail length ${tailLength}: must be between 0 and ${MAX_POLY_A_TAIL_LENGTH}`,
+      );
     }
 
     // Create poly-A tail
@@ -130,7 +137,7 @@ export function remove3PrimePolyATail(rna: RNA): ValidationResult<ProcessedRNA> 
     // For regular RNA, check if sequence ends with A's
     let sequence = rna.getSequence();
     const originalLength = sequence.length;
-    sequence = sequence.replace(/A+$/, '');
+    sequence = sequence.replace(POLY_A_TAIL_PATTERN, '');
 
     if (sequence.length === originalLength) {
       return failure('No poly-A tail found to remove');
@@ -180,7 +187,10 @@ export function has5PrimeCap(rna: RNA): boolean {
  * Checks if an RNA molecule has a 3' poly-A tail.
  * This is a basic check that looks for at least 10 consecutive A's at the 3' end.
  */
-export function has3PrimePolyATail(rna: RNA, minLength: number = 10): boolean {
+export function has3PrimePolyATail(
+  rna: RNA,
+  minLength: number = MIN_POLY_A_DETECTION_LENGTH,
+): boolean {
   if (rna instanceof ProcessedRNA) {
     return rna.polyATail.length >= minLength;
   }
@@ -212,7 +222,7 @@ export function getCoreSequence(rna: RNA): string {
 
   let sequence = rna.getSequence();
   // Remove poly-A tail if present
-  sequence = sequence.replace(/A+$/, '');
+  sequence = sequence.replace(POLY_A_TAIL_PATTERN, '');
   return sequence;
 }
 

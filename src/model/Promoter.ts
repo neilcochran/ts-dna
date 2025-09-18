@@ -1,4 +1,12 @@
 import { PromoterElement } from './PromoterElement';
+import {
+  PROMOTER_ELEMENT_SCORE_BOOST,
+  INR_ELEMENT_SCORE_BOOST,
+  WEAKER_ELEMENT_SCORE_BOOST,
+  CAAT_ELEMENT_SCORE_BOOST,
+  GC_ELEMENT_SCORE_BOOST,
+  PROMOTER_SYNERGY_MULTIPLIER,
+} from '../constants/biological-constants';
 
 /**
  * Represents a gene promoter containing multiple regulatory elements.
@@ -81,24 +89,24 @@ export class Promoter {
 
     // Add points for key elements (simplified scoring)
     if (this.hasElement('TATA')) {
-      score += 10;
+      score += PROMOTER_ELEMENT_SCORE_BOOST;
     }
     if (this.hasElement('Inr')) {
-      score += 8;
+      score += INR_ELEMENT_SCORE_BOOST;
     }
     if (this.hasElement('DPE')) {
-      score += 6;
+      score += WEAKER_ELEMENT_SCORE_BOOST;
     }
     if (this.hasElement('CAAT')) {
-      score += 5;
+      score += CAAT_ELEMENT_SCORE_BOOST;
     }
     if (this.hasElement('GC')) {
-      score += 4;
+      score += GC_ELEMENT_SCORE_BOOST;
     }
 
     // Bonus for multiple elements (synergy)
     if (this.elements.length > 1) {
-      score += this.elements.length * 2;
+      score += this.elements.length * PROMOTER_SYNERGY_MULTIPLIER;
     }
 
     return score;

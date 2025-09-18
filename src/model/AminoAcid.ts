@@ -7,6 +7,7 @@ import { AminoAcidCharge } from '../enums/amino-acid-charge';
 import { AminoAcidSideChainType } from '../enums/amino-acid-side-chain-type';
 import { isDeepStrictEqual } from 'util';
 import { InvalidCodonError } from './errors/InvalidCodonError';
+import { CODON_LENGTH } from '../constants/biological-constants';
 
 /**
  * A class representing an amino acid instance with its backing RNA codon.
@@ -33,7 +34,7 @@ export class AminoAcid implements AminoAcidData {
    */
   constructor(codon: RNA) {
     const sequence = codon.getSequence();
-    if (sequence.length !== 3) {
+    if (sequence.length !== CODON_LENGTH) {
       throw new InvalidCodonError(`Invalid codon length of: ${sequence.length}`, sequence);
     }
     const aminoAcidData = getAminoAcidDataByCodon(codon);

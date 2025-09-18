@@ -4,6 +4,12 @@ import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePatte
 import {
   TATA_BOX_TYPICAL_POSITION,
   DPE_TYPICAL_POSITION,
+  PROMOTER_ELEMENT_SCORE_BOOST,
+  INR_ELEMENT_SCORE_BOOST,
+  WEAKER_ELEMENT_SCORE_BOOST,
+  CAAT_ELEMENT_SCORE_BOOST,
+  GC_ELEMENT_SCORE_BOOST,
+  PROMOTER_SYNERGY_MULTIPLIER,
 } from '../../src/constants/biological-constants';
 
 describe('Promoter', () => {
@@ -140,22 +146,29 @@ describe('Promoter', () => {
     test('calculates score for single TATA element', () => {
       const promoter = new Promoter(1000, [tataElement]);
 
-      expect(promoter.getStrengthScore()).toBe(10); // TATA = 10 points
+      expect(promoter.getStrengthScore()).toBe(PROMOTER_ELEMENT_SCORE_BOOST); // TATA = PROMOTER_ELEMENT_SCORE_BOOST points
     });
 
     test('calculates score for TATA-less promoter', () => {
       const promoter = new Promoter(1000, [inrElement, dpeElement]);
 
-      // Inr = 8, DPE = 6, multiple elements bonus = 2 * 2 = 4
-      expect(promoter.getStrengthScore()).toBe(18);
+      // Inr = INR_ELEMENT_SCORE_BOOST, DPE = WEAKER_ELEMENT_SCORE_BOOST, multiple elements bonus = 2 * PROMOTER_SYNERGY_MULTIPLIER = 4
+      expect(promoter.getStrengthScore()).toBe(
+        INR_ELEMENT_SCORE_BOOST + WEAKER_ELEMENT_SCORE_BOOST + 2 * PROMOTER_SYNERGY_MULTIPLIER,
+      );
     });
 
     test('calculates score for strong promoter', () => {
       const gcElement = new PromoterElement('GC', new NucleotidePattern('GGGCGG'), -70);
       const promoter = new Promoter(1000, [tataElement, caatElement, gcElement]);
 
-      // TATA = 10, CAAT = 5, GC = 4, multiple bonus = 3 * 2 = 6
-      expect(promoter.getStrengthScore()).toBe(25);
+      // TATA = PROMOTER_ELEMENT_SCORE_BOOST, CAAT = CAAT_ELEMENT_SCORE_BOOST, GC = GC_ELEMENT_SCORE_BOOST, multiple bonus = 3 * PROMOTER_SYNERGY_MULTIPLIER = 6
+      expect(promoter.getStrengthScore()).toBe(
+        PROMOTER_ELEMENT_SCORE_BOOST +
+          CAAT_ELEMENT_SCORE_BOOST +
+          GC_ELEMENT_SCORE_BOOST +
+          3 * PROMOTER_SYNERGY_MULTIPLIER,
+      );
     });
 
     test('returns zero for empty promoter', () => {

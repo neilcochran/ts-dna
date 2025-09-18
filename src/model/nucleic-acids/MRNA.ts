@@ -1,5 +1,6 @@
 import { RNA } from './RNA';
 import { RNASubType } from '../../enums/rna-sub-type';
+import { MIN_POLY_A_DETECTION_LENGTH, CODON_LENGTH } from '../../constants/biological-constants';
 
 /**
  * Represents mature messenger RNA (mRNA) that has undergone complete processing.
@@ -152,7 +153,11 @@ export class MRNA extends RNA {
    * ```
    */
   isFullyProcessed(): boolean {
-    return this.fivePrimeCap && this.polyATail.length >= 10 && this.codingSequence.length >= 3;
+    return (
+      this.fivePrimeCap &&
+      this.polyATail.length >= MIN_POLY_A_DETECTION_LENGTH &&
+      this.codingSequence.length >= CODON_LENGTH
+    );
   }
 
   /**
