@@ -1,6 +1,7 @@
 import { Promoter } from '../../src/model/Promoter';
 import { PromoterElement } from '../../src/model/PromoterElement';
 import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
+import { TATA_BOX_TYPICAL_POSITION, DPE_TYPICAL_POSITION } from '../../src/constants/biological-constants';
 
 describe('Promoter', () => {
     let tataElement: PromoterElement;
@@ -9,9 +10,9 @@ describe('Promoter', () => {
     let caatElement: PromoterElement;
 
     beforeEach(() => {
-        tataElement = new PromoterElement('TATA', new NucleotidePattern('TATAWAR'), -25);
+        tataElement = new PromoterElement('TATA', new NucleotidePattern('TATAWAR'), TATA_BOX_TYPICAL_POSITION);
         inrElement = new PromoterElement('Inr', new NucleotidePattern('YYANWYY'), 0);
-        dpeElement = new PromoterElement('DPE', new NucleotidePattern('RGWYV'), 30);
+        dpeElement = new PromoterElement('DPE', new NucleotidePattern('RGWYV'), DPE_TYPICAL_POSITION);
         caatElement = new PromoterElement('CAAT', new NucleotidePattern('GGCCAATCT'), -75);
     });
 
@@ -92,15 +93,15 @@ describe('Promoter', () => {
         test('calculates correct genomic positions', () => {
             const promoter = new Promoter(1000, [tataElement, inrElement, dpeElement]);
 
-            expect(promoter.getElementPosition(tataElement)).toBe(975); // 1000 + (-25)
+            expect(promoter.getElementPosition(tataElement)).toBe(1000 + TATA_BOX_TYPICAL_POSITION); // 1000 + TATA_BOX_TYPICAL_POSITION
             expect(promoter.getElementPosition(inrElement)).toBe(1000); // 1000 + 0
-            expect(promoter.getElementPosition(dpeElement)).toBe(1030); // 1000 + 30
+            expect(promoter.getElementPosition(dpeElement)).toBe(1000 + DPE_TYPICAL_POSITION); // 1000 + DPE_TYPICAL_POSITION
         });
 
         test('handles negative TSS', () => {
             const promoter = new Promoter(-100, [tataElement]);
 
-            expect(promoter.getElementPosition(tataElement)).toBe(-125); // -100 + (-25)
+            expect(promoter.getElementPosition(tataElement)).toBe(-100 + TATA_BOX_TYPICAL_POSITION); // -100 + TATA_BOX_TYPICAL_POSITION
         });
     });
 
@@ -112,9 +113,9 @@ describe('Promoter', () => {
             const sorted = promoter.getElementsByPosition();
 
             expect(sorted).toHaveLength(3);
-            expect(sorted[0]).toBe(tataElement); // position -25
+            expect(sorted[0]).toBe(tataElement); // position TATA_BOX_TYPICAL_POSITION
             expect(sorted[1]).toBe(inrElement);  // position 0
-            expect(sorted[2]).toBe(dpeElement);  // position 30
+            expect(sorted[2]).toBe(dpeElement);  // position DPE_TYPICAL_POSITION
         });
 
         test('handles elements with same position', () => {

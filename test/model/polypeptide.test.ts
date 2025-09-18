@@ -1,6 +1,7 @@
 import { RNA, Polypeptide, InvalidSequenceError, InvalidCodonError } from '../../src/model';
-import { RNAtoAminoAcids  } from '../../src/utils/amino-acids';
+import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import { STOP_CODONS } from '../../src/utils/nucleic-acids';
+import { CODON_LENGTH } from '../../src/constants/biological-constants';
 import * as TestUtils from '../utils/test-utils';
 
 test('create invalid polypeptide from RNA with wrong length', () => {
@@ -23,13 +24,19 @@ test('create invalid polypeptide from invalid (short) length RNA sequence', () =
 
 test('create valid polypeptide from RNA_ALL_AMINO_ACIDS_1', () => {
     expect(
-        TestUtils.isCorrectAminoAcidSequence(new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_1).aminoAcidSequence, TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
+        TestUtils.isCorrectAminoAcidSequence(
+            new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_1).aminoAcidSequence,
+            TestUtils.ALL_AMINO_ACIDS_SLC_SEQ,
+        ),
     ).toEqual(true);
 });
 
 test('create valid polypeptide from RNA_ALL_AMINO_ACIDS_2', () => {
     expect(
-        TestUtils.isCorrectAminoAcidSequence(new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_2).aminoAcidSequence, TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
+        TestUtils.isCorrectAminoAcidSequence(
+            new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_2).aminoAcidSequence,
+            TestUtils.ALL_AMINO_ACIDS_SLC_SEQ,
+        ),
     ).toEqual(true);
 });
 
@@ -82,13 +89,19 @@ test('Polypeptide constructor throws InvalidCodonError for RNA containing stop c
 
 test('RNAtoAminoAcids() from RNA_ALL_AMINO_ACIDS_1', () => {
     expect(
-        TestUtils.isCorrectAminoAcidSequence(RNAtoAminoAcids(TestUtils.RNA_ALL_AMINO_ACIDS_1), TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
+        TestUtils.isCorrectAminoAcidSequence(
+            RNAtoAminoAcids(TestUtils.RNA_ALL_AMINO_ACIDS_1),
+            TestUtils.ALL_AMINO_ACIDS_SLC_SEQ,
+        ),
     ).toEqual(true);
 });
 
 test('RNAtoAminoAcids() from RNA_ALL_AMINO_ACIDS_2', () => {
     expect(
-        TestUtils.isCorrectAminoAcidSequence(RNAtoAminoAcids(TestUtils.RNA_ALL_AMINO_ACIDS_2), TestUtils.ALL_AMINO_ACIDS_SLC_SEQ)
+        TestUtils.isCorrectAminoAcidSequence(
+            RNAtoAminoAcids(TestUtils.RNA_ALL_AMINO_ACIDS_2),
+            TestUtils.ALL_AMINO_ACIDS_SLC_SEQ,
+        ),
     ).toEqual(true);
 });
 
@@ -105,7 +118,7 @@ test('polypeptide maintains reference to original RNA', () => {
 
 test('polypeptide amino acid sequence has correct length', () => {
     const polypeptide = new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_1);
-    const expectedLength = TestUtils.RNA_ALL_AMINO_ACIDS_1.getSequence().length / 3;
+    const expectedLength = TestUtils.RNA_ALL_AMINO_ACIDS_1.getSequence().length / CODON_LENGTH;
     expect(polypeptide.aminoAcidSequence.length).toEqual(expectedLength);
 });
 

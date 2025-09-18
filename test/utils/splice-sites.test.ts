@@ -5,6 +5,7 @@ import {
     SPLICE_ACCEPTOR_SEQUENCES
 } from '../../src/utils/splice-sites';
 import { GenomicRegion } from '../../src/types/genomic-region';
+import { DONOR_SPLICE_CONSENSUS, ACCEPTOR_SPLICE_CONSENSUS } from '../../src/constants/biological-constants';
 
 describe('Splice site utilities', () => {
     describe('constants', () => {
@@ -187,7 +188,7 @@ describe('Splice site utilities', () => {
         });
 
         test('respects maximum intron length', () => {
-            const sequence = 'GT' + 'C'.repeat(1000) + 'AG';  // Very long intron
+            const sequence = DONOR_SPLICE_CONSENSUS + 'C'.repeat(1000) + ACCEPTOR_SPLICE_CONSENSUS;  // Very long intron
             const potentialIntrons = findPotentialSpliceSites(sequence, 4, 100);
 
             expect(potentialIntrons).toHaveLength(0);  // Too long

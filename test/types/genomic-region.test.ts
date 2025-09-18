@@ -5,8 +5,11 @@ import {
     validateNonOverlappingRegions,
     validateExons,
     buildOptimizedIntervalTree,
-    IntervalTree
+    IntervalTree,
 } from '../../src/types/genomic-region';
+import {
+    MIN_INTRON_SIZE,
+} from '../../src/constants/biological-constants';
 
 describe('GenomicRegion utilities', () => {
     describe('isValidGenomicRegion', () => {
@@ -104,7 +107,7 @@ describe('GenomicRegion utilities', () => {
             const regions: GenomicRegion[] = [
                 { start: 0, end: 5 },
                 { start: 10, end: 15 },
-                { start: 20, end: 25 }
+                { start: 20, end: 25 },
             ];
             expect(validateNonOverlappingRegions(regions)).toBe(true);
         });
@@ -113,7 +116,7 @@ describe('GenomicRegion utilities', () => {
             const regions: GenomicRegion[] = [
                 { start: 0, end: 5 },
                 { start: 5, end: 10 },
-                { start: 10, end: 15 }
+                { start: 10, end: 15 },
             ];
             expect(validateNonOverlappingRegions(regions)).toBe(true);
         });
@@ -121,7 +124,7 @@ describe('GenomicRegion utilities', () => {
         test('rejects overlapping regions', () => {
             const regions: GenomicRegion[] = [
                 { start: 0, end: 10 },
-                { start: 5, end: 15 }
+                { start: 5, end: 15 },
             ];
             expect(validateNonOverlappingRegions(regions)).toBe(false);
         });
@@ -129,8 +132,8 @@ describe('GenomicRegion utilities', () => {
         test('rejects overlapping regions in unsorted order', () => {
             const regions: GenomicRegion[] = [
                 { start: 10, end: 20 },
-                { start: 0, end: 15 },  // Overlaps with first when sorted
-                { start: 25, end: 30 }
+                { start: 0, end: 15 }, // Overlaps with first when sorted
+                { start: 25, end: 30 },
             ];
             expect(validateNonOverlappingRegions(regions)).toBe(false);
         });
@@ -139,7 +142,7 @@ describe('GenomicRegion utilities', () => {
             const regions: GenomicRegion[] = [
                 { start: 20, end: 25 },
                 { start: 10, end: 15 },
-                { start: 0, end: 5 }
+                { start: 0, end: 5 },
             ];
             expect(validateNonOverlappingRegions(regions)).toBe(true);
         });
@@ -149,7 +152,7 @@ describe('GenomicRegion utilities', () => {
                 { start: 15, end: 20 },
                 { start: 0, end: 3 },
                 { start: 25, end: 30 },
-                { start: 5, end: 10 }
+                { start: 5, end: 10 },
             ];
             expect(validateNonOverlappingRegions(regions)).toBe(true);
         });
@@ -160,7 +163,7 @@ describe('GenomicRegion utilities', () => {
                 { start: 0, end: 3 },
                 { start: 25, end: 30 },
                 { start: 18, end: 22 }, // Overlaps with first region
-                { start: 5, end: 10 }
+                { start: 5, end: 10 },
             ];
             expect(validateNonOverlappingRegions(regions)).toBe(false);
         });
@@ -168,9 +171,7 @@ describe('GenomicRegion utilities', () => {
 
     describe('validateExons', () => {
         test('validates single exon successfully', () => {
-            const exons: GenomicRegion[] = [
-                { start: 0, end: 100, name: 'exon1' }
-            ];
+            const exons: GenomicRegion[] = [{ start: 0, end: 100, name: 'exon1' }];
             const result = validateExons(exons, 200);
             expect(result.success).toBe(true);
         });
@@ -179,7 +180,7 @@ describe('GenomicRegion utilities', () => {
             const exons: GenomicRegion[] = [
                 { start: 0, end: 50, name: 'exon1' },
                 { start: 100, end: 150, name: 'exon2' },
-                { start: 200, end: 250, name: 'exon3' }
+                { start: 200, end: 250, name: 'exon3' },
             ];
             const result = validateExons(exons, 300);
             expect(result.success).toBe(true);
@@ -197,7 +198,7 @@ describe('GenomicRegion utilities', () => {
             const exons: GenomicRegion[] = [
                 { start: 0, end: 50, name: 'exon1' },
                 { start: 40, end: 90, name: 'exon2' }, // Overlaps with exon1
-                { start: 100, end: 150, name: 'exon3' }
+                { start: 100, end: 150, name: 'exon3' },
             ];
             const result = validateExons(exons, 200);
             expect(result.success).toBe(false);
@@ -210,7 +211,7 @@ describe('GenomicRegion utilities', () => {
         test('rejects exons extending beyond sequence length', () => {
             const exons: GenomicRegion[] = [
                 { start: 0, end: 50 },
-                { start: 100, end: 250 } // Extends beyond sequence length of 200
+                { start: 100, end: 250 }, // Extends beyond sequence length of 200
             ];
             const result = validateExons(exons, 200);
             expect(result.success).toBe(false);
@@ -222,7 +223,7 @@ describe('GenomicRegion utilities', () => {
         test('enforces minimum exon size constraint', () => {
             const exons: GenomicRegion[] = [
                 { start: 0, end: 2 }, // Only 2 bp, below minimum of 3
-                { start: 50, end: 100 }
+                { start: 50, end: 100 },
             ];
             const result = validateExons(exons, 150);
             expect(result.success).toBe(false);
@@ -234,7 +235,7 @@ describe('GenomicRegion utilities', () => {
 
         test('enforces maximum exon size constraint', () => {
             const exons: GenomicRegion[] = [
-                { start: 0, end: 60000 } // Exceeds maximum of 50000 bp
+                { start: 0, end: 60000 }, // Exceeds maximum of 50000 bp
             ];
             const result = validateExons(exons, 70000);
             expect(result.success).toBe(false);
@@ -247,20 +248,20 @@ describe('GenomicRegion utilities', () => {
         test('enforces minimum intron size constraint', () => {
             const exons: GenomicRegion[] = [
                 { start: 0, end: 50 },
-                { start: 65, end: 100 } // Only 15 bp intron, below minimum of 20
+                { start: 65, end: 100 }, // Only 15 bp intron, below minimum of ${MIN_INTRON_SIZE}
             ];
             const result = validateExons(exons, 150);
             expect(result.success).toBe(false);
             if (!result.success) {
                 expect(result.error).toContain('Intron between exons is too small');
-                expect(result.error).toContain('minimum 20 bp required');
+                expect(result.error).toContain('minimum ' + MIN_INTRON_SIZE + ' bp required');
             }
         });
 
         test('enforces maximum intron size constraint', () => {
             const exons: GenomicRegion[] = [
                 { start: 0, end: 50 },
-                { start: 1050100, end: 1050150 } // Massive intron exceeding 1MB limit
+                { start: 1050100, end: 1050150 }, // Massive intron exceeding 1MB limit
             ];
             const result = validateExons(exons, 1050200);
             expect(result.success).toBe(false);
@@ -277,7 +278,7 @@ describe('GenomicRegion utilities', () => {
                 exons.push({
                     start: i * 100,
                     end: i * 100 + 50,
-                    name: `exon${i}`
+                    name: `exon${i}`,
                 });
             }
 
@@ -292,7 +293,7 @@ describe('GenomicRegion utilities', () => {
 
         test('provides detailed error for invalid coordinates', () => {
             const exons: GenomicRegion[] = [
-                { start: -5, end: 50 } // Invalid negative start
+                { start: -5, end: 50 }, // Invalid negative start
             ];
             const result = validateExons(exons, 100);
             expect(result.success).toBe(false);
@@ -304,8 +305,8 @@ describe('GenomicRegion utilities', () => {
         test('handles adjacent exons correctly', () => {
             const exons: GenomicRegion[] = [
                 { start: 0, end: 50 },
-                { start: 70, end: 120 }, // 20 bp intron, exactly at minimum
-                { start: 140, end: 190 }
+                { start: 70, end: 120 }, // ${MIN_INTRON_SIZE} bp intron, exactly at minimum
+                { start: 140, end: 190 },
             ];
             const result = validateExons(exons, 200);
             expect(result.success).toBe(true);
@@ -317,7 +318,7 @@ describe('GenomicRegion utilities', () => {
             const intervals: GenomicRegion[] = [
                 { start: 0, end: 10 },
                 { start: 20, end: 30 },
-                { start: 40, end: 50 }
+                { start: 40, end: 50 },
             ];
             const tree = new IntervalTree(intervals);
             expect(tree).toBeInstanceOf(IntervalTree);
@@ -328,7 +329,7 @@ describe('GenomicRegion utilities', () => {
                 { start: 0, end: 10, name: 'interval1' },
                 { start: 15, end: 25, name: 'interval2' },
                 { start: 30, end: 40, name: 'interval3' },
-                { start: 20, end: 35, name: 'interval4' }
+                { start: 20, end: 35, name: 'interval4' },
             ];
             const tree = new IntervalTree(intervals);
 
@@ -356,7 +357,7 @@ describe('GenomicRegion utilities', () => {
         test('returns no overlaps when none exist', () => {
             const intervals: GenomicRegion[] = [
                 { start: 0, end: 10 },
-                { start: 20, end: 30 }
+                { start: 20, end: 30 },
             ];
             const tree = new IntervalTree(intervals);
 
@@ -381,7 +382,7 @@ describe('GenomicRegion utilities', () => {
             for (let i = 0; i < 10000; i++) {
                 intervals.push({
                     start: Math.random() * 1000000,
-                    end: Math.random() * 1000000 + 1000
+                    end: Math.random() * 1000000 + 1000,
                 });
             }
 
@@ -405,7 +406,7 @@ describe('GenomicRegion utilities', () => {
             const intervals: GenomicRegion[] = [
                 { start: 0, end: 100 },
                 { start: 200, end: 300 },
-                { start: 400, end: 500 }
+                { start: 400, end: 500 },
             ];
 
             const tree = buildOptimizedIntervalTree(intervals);

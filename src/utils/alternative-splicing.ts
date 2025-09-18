@@ -5,6 +5,7 @@ import { Gene } from '../model/nucleic-acids/Gene';
 import { RNASubType } from '../enums/rna-sub-type';
 import { ValidationResult, success, failure } from '../types/validation-result';
 import { convertToRNA, START_CODON, STOP_CODONS } from './nucleic-acids';
+import { CODON_LENGTH } from '../constants/biological-constants';
 import {
     SpliceVariant,
     SplicingOutcome,
@@ -95,7 +96,7 @@ export function processAllSplicingVariants(
             try {
                 const matureRNA = splicingResult.data;
                 const codingSequence = matureRNA.getSequence();
-                const proteinLength = Math.floor(codingSequence.length / 3);
+                const proteinLength = Math.floor(codingSequence.length / CODON_LENGTH);
 
                 const outcome = new SplicingOutcome(
                     variant,
@@ -175,8 +176,10 @@ export function validateSpliceVariant(
     if (opts.validateReadingFrames) {
         try {
             const variantSequence = gene.getVariantSequence(variant);
-            if (variantSequence.length % 3 !== 0) {
-                return failure(`Variant '${variant.name}' does not maintain reading frame: length ${variantSequence.length} is not divisible by 3`);
+            if (variantSequence.length % CODON_LENGTH !== 0) {
+                return failure(
+                    `Variant '${variant.name}' does not maintain reading frame: length ${variantSequence.length} is not divisible by 3`,
+                );
             }
         } catch (error) {
             return failure(`Failed to validate reading frame for variant '${variant.name}': ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -190,15 +193,17 @@ export function validateSpliceVariant(
             const variantDNA = new DNA(variantSequence);
             const rnaSequence = convertToRNA(variantDNA).getSequence();
 
-            if (rnaSequence.length >= 3) {
-                const startCodon = rnaSequence.substring(0, 3);
+            if (rnaSequence.length >= CODON_LENGTH) {
+                const startCodon = rnaSequence.substring(0, CODON_LENGTH);
                 if (startCodon !== START_CODON) {
-                    return failure(`Variant '${variant.name}' does not start with start codon ${START_CODON}, found '${startCodon}'`);
+                    return failure(
+                        `Variant '${variant.name}' does not start with start codon ${START_CODON}, found '${startCodon}'`,
+                    );
                 }
             }
 
-            if (rnaSequence.length >= 3) {
-                const lastCodon = rnaSequence.substring(rnaSequence.length - 3);
+            if (rnaSequence.length >= CODON_LENGTH) {
+                const lastCodon = rnaSequence.substring(rnaSequence.length - CODON_LENGTH);
                 if (!STOP_CODONS.includes(lastCodon)) {
                     return failure(`Variant '${variant.name}' does not end with stop codon, found '${lastCodon}'`);
                 }

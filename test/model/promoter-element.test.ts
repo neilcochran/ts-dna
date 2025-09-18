@@ -1,15 +1,19 @@
 import { PromoterElement } from '../../src/model/PromoterElement';
 import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
+import {
+    TATA_BOX_TYPICAL_POSITION,
+    DPE_TYPICAL_POSITION,
+} from '../../src/constants/biological-constants';
 
 describe('PromoterElement', () => {
     describe('constructor', () => {
         test('creates valid PromoterElement', () => {
             const pattern = new NucleotidePattern('TATAWAR');
-            const element = new PromoterElement('TATA', pattern, -25);
+            const element = new PromoterElement('TATA', pattern, TATA_BOX_TYPICAL_POSITION);
 
             expect(element.name).toBe('TATA');
             expect(element.pattern).toBe(pattern);
-            expect(element.position).toBe(-25);
+            expect(element.position).toBe(TATA_BOX_TYPICAL_POSITION);
         });
 
         test('creates element with positive position', () => {
@@ -21,18 +25,18 @@ describe('PromoterElement', () => {
 
         test('creates element with downstream position', () => {
             const pattern = new NucleotidePattern('RGWYV');
-            const element = new PromoterElement('DPE', pattern, 30);
+            const element = new PromoterElement('DPE', pattern, DPE_TYPICAL_POSITION);
 
-            expect(element.position).toBe(30);
+            expect(element.position).toBe(DPE_TYPICAL_POSITION);
         });
     });
 
     describe('toString', () => {
         test('returns formatted string representation', () => {
             const pattern = new NucleotidePattern('TATAWAR');
-            const element = new PromoterElement('TATA', pattern, -25);
+            const element = new PromoterElement('TATA', pattern, TATA_BOX_TYPICAL_POSITION);
 
-            expect(element.toString()).toBe('TATA@-25');
+            expect(element.toString()).toBe('TATA@' + TATA_BOX_TYPICAL_POSITION);
         });
 
         test('handles zero position', () => {
@@ -44,9 +48,9 @@ describe('PromoterElement', () => {
 
         test('handles positive position', () => {
             const pattern = new NucleotidePattern('RGWYV');
-            const element = new PromoterElement('DPE', pattern, 30);
+            const element = new PromoterElement('DPE', pattern, DPE_TYPICAL_POSITION);
 
-            expect(element.toString()).toBe('DPE@30');
+            expect(element.toString()).toBe('DPE@' + DPE_TYPICAL_POSITION);
         });
     });
 
@@ -54,24 +58,24 @@ describe('PromoterElement', () => {
         test('returns true for identical elements', () => {
             const pattern1 = new NucleotidePattern('TATAWAR');
             const pattern2 = new NucleotidePattern('TATAWAR');
-            const element1 = new PromoterElement('TATA', pattern1, -25);
-            const element2 = new PromoterElement('TATA', pattern2, -25);
+            const element1 = new PromoterElement('TATA', pattern1, TATA_BOX_TYPICAL_POSITION);
+            const element2 = new PromoterElement('TATA', pattern2, TATA_BOX_TYPICAL_POSITION);
 
             expect(element1.equals(element2)).toBe(true);
         });
 
         test('returns false for different names', () => {
             const pattern = new NucleotidePattern('TATAWAR');
-            const element1 = new PromoterElement('TATA', pattern, -25);
-            const element2 = new PromoterElement('GC', pattern, -25);
+            const element1 = new PromoterElement('TATA', pattern, TATA_BOX_TYPICAL_POSITION);
+            const element2 = new PromoterElement('GC', pattern, TATA_BOX_TYPICAL_POSITION);
 
             expect(element1.equals(element2)).toBe(false);
         });
 
         test('returns false for different positions', () => {
             const pattern = new NucleotidePattern('TATAWAR');
-            const element1 = new PromoterElement('TATA', pattern, -25);
-            const element2 = new PromoterElement('TATA', pattern, -30);
+            const element1 = new PromoterElement('TATA', pattern, TATA_BOX_TYPICAL_POSITION);
+            const element2 = new PromoterElement('TATA', pattern, -DPE_TYPICAL_POSITION);
 
             expect(element1.equals(element2)).toBe(false);
         });
@@ -79,8 +83,8 @@ describe('PromoterElement', () => {
         test('returns false for different patterns', () => {
             const pattern1 = new NucleotidePattern('TATAWAR');
             const pattern2 = new NucleotidePattern('GGGCGG');
-            const element1 = new PromoterElement('TATA', pattern1, -25);
-            const element2 = new PromoterElement('TATA', pattern2, -25);
+            const element1 = new PromoterElement('TATA', pattern1, TATA_BOX_TYPICAL_POSITION);
+            const element2 = new PromoterElement('TATA', pattern2, TATA_BOX_TYPICAL_POSITION);
 
             expect(element1.equals(element2)).toBe(false);
         });

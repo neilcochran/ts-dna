@@ -4,6 +4,11 @@ import { ValidationResult, success, failure, isSuccess } from '../types/validati
 import { spliceRNA } from './rna-processing';
 import { findPolyadenylationSites, getStrongestPolyadenylationSite } from './polyadenylation';
 import { START_CODON, STOP_CODONS } from './nucleic-acids';
+import {
+    DEFAULT_POLY_A_TAIL_LENGTH,
+    CODON_LENGTH,
+    DEFAULT_CLEAVAGE_OFFSET,
+} from '../constants/biological-constants';
 
 /**
  * Processes a pre-mRNA through the complete RNA processing pipeline to produce mature mRNA.
@@ -56,7 +61,9 @@ export function processRNA(
             if (polySites.length > 0) {
                 const strongestSite = getStrongestPolyadenylationSite(polySites);
                 if (strongestSite) {
-                    cleavageSite = strongestSite.cleavageSite ?? (strongestSite.position + strongestSite.signal.length + 15);
+                    cleavageSite =
+            strongestSite.cleavageSite ??
+            strongestSite.position + strongestSite.signal.length + DEFAULT_CLEAVAGE_OFFSET;
 
                     // Ensure cleavage site is within sequence bounds
                     cleavageSite = Math.min(cleavageSite, processedSequence.length);
@@ -93,13 +100,14 @@ export function processRNA(
             codingStart,
             codingEnd,
             opts.addFivePrimeCap,
-            polyATail
+            polyATail,
         );
 
         return success(mRNA);
-
     } catch (error) {
-        return failure(`RNA processing failed: ${error instanceof Error ? error.message : String(error)}`);
+        return failure(
+            `RNA processing failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
     }
 }
 
@@ -107,20 +115,20 @@ export function processRNA(
  * Configuration options for RNA processing pipeline.
  */
 export interface RNAProcessingOptions {
-    /** Whether to add 5' methylguanosine cap (default: true) */
-    readonly addFivePrimeCap?: boolean;
+  /** Whether to add 5' methylguanosine cap (default: true) */
+  readonly addFivePrimeCap?: boolean;
 
-    /** Whether to add 3' poly-A tail (default: true) */
-    readonly addPolyATail?: boolean;
+  /** Whether to add 3' poly-A tail (default: true) */
+  readonly addPolyATail?: boolean;
 
-    /** Length of poly-A tail to add (default: 200) */
-    readonly polyATailLength?: number;
+  /** Length of poly-A tail to add (default: 200) */
+  readonly polyATailLength?: number;
 
-    /** Whether to validate coding sequence has start/stop codons (default: true) */
-    readonly validateCodons?: boolean;
+  /** Whether to validate coding sequence has start/stop codons (default: true) */
+  readonly validateCodons?: boolean;
 
-    /** Minimum coding sequence length in nucleotides (default: 3) */
-    readonly minimumCodingLength?: boolean;
+  /** Minimum coding sequence length in nucleotides (default: 3) */
+  readonly minimumCodingLength?: boolean;
 }
 
 /**
@@ -129,18 +137,18 @@ export interface RNAProcessingOptions {
 export const DEFAULT_RNA_PROCESSING_OPTIONS: Required<RNAProcessingOptions> = {
     addFivePrimeCap: true,
     addPolyATail: true,
-    polyATailLength: 200,
+    polyATailLength: DEFAULT_POLY_A_TAIL_LENGTH,
     validateCodons: true,
-    minimumCodingLength: true
+    minimumCodingLength: true,
 };
 
 /**
  * Information about coding sequence boundaries within processed mRNA.
  */
 interface CodingSequenceInfo {
-    readonly codingStart: number;
-    readonly codingEnd: number;
-    readonly codingSequence: string;
+  readonly codingStart: number;
+  readonly codingEnd: number;
+  readonly codingSequence: string;
 }
 
 /**
@@ -152,7 +160,7 @@ interface CodingSequenceInfo {
  */
 function findCodingSequence(
     sequence: string,
-    polyATailLength: number = 0
+    polyATailLength: number = 0,
 ): ValidationResult<CodingSequenceInfo> {
     // Search region excludes poly-A tail
     const searchSequence = sequence.substring(0, sequence.length - polyATailLength);
@@ -165,10 +173,14 @@ function findCodingSequence(
 
     // Find stop codon in frame after start codon
     let stopCodonIndex = -1;
-    for (let i = startCodonIndex + 3; i <= searchSequence.length - 3; i += 3) {
-        const codon = searchSequence.substring(i, i + 3);
+    for (
+        let i = startCodonIndex + CODON_LENGTH;
+        i <= searchSequence.length - CODON_LENGTH;
+        i += CODON_LENGTH
+    ) {
+        const codon = searchSequence.substring(i, i + CODON_LENGTH);
         if (STOP_CODONS.includes(codon)) {
-            stopCodonIndex = i + 3; // Include stop codon in coding sequence
+            stopCodonIndex = i + CODON_LENGTH; // Include stop codon in coding sequence
             break;
         }
     }
@@ -182,7 +194,7 @@ function findCodingSequence(
     return success({
         codingStart: startCodonIndex,
         codingEnd: stopCodonIndex,
-        codingSequence
+        codingSequence,
     });
 }
 
@@ -200,9 +212,9 @@ function findCodingSequence(
  * ```
  */
 export function convertProcessedRNAToMRNA(processedRNA: {
-    getSequence(): string;
-    polyATail?: string;
-    hasFivePrimeCap?: boolean;
+  getSequence(): string;
+  polyATail?: string;
+  hasFivePrimeCap?: boolean;
 }): ValidationResult<MRNA> {
     try {
         const sequence = processedRNA.getSequence();
@@ -218,18 +230,12 @@ export function convertProcessedRNAToMRNA(processedRNA: {
         const { codingStart, codingEnd, codingSequence } = codingBoundaries.data;
         const fullSequence = sequence + polyATail;
 
-        const mRNA = new MRNA(
-            fullSequence,
-            codingSequence,
-            codingStart,
-            codingEnd,
-            hasCap,
-            polyATail
-        );
+        const mRNA = new MRNA(fullSequence, codingSequence, codingStart, codingEnd, hasCap, polyATail);
 
         return success(mRNA);
-
     } catch (error) {
-        return failure(`Failed to convert ProcessedRNA to MRNA: ${error instanceof Error ? error.message : String(error)}`);
+        return failure(
+            `Failed to convert ProcessedRNA to MRNA: ${error instanceof Error ? error.message : String(error)}`,
+        );
     }
 }

@@ -2,6 +2,7 @@ import { RNA } from '../model/nucleic-acids/RNA';
 import { RNASubType } from '../enums/rna-sub-type';
 import { PolyadenylationSite } from '../types/polyadenylation-site';
 import { ValidationResult, success, failure } from '../types/validation-result';
+import { DEFAULT_POLY_A_TAIL_LENGTH } from '../constants/biological-constants';
 
 /**
  * Represents a processed mRNA with 5' cap and 3' poly-A tail modifications.
@@ -11,36 +12,36 @@ export class ProcessedRNA extends RNA {
     constructor(
         sequence: string,
         rnaSubType?: RNASubType,
-        public readonly hasFivePrimeCap: boolean = false,
-        public readonly polyATail: string = ''
+    public readonly hasFivePrimeCap: boolean = false,
+    public readonly polyATail: string = '',
     ) {
         super(sequence, rnaSubType);
     }
 
     /**
-     * Gets the total length including poly-A tail.
-     */
+   * Gets the total length including poly-A tail.
+   */
     getTotalLength(): number {
         return this.getSequence().length + this.polyATail.length;
     }
 
     /**
-     * Gets the core sequence without poly-A tail.
-     */
+   * Gets the core sequence without poly-A tail.
+   */
     getCoreSequence(): string {
         return this.getSequence();
     }
 
     /**
-     * Gets the length of the poly-A tail.
-     */
+   * Gets the length of the poly-A tail.
+   */
     getPolyATailLength(): number {
         return this.polyATail.length;
     }
 
     /**
-     * Checks if this RNA is fully processed (has both cap and poly-A tail).
-     */
+   * Checks if this RNA is fully processed (has both cap and poly-A tail).
+   */
     isFullyProcessed(): boolean {
         return this.hasFivePrimeCap && this.polyATail.length > 0;
     }
@@ -64,7 +65,7 @@ export function add5PrimeCap(rna: RNA): ProcessedRNA {
 export function add3PrimePolyATail(
     rna: RNA,
     cleavageSite: number,
-    tailLength: number = 200
+    tailLength: number = DEFAULT_POLY_A_TAIL_LENGTH,
 ): ValidationResult<ProcessedRNA> {
     try {
         const sequence = rna.getSequence();
@@ -92,9 +93,10 @@ export function add3PrimePolyATail(
         const hasCap = rna instanceof ProcessedRNA ? rna.hasFivePrimeCap : false;
         const processedRNA = new ProcessedRNA(cleavedSequence, rna.rnaSubType, hasCap, polyATail);
         return success(processedRNA);
-
     } catch (error) {
-        return failure(`Failed to add poly-A tail: ${error instanceof Error ? error.message : String(error)}`);
+        return failure(
+            `Failed to add poly-A tail: ${error instanceof Error ? error.message : String(error)}`,
+        );
     }
 }
 
@@ -105,9 +107,9 @@ export function add3PrimePolyATail(
 export function add3PrimePolyATailAtSite(
     rna: RNA,
     polySite: PolyadenylationSite,
-    tailLength: number = 200
+    tailLength: number = DEFAULT_POLY_A_TAIL_LENGTH,
 ): ValidationResult<ProcessedRNA> {
-    const cleavageSite = polySite.cleavageSite ?? (polySite.position + polySite.signal.length + 15);
+    const cleavageSite = polySite.cleavageSite ?? polySite.position + polySite.signal.length + 15;
     return add3PrimePolyATail(rna, cleavageSite, tailLength);
 }
 
@@ -136,9 +138,10 @@ export function remove3PrimePolyATail(rna: RNA): ValidationResult<ProcessedRNA> 
 
         const processedRNA = new ProcessedRNA(sequence, rna.rnaSubType, false, '');
         return success(processedRNA);
-
     } catch (error) {
-        return failure(`Failed to remove poly-A tail: ${error instanceof Error ? error.message : String(error)}`);
+        return failure(
+            `Failed to remove poly-A tail: ${error instanceof Error ? error.message : String(error)}`,
+        );
     }
 }
 
@@ -156,9 +159,10 @@ export function remove5PrimeCap(rna: RNA): ValidationResult<ProcessedRNA> {
         }
 
         return failure('No 5\' cap found to remove');
-
     } catch (error) {
-        return failure(`Failed to remove 5' cap: ${error instanceof Error ? error.message : String(error)}`);
+        return failure(
+            `Failed to remove 5' cap: ${error instanceof Error ? error.message : String(error)}`,
+        );
     }
 }
 

@@ -2,6 +2,7 @@ import { transcribe, TranscriptionOptions } from '../../src/utils/transcription'
 import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
 import { isSuccess, isFailure } from '../../src/types/validation-result';
+import { MAX_PROMOTER_SEARCH_DISTANCE, MIN_INTRON_SIZE } from '../../src/constants/biological-constants';
 import { COMPLEX_GENE } from '../test-genes';
 
 describe('transcription', () => {
@@ -51,7 +52,7 @@ describe('transcription', () => {
         test('handles custom promoter pattern', () => {
             const options: TranscriptionOptions = {
                 promoterPattern: new NucleotidePattern('GGCCAATCT'), // CAAT box
-                maxPromoterSearchDistance: 200
+                maxPromoterSearchDistance: MAX_PROMOTER_SEARCH_DISTANCE
             };
 
             const result = transcribe(testGene, options);
@@ -61,9 +62,9 @@ describe('transcription', () => {
 
         test('fails when no promoters found', () => {
             // Create gene without promoter elements but with valid intron size
-            const nopromoterDNA = 'A'.repeat(200) + 'ATGAAAGT' + 'A'.repeat(20) + 'AGTTTGGGAATAAA';
+            const nopromoterDNA = 'A'.repeat(MAX_PROMOTER_SEARCH_DISTANCE) + 'ATGAAAGT' + 'A'.repeat(MIN_INTRON_SIZE) + 'AGTTTGGGAATAAA';
             const nopromoterGene = new Gene(nopromoterDNA, [
-                { start: 200, end: 208 },     // ATGAAAGT (8bp)
+                { start: MAX_PROMOTER_SEARCH_DISTANCE, end: 208 },     // ATGAAAGT (8bp)
                 { start: 230, end: 236 }      // TTTGGG (6bp) - 20bp intron between them
             ]);
 
@@ -99,7 +100,7 @@ describe('transcription', () => {
 
         test('transcribes gene without polyadenylation signal', () => {
             // Gene without AATAAA signal
-            const simpleGene = new Gene('A'.repeat(100) + 'TATAAAAG' + 'A'.repeat(20) + 'ATGAAATTTGGG', [
+            const simpleGene = new Gene('A'.repeat(100) + 'TATAAAAG' + 'A'.repeat(MIN_INTRON_SIZE) + 'ATGAAATTTGGG', [
                 { start: 128, end: 140 }
             ]);
 

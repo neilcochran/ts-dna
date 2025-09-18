@@ -1,4 +1,5 @@
 import { RNA } from '../../src/model/nucleic-acids/RNA';
+import { DEFAULT_POLY_A_TAIL_LENGTH } from '../../src/constants/biological-constants';
 import {
     ProcessedRNA,
     add5PrimeCap,
@@ -65,9 +66,9 @@ describe('rna-modifications', () => {
             expect(isSuccess(result)).toBe(true);
             if (isSuccess(result)) {
                 expect(result.data.getSequence()).toBe('AUGAAACCCGGG'); // Core sequence unchanged
-                expect(result.data.getPolyATailLength()).toBe(200); // Default tail length
-                expect(result.data.polyATail).toBe('A'.repeat(200)); // Poly-A tail stored separately
-                expect(result.data.getTotalLength()).toBe(12 + 200); // Total length with tail
+                expect(result.data.getPolyATailLength()).toBe(DEFAULT_POLY_A_TAIL_LENGTH); // Default tail length
+                expect(result.data.polyATail).toBe('A'.repeat(DEFAULT_POLY_A_TAIL_LENGTH)); // Poly-A tail stored separately
+                expect(result.data.getTotalLength()).toBe(12 + DEFAULT_POLY_A_TAIL_LENGTH); // Total length with tail
             }
         });
 
@@ -117,7 +118,7 @@ describe('rna-modifications', () => {
 
         test('fails with excessive tail length', () => {
             const rna = new RNA('AUGAAACCCGGG');
-            const result = add3PrimePolyATail(rna, 12, 2000);
+            const result = add3PrimePolyATail(rna, 12, 1500); // Exceeds the 1000 limit
 
             expect(isFailure(result)).toBe(true);
             if (isFailure(result)) {
@@ -133,7 +134,7 @@ describe('rna-modifications', () => {
                 position: 12,
                 signal: 'AAUAAA',
                 strength: 100,
-                cleavageSite: 20
+                cleavageSite: 20,
             };
 
             const result = add3PrimePolyATailAtSite(rna, polySite, 10);
@@ -151,7 +152,7 @@ describe('rna-modifications', () => {
             const polySite: PolyadenylationSite = {
                 position: 12,
                 signal: 'AAUAAA',
-                strength: 100
+                strength: 100,
                 // No cleavageSite provided
             };
 
@@ -306,5 +307,4 @@ describe('rna-modifications', () => {
             expect(isFullyProcessed(unprocessed)).toBe(false);
         });
     });
-
 });

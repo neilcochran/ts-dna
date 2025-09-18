@@ -1,3 +1,5 @@
+import { MIN_EXON_SIZE, MAX_EXON_SIZE, MIN_INTRON_SIZE, MAX_INTRON_SIZE } from '../constants/biological-constants';
+
 /**
  * Represents a region within a genomic sequence using 0-based indexing.
  * Used for representing introns, exons, promoter regions, and other genomic features.
@@ -102,11 +104,17 @@ export function validateExons(
 
         // Apply same biological constraints as multi-exon validation
         const exonLength = exon.end - exon.start;
-        if (exonLength < 3) {
-            return { success: false, error: `Exon is too small: ${exonLength} bp (minimum 3 bp required)` };
+        if (exonLength < MIN_EXON_SIZE) {
+            return {
+                success: false,
+                error: `Exon is too small: ${exonLength} bp (minimum ${MIN_EXON_SIZE} bp required)`,
+            };
         }
-        if (exonLength > 50000) {
-            return { success: false, error: `Exon is unrealistically large: ${exonLength} bp (maximum 50000 bp)` };
+        if (exonLength > MAX_EXON_SIZE) {
+            return {
+                success: false,
+                error: `Exon is unrealistically large: ${exonLength} bp (maximum ${MAX_EXON_SIZE} bp)`,
+            };
         }
 
         return { success: true };
@@ -137,13 +145,19 @@ export function validateExons(
         }
 
         // Biological constraint: minimum exon size (typically >= 3 bp for meaningful coding)
-        if (exon.end - exon.start < 3) {
-            return { success: false, error: `Exon ${i} is too small: ${exon.end - exon.start} bp (minimum 3 bp required)` };
+        if (exon.end - exon.start < MIN_EXON_SIZE) {
+            return {
+                success: false,
+                error: `Exon ${i} is too small: ${exon.end - exon.start} bp (minimum ${MIN_EXON_SIZE} bp required)`,
+            };
         }
 
         // Biological constraint: maximum realistic exon size (prevent unrealistic sequences)
-        if (exon.end - exon.start > 50000) {
-            return { success: false, error: `Exon ${i} is unrealistically large: ${exon.end - exon.start} bp (maximum 50000 bp)` };
+        if (exon.end - exon.start > MAX_EXON_SIZE) {
+            return {
+                success: false,
+                error: `Exon ${i} is unrealistically large: ${exon.end - exon.start} bp (maximum ${MAX_EXON_SIZE} bp)`,
+            };
         }
 
         // Create sweep events
@@ -204,10 +218,10 @@ export function validateExons(
         }
 
         // Maximum exon size (prevent unrealistic sequences)
-        if (exonLength > 50000) {
+        if (exonLength > MAX_EXON_SIZE) {
             return {
                 success: false,
-                error: `Exon is unrealistically large: ${exonLength} bp (maximum 50000 bp)`
+                error: `Exon is unrealistically large: ${exonLength} bp (maximum ${MAX_EXON_SIZE} bp)`,
             };
         }
     }
@@ -219,18 +233,18 @@ export function validateExons(
 
         // Validate minimum intron size (typically >= 20 bp for splicing machinery)
         const intronLength = nextExon.start - currentExon.end;
-        if (intronLength < 20) {
+        if (intronLength < MIN_INTRON_SIZE) {
             return {
                 success: false,
-                error: `Intron between exons is too small: ${intronLength} bp (minimum 20 bp required for proper splicing)`
+                error: `Intron between exons is too small: ${intronLength} bp (minimum ${MIN_INTRON_SIZE} bp required for proper splicing)`,
             };
         }
 
         // Biological constraint: maximum realistic intron size (prevent memory issues)
-        if (intronLength > 1000000) {
+        if (intronLength > MAX_INTRON_SIZE) {
             return {
                 success: false,
-                error: `Intron between exons is unrealistically large: ${intronLength} bp (maximum 1000000 bp)`
+                error: `Intron between exons is unrealistically large: ${intronLength} bp (maximum ${MAX_INTRON_SIZE} bp)`,
             };
         }
     }

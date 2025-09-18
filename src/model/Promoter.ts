@@ -80,11 +80,21 @@ export class Promoter {
         let score = 0;
 
         // Add points for key elements (simplified scoring)
-        if (this.hasElement('TATA')) score += 10;
-        if (this.hasElement('Inr')) score += 8;
-        if (this.hasElement('DPE')) score += 6;
-        if (this.hasElement('CAAT')) score += 5;
-        if (this.hasElement('GC')) score += 4;
+        if (this.hasElement('TATA')) {
+            score += 10;
+        }
+        if (this.hasElement('Inr')) {
+            score += 8;
+        }
+        if (this.hasElement('DPE')) {
+            score += 6;
+        }
+        if (this.hasElement('CAAT')) {
+            score += 5;
+        }
+        if (this.hasElement('GC')) {
+            score += 4;
+        }
 
         // Bonus for multiple elements (synergy)
         if (this.elements.length > 1) {

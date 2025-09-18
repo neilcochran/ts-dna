@@ -5,6 +5,7 @@ import {
     spliceRNA,
     validateReadingFrame
 } from '../../src/utils/rna-processing';
+import { CODON_LENGTH } from '../../src/constants/biological-constants';
 import { GenomicRegion } from '../../src/types/genomic-region';
 import { isSuccess, isFailure } from '../../src/types/validation-result';
 import { SIMPLE_TWO_EXON_GENE, THREE_EXON_GENE, SINGLE_EXON_GENE, INVALID_SPLICE_GENE } from '../test-genes';
@@ -95,18 +96,18 @@ describe('rna-processing', () => {
         });
 
         test('fails with incorrect reading frame length', () => {
-            const rna = new RNA('AUGAAACCCGGGUUAA'); // 16 nucleotides (not divisible by 3)
+            const rna = new RNA('AUGAAACCCGGGUUAA'); // 16 nucleotides (not divisible by ${CODON_LENGTH})
             const result = validateReadingFrame(rna);
 
             expect(isFailure(result)).toBe(true);
             if (isFailure(result)) {
-                expect(result.error).toContain('not divisible by 3');
+                expect(result.error).toContain('not divisible by ' + CODON_LENGTH);
             }
         });
 
         test('validates start codon when position specified', () => {
             const rna = new RNA('UUUAUGAAACCCGGG');
-            const result = validateReadingFrame(rna, 3);
+            const result = validateReadingFrame(rna, CODON_LENGTH);
 
             expect(isSuccess(result)).toBe(true);
         });
@@ -123,7 +124,7 @@ describe('rna-processing', () => {
 
         test('validates reading frame from custom start position', () => {
             const rna = new RNA('UUUUUUGGGCCCAAA'); // 12 nucleotides from position 3
-            const result = validateReadingFrame(rna, 3);
+            const result = validateReadingFrame(rna, CODON_LENGTH);
 
             expect(isSuccess(result)).toBe(true);
         });

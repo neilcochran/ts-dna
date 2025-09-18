@@ -5,8 +5,9 @@ import {
     processRNA,
     RNAProcessingOptions,
     DEFAULT_RNA_PROCESSING_OPTIONS,
-    convertProcessedRNAToMRNA
+    convertProcessedRNAToMRNA,
 } from '../../src/utils/mrna-processing';
+import { DEFAULT_POLY_A_TAIL_LENGTH } from '../../src/constants/biological-constants';
 import { GenomicRegion } from '../../src/types/genomic-region';
 import { isSuccess, isFailure } from '../../src/types/validation-result';
 import { SIMPLE_TWO_EXON_GENE, SINGLE_EXON_GENE, INVALID_SPLICE_GENE } from '../test-genes';
@@ -27,7 +28,7 @@ describe('mrna-processing', () => {
                 const mRNA = result.data;
                 expect(mRNA).toBeInstanceOf(MRNA);
                 expect(mRNA.hasFivePrimeCap()).toBe(true);
-                expect(mRNA.getPolyATailLength()).toBe(200); // default poly-A tail length
+                expect(mRNA.getPolyATailLength()).toBe(DEFAULT_POLY_A_TAIL_LENGTH); // default poly-A tail length
                 expect(mRNA.getCodingSequence()).toContain('AUG'); // should have start codon
                 expect(mRNA.isFullyProcessed()).toBe(true);
             }
@@ -44,15 +45,13 @@ describe('mrna-processing', () => {
                 const mRNA = result.data;
                 expect(mRNA.getCodingSequence()).toBe('AUGAAACCCGGGUAG'); // AUG to UAG (updated for stop codon)
                 expect(mRNA.hasFivePrimeCap()).toBe(true);
-                expect(mRNA.getPolyATailLength()).toBe(200); // Should get default poly-A tail
+                expect(mRNA.getPolyATailLength()).toBe(DEFAULT_POLY_A_TAIL_LENGTH); // Should get default poly-A tail
             }
         });
 
         test('respects custom processing options', () => {
             const geneSequence = 'ATGAAACCCGGGTAA';
-            const exons: GenomicRegion[] = [
-                { start: 0, end: 15, name: 'exon1' }
-            ];
+            const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
 
             const gene = new Gene(geneSequence, exons);
             const preMRNA = new PreMRNA('AUGAAACCCGGGUAA', gene, 0);
@@ -60,7 +59,7 @@ describe('mrna-processing', () => {
             const options: RNAProcessingOptions = {
                 addFivePrimeCap: false,
                 addPolyATail: false,
-                polyATailLength: 50
+                polyATailLength: 50,
             };
 
             const result = processRNA(preMRNA, options);
@@ -77,9 +76,7 @@ describe('mrna-processing', () => {
         test('processes gene with polyadenylation signal', () => {
             // Include realistic polyadenylation signal (AATAAA in DNA, AAUAAA in RNA)
             const geneSequence = 'ATGAAACCCGGGTAAAATAAACCCC';
-            const exons: GenomicRegion[] = [
-                { start: 0, end: 24, name: 'exon1' }
-            ];
+            const exons: GenomicRegion[] = [{ start: 0, end: 24, name: 'exon1' }];
 
             const gene = new Gene(geneSequence, exons);
             const preMRNA = new PreMRNA('AUGAAACCCGGGUAAAAUAAACCCC', gene, 0);
@@ -90,16 +87,14 @@ describe('mrna-processing', () => {
             if (isSuccess(result)) {
                 const mRNA = result.data;
                 // Should find polyadenylation signal and add poly-A tail
-                expect(mRNA.getPolyATailLength()).toBe(200);
+                expect(mRNA.getPolyATailLength()).toBe(DEFAULT_POLY_A_TAIL_LENGTH);
                 expect(mRNA.hasFivePrimeCap()).toBe(true);
             }
         });
 
         test('fails when no start codon found', () => {
             const geneSequence = 'AAACCCGGGTAA'; // no ATG start codon
-            const exons: GenomicRegion[] = [
-                { start: 0, end: 12, name: 'exon1' }
-            ];
+            const exons: GenomicRegion[] = [{ start: 0, end: 12, name: 'exon1' }];
 
             const gene = new Gene(geneSequence, exons);
             const preMRNA = new PreMRNA('AAACCCGGGUAA', gene, 0);
@@ -114,9 +109,7 @@ describe('mrna-processing', () => {
 
         test('fails when no stop codon found', () => {
             const geneSequence = 'ATGAAACCCGGGAAA'; // no stop codon
-            const exons: GenomicRegion[] = [
-                { start: 0, end: 15, name: 'exon1' }
-            ];
+            const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
 
             const gene = new Gene(geneSequence, exons);
             const preMRNA = new PreMRNA('AUGAAACCCGGGAAA', gene, 0);
@@ -147,7 +140,7 @@ describe('mrna-processing', () => {
         test('has expected default values', () => {
             expect(DEFAULT_RNA_PROCESSING_OPTIONS.addFivePrimeCap).toBe(true);
             expect(DEFAULT_RNA_PROCESSING_OPTIONS.addPolyATail).toBe(true);
-            expect(DEFAULT_RNA_PROCESSING_OPTIONS.polyATailLength).toBe(200);
+            expect(DEFAULT_RNA_PROCESSING_OPTIONS.polyATailLength).toBe(DEFAULT_POLY_A_TAIL_LENGTH);
             expect(DEFAULT_RNA_PROCESSING_OPTIONS.validateCodons).toBe(true);
             expect(DEFAULT_RNA_PROCESSING_OPTIONS.minimumCodingLength).toBe(true);
         });
@@ -160,7 +153,7 @@ describe('mrna-processing', () => {
                 getSequence: () => 'AUGAAACCCGGGUAA',
                 polyATail: 'AAAAAAAAAA',
                 hasFivePrimeCap: true,
-                rnaSubType: 'M_RNA'
+                rnaSubType: 'M_RNA',
             };
 
             const result = convertProcessedRNAToMRNA(processedRNA);
@@ -179,7 +172,7 @@ describe('mrna-processing', () => {
             const processedRNA = {
                 getSequence: () => 'AUGAAACCCGGGUAA',
                 polyATail: '',
-                hasFivePrimeCap: false
+                hasFivePrimeCap: false,
             };
 
             const result = convertProcessedRNAToMRNA(processedRNA);
@@ -194,9 +187,9 @@ describe('mrna-processing', () => {
 
         test('fails when no coding sequence found in ProcessedRNA', () => {
             const processedRNA = {
-                getSequence: () => 'GGGCCCAAAUUU',  // no start codon
+                getSequence: () => 'GGGCCCAAAUUU', // no start codon
                 polyATail: '',
-                hasFivePrimeCap: false
+                hasFivePrimeCap: false,
             };
 
             const result = convertProcessedRNAToMRNA(processedRNA);
@@ -222,7 +215,7 @@ describe('mrna-processing', () => {
 
                 // Verify proper processing
                 expect(mRNA.hasFivePrimeCap()).toBe(true);
-                expect(mRNA.getPolyATailLength()).toBe(200);
+                expect(mRNA.getPolyATailLength()).toBe(DEFAULT_POLY_A_TAIL_LENGTH);
                 expect(mRNA.isFullyProcessed()).toBe(true);
 
                 // Verify UTRs are properly identified
