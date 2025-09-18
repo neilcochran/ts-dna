@@ -4,17 +4,18 @@
  */
 
 export default {
-    // The glob patterns Jest uses to detect test files
-    testMatch: [
-        '**/test/**/*.test.ts'
+  // The glob patterns Jest uses to detect test files
+  testMatch: ['**/test/**/*.test.ts'],
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  // Improve performance for TypeScript compilation
+  extensionsToTreatAsEsm: [],
+  transform: {
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        useESM: false,
+      },
     ],
-    preset: 'ts-jest',
-    testEnvironment: 'node',
-    // Improve performance for TypeScript compilation
-    extensionsToTreatAsEsm: [],
-    transform: {
-        '^.+\\.ts$': ['ts-jest', {
-            useESM: false
-        }]
-    }
+  },
 };

@@ -7,12 +7,12 @@ import { AminoAcidSideChainType } from '../enums/amino-acid-side-chain-type';
  * Contains immutable characteristics independent of the specific codon
  */
 export interface AminoAcidData {
-    readonly name: string;
-    readonly abbrv: string;
-    readonly slc: string;
-    readonly molecularWeight: number;
-    readonly polarity: AminoAcidPolarity;
-    readonly charge: AminoAcidCharge;
-    readonly hydrophobicity: number;
-    readonly sideChainType: AminoAcidSideChainType;
+  readonly name: string;
+  readonly abbrv: string;
+  readonly slc: string;
+  readonly molecularWeight: number;
+  readonly polarity: AminoAcidPolarity;
+  readonly charge: AminoAcidCharge;
+  readonly hydrophobicity: number;
+  readonly sideChainType: AminoAcidSideChainType;
 }

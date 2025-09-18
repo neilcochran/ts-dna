@@ -3,10 +3,8 @@ import { InvalidCodonError } from '../model/errors/InvalidCodonError';
 import { InvalidSequenceError } from '../model/errors/InvalidSequenceError';
 import { NucleicAcidType } from '../enums/nucleic-acid-type';
 import { AminoAcidData } from '../types/amino-acid-data';
-import {
-    SLC_AMINO_ACID_DATA_MAP,
-    CODON_TO_SLC_MAP
-} from '../data/codon-map';
+import { CODON_LENGTH } from '../constants/biological-constants';
+import { SLC_AMINO_ACID_DATA_MAP, CODON_TO_SLC_MAP } from '../data/codon-map';
 
 export { SLC_AMINO_ACID_DATA_MAP, SLC_ALT_CODONS_MAP, CODON_TO_SLC_MAP } from '../data/codon-map';
 
@@ -27,14 +25,14 @@ export { SLC_AMINO_ACID_DATA_MAP, SLC_ALT_CODONS_MAP, CODON_TO_SLC_MAP } from '.
  * ```
  */
 export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
-    //leverage the AminoAcid constructor validation and simply attempt to create the AminoAcid object
-    //if it is not a valid amino acid codon it will throw an error
-    try {
-        const aminoAcid = new AminoAcid(codon);
-        return aminoAcid;
-    } catch (error) {
-        return undefined;
-    }
+  //leverage the AminoAcid constructor validation and simply attempt to create the AminoAcid object
+  //if it is not a valid amino acid codon it will throw an error
+  try {
+    const aminoAcid = new AminoAcid(codon);
+    return aminoAcid;
+  } catch (error) {
+    return undefined;
+  }
 };
 
 /**
@@ -47,17 +45,17 @@ export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
  * @internal
  */
 const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined => {
-    const sequence = codon.getSequence();
-    if(sequence.length !== 3) {
-        return undefined;
-    }
+  const sequence = codon.getSequence();
+  if (sequence.length !== CODON_LENGTH) {
+    return undefined;
+  }
 
-    const slc = CODON_TO_SLC_MAP[sequence];
-    if (!slc) {
-        return undefined;
-    }
+  const slc = CODON_TO_SLC_MAP[sequence];
+  if (!slc) {
+    return undefined;
+  }
 
-    return SLC_AMINO_ACID_DATA_MAP[slc];
+  return SLC_AMINO_ACID_DATA_MAP[slc];
 };
 
 /**
@@ -68,33 +66,37 @@ const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined => {
  * @returns A list of amino acids
  *
  * @throws {@link InvalidSequenceError}
- * Thrown if the sequence is undefined, or not evenly divisible by 3 (codons always have a length of 3)
+ * Thrown if the sequence is undefined, or not evenly divisible by {@link CODON_LENGTH} (codons always have a length of {@link CODON_LENGTH})
  *
  * @throws {@link InvalidCodonError}
  * Thrown if an invalid codon is encountered (one that does not code for an amino acid)
  *
  * @example
  * ```typescript
- *  //passing RNA comprised of 3 valid codons
- *  RNAtoAminoAcids(new RNA('GCAUGCGAC')); //returns a list of 3 AminoAcid objects
+ *  //passing RNA comprised of ${CODON_LENGTH} valid codons
+ *  RNAtoAminoAcids(new RNA('GCAUGCGAC')); //returns a list of ${CODON_LENGTH} AminoAcid objects
  * ```
  */
 export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
-    const sequence = rna.getSequence();
-    const aminoAcids: AminoAcid[] = [];
+  const sequence = rna.getSequence();
+  const aminoAcids: AminoAcid[] = [];
 
-    if(sequence.length % 3 !== 0) {
-        throw new InvalidSequenceError(`Invalid codon: ${sequence} The RNA sequence length must be divisible by 3 to be comprised of only codons`, sequence, NucleicAcidType.RNA);
+  if (sequence.length % CODON_LENGTH !== 0) {
+    throw new InvalidSequenceError(
+      `Invalid codon: ${sequence} The RNA sequence length must be divisible by ${CODON_LENGTH} to be comprised of only codons`,
+      sequence,
+      NucleicAcidType.RNA,
+    );
+  }
+  //parse sequence into groups of ${CODON_LENGTH} (codons)
+  sequence.match(new RegExp(`.{1,${CODON_LENGTH}}`, 'g'))?.forEach(codonSeq => {
+    const aminoAcid = getAminoAcidByCodon(new RNA(codonSeq));
+    if (!aminoAcid) {
+      throw new InvalidCodonError(`Invalid codon encountered: ${codonSeq}`, codonSeq);
     }
-    //parse sequence into groups of 3 (codons)
-    sequence.match(/.{1,3}/g)?.forEach(codonSeq => {
-        const aminoAcid = getAminoAcidByCodon(new RNA(codonSeq));
-        if(!aminoAcid) {
-            throw new InvalidCodonError(`Invalid codon encountered: ${codonSeq}`, codonSeq);
-        }
-        aminoAcids.push(aminoAcid);
-    });
-    return aminoAcids;
+    aminoAcids.push(aminoAcid);
+  });
+  return aminoAcids;
 };
 
 // Export for internal use by model classes

@@ -5,7 +5,8 @@
     },
     "extends": [
         "eslint:recommended",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+        "prettier"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -13,7 +14,8 @@
     },
     "plugins": [
         "@typescript-eslint",
-        "eslint-plugin-tsdoc"
+        "eslint-plugin-tsdoc",
+        "prettier"
     ],
     "ignorePatterns": "scripts/**",
     "rules": {
@@ -28,26 +30,7 @@
                 "ignoreRestSiblings": true
             }
         ],
-        "indent": [
-            "error",
-            4,
-            { "SwitchCase": 1 }
-        ],
-        "no-trailing-spaces": [
-            "error"
-        ],
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ],
+        "prettier/prettier": "error",
         "tsdoc/syntax": "error"
     }
 }

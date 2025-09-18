@@ -1,3 +1,9 @@
+## Version 0.16.0
+
+- Add realistic gene test sequences with proper biological constraints (20bp+ introns, valid splice sites, start/stop codons)
+- Establish biologically accurate test foundation for Gene → Pre-mRNA → mRNA → Protein pipeline
+- Validate end-to-end molecular biology modeling with scientifically accurate splice site recognition and processing
+
 ## Version 0.15.0
 
 - Add complete mature mRNA processing pipeline with processRNA() function that handles 5' capping, splicing, polyadenylation, and coding sequence identification
