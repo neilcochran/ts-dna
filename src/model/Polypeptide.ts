@@ -7,27 +7,26 @@ import { RNAtoAminoAcids } from '../utils/amino-acids';
  * The constructor enforces validation, and all members are readonly. Therefore, all Polypeptide objects can only exist in a valid state.
  */
 export class Polypeptide {
-    public readonly aminoAcidSequence: AminoAcid[];
-    public readonly rna: RNA;
+  public readonly aminoAcidSequence: AminoAcid[];
+  public readonly rna: RNA;
 
-    /**
-     * @param rna - An RNA sequence that codes for a sequence of amino acids
-     *
-     * @throws {@link InvalidSequenceError}
-     * Thrown if the RNA sequence length is not divisible by 3 (invalid codons)
-     *
-     * @throws {@link InvalidCodonError}
-     * Thrown if any codon is invalid (doesn't code for an amino acid)
-     *
-     * @example
-     * ```typescript
-     * const polypeptide = new Polypeptide(new RNA('AUGAAAGGG')); // 3 codons: Met-Lys-Gly
-     * console.log(polypeptide.aminoAcidSequence.length); // 3
-     * ```
-     */
-    constructor(rna: RNA) {
-        this.aminoAcidSequence = RNAtoAminoAcids(rna);
-        this.rna = rna;
-    }
+  /**
+   * @param rna - An RNA sequence that codes for a sequence of amino acids
+   *
+   * @throws {@link InvalidSequenceError}
+   * Thrown if the RNA sequence length is not divisible by 3 (invalid codons)
+   *
+   * @throws {@link InvalidCodonError}
+   * Thrown if any codon is invalid (doesn't code for an amino acid)
+   *
+   * @example
+   * ```typescript
+   * const polypeptide = new Polypeptide(new RNA('AUGAAAGGG')); // 3 codons: Met-Lys-Gly
+   * console.log(polypeptide.aminoAcidSequence.length); // 3
+   * ```
+   */
+  constructor(rna: RNA) {
+    this.aminoAcidSequence = RNAtoAminoAcids(rna);
+    this.rna = rna;
+  }
 }
-

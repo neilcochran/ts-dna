@@ -7,10 +7,10 @@ import { ValidationResult, success, failure } from '../types/validation-result';
 import { convertToRNA, START_CODON, STOP_CODONS } from './nucleic-acids';
 import { CODON_LENGTH } from '../constants/biological-constants';
 import {
-    SpliceVariant,
-    SplicingOutcome,
-    AlternativeSplicingOptions,
-    DEFAULT_ALTERNATIVE_SPLICING_OPTIONS
+  SpliceVariant,
+  SplicingOutcome,
+  AlternativeSplicingOptions,
+  DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 } from '../types/alternative-splicing';
 
 /**
@@ -31,31 +31,33 @@ import {
  * ```
  */
 export function spliceRNAWithVariant(
-    preMRNA: PreMRNA,
-    variant: SpliceVariant,
-    options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS
+  preMRNA: PreMRNA,
+  variant: SpliceVariant,
+  options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): ValidationResult<RNA> {
-    const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
-    const sourceGene = preMRNA.getSourceGene();
+  const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
+  const sourceGene = preMRNA.getSourceGene();
 
-    // Validate variant against gene structure
-    const validation = validateSpliceVariant(variant, sourceGene, opts);
-    if (!validation.success) {
-        return failure(validation.error);
-    }
+  // Validate variant against gene structure
+  const validation = validateSpliceVariant(variant, sourceGene, opts);
+  if (!validation.success) {
+    return failure(validation.error);
+  }
 
-    try {
-        // Get the variant sequence from the gene
-        const variantSequence = sourceGene.getVariantSequence(variant);
+  try {
+    // Get the variant sequence from the gene
+    const variantSequence = sourceGene.getVariantSequence(variant);
 
-        // Convert DNA to RNA
-        const variantDNA = new DNA(variantSequence);
-        const matureRNA = convertToRNA(variantDNA, RNASubType.M_RNA);
+    // Convert DNA to RNA
+    const variantDNA = new DNA(variantSequence);
+    const matureRNA = convertToRNA(variantDNA, RNASubType.M_RNA);
 
-        return success(matureRNA);
-    } catch (error) {
-        return failure(`Failed to process splice variant: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    return success(matureRNA);
+  } catch (error) {
+    return failure(
+      `Failed to process splice variant: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
 }
 
 /**
@@ -76,55 +78,52 @@ export function spliceRNAWithVariant(
  * ```
  */
 export function processAllSplicingVariants(
-    preMRNA: PreMRNA,
-    options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS
+  preMRNA: PreMRNA,
+  options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): ValidationResult<SplicingOutcome[]> {
-    const sourceGene = preMRNA.getSourceGene();
-    const splicingProfile = sourceGene.getSplicingProfile();
+  const sourceGene = preMRNA.getSourceGene();
+  const splicingProfile = sourceGene.getSplicingProfile();
 
-    if (!splicingProfile) {
-        return failure('Gene does not have an alternative splicing profile');
+  if (!splicingProfile) {
+    return failure('Gene does not have an alternative splicing profile');
+  }
+
+  const outcomes: SplicingOutcome[] = [];
+  const errors: string[] = [];
+
+  for (const variant of splicingProfile.variants) {
+    const splicingResult = spliceRNAWithVariant(preMRNA, variant, options);
+
+    if (splicingResult.success) {
+      try {
+        const matureRNA = splicingResult.data;
+        const codingSequence = matureRNA.getSequence();
+        const proteinLength = Math.floor(codingSequence.length / CODON_LENGTH);
+
+        const outcome = new SplicingOutcome(variant, matureRNA, codingSequence, proteinLength);
+
+        outcomes.push(outcome);
+      } catch (error) {
+        errors.push(
+          `Failed to create outcome for variant '${variant.name}': ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
+    } else {
+      errors.push(`Failed to process variant '${variant.name}': ${splicingResult.error}`);
     }
+  }
 
-    const outcomes: SplicingOutcome[] = [];
-    const errors: string[] = [];
+  if (errors.length > 0 && outcomes.length === 0) {
+    return failure(`All splice variants failed: ${errors.join('; ')}`);
+  }
 
-    for (const variant of splicingProfile.variants) {
-        const splicingResult = spliceRNAWithVariant(preMRNA, variant, options);
+  if (errors.length > 0) {
+    // Some variants succeeded, some failed - could return partial success
+    // For now, we'll include the errors in a warning but still return success
+    console.warn(`Some splice variants failed: ${errors.join('; ')}`);
+  }
 
-        if (splicingResult.success) {
-            try {
-                const matureRNA = splicingResult.data;
-                const codingSequence = matureRNA.getSequence();
-                const proteinLength = Math.floor(codingSequence.length / CODON_LENGTH);
-
-                const outcome = new SplicingOutcome(
-                    variant,
-                    matureRNA,
-                    codingSequence,
-                    proteinLength
-                );
-
-                outcomes.push(outcome);
-            } catch (error) {
-                errors.push(`Failed to create outcome for variant '${variant.name}': ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-        } else {
-            errors.push(`Failed to process variant '${variant.name}': ${splicingResult.error}`);
-        }
-    }
-
-    if (errors.length > 0 && outcomes.length === 0) {
-        return failure(`All splice variants failed: ${errors.join('; ')}`);
-    }
-
-    if (errors.length > 0) {
-        // Some variants succeeded, some failed - could return partial success
-        // For now, we'll include the errors in a warning but still return success
-        console.warn(`Some splice variants failed: ${errors.join('; ')}`);
-    }
-
-    return success(outcomes);
+  return success(outcomes);
 }
 
 /**
@@ -144,76 +143,86 @@ export function processAllSplicingVariants(
  * ```
  */
 export function validateSpliceVariant(
-    variant: SpliceVariant,
-    gene: Gene,
-    options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS
+  variant: SpliceVariant,
+  gene: Gene,
+  options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): ValidationResult<boolean> {
-    const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
-    const exons = gene.getExons();
+  const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
+  const exons = gene.getExons();
 
-    // Check minimum exon requirement
-    if (opts.requireMinimumExons && variant.includedExons.length < (opts.minimumExonCount ?? 1)) {
-        return failure(`Variant '${variant.name}' includes ${variant.includedExons.length} exons, but minimum required is ${opts.minimumExonCount}`);
+  // Check minimum exon requirement
+  if (opts.requireMinimumExons && variant.includedExons.length < (opts.minimumExonCount ?? 1)) {
+    return failure(
+      `Variant '${variant.name}' includes ${variant.includedExons.length} exons, but minimum required is ${opts.minimumExonCount}`,
+    );
+  }
+
+  // Check exon indices are valid
+  for (const exonIndex of variant.includedExons) {
+    if (exonIndex < 0 || exonIndex >= exons.length) {
+      return failure(
+        `Variant '${variant.name}' references invalid exon index ${exonIndex}. Gene has ${exons.length} exons.`,
+      );
     }
+  }
 
-    // Check exon indices are valid
-    for (const exonIndex of variant.includedExons) {
-        if (exonIndex < 0 || exonIndex >= exons.length) {
-            return failure(`Variant '${variant.name}' references invalid exon index ${exonIndex}. Gene has ${exons.length} exons.`);
+  // Check first/last exon restrictions
+  if (!opts.allowSkipFirstExon && !variant.includedExons.includes(0)) {
+    return failure(`Variant '${variant.name}' skips the first exon, which is not allowed`);
+  }
+
+  if (!opts.allowSkipLastExon && !variant.includedExons.includes(exons.length - 1)) {
+    return failure(`Variant '${variant.name}' skips the last exon, which is not allowed`);
+  }
+
+  // Validate reading frame if required
+  if (opts.validateReadingFrames) {
+    try {
+      const variantSequence = gene.getVariantSequence(variant);
+      if (variantSequence.length % CODON_LENGTH !== 0) {
+        return failure(
+          `Variant '${variant.name}' does not maintain reading frame: length ${variantSequence.length} is not divisible by 3`,
+        );
+      }
+    } catch (error) {
+      return failure(
+        `Failed to validate reading frame for variant '${variant.name}': ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  // Validate start/stop codons if required
+  if (opts.validateCodons) {
+    try {
+      const variantSequence = gene.getVariantSequence(variant);
+      const variantDNA = new DNA(variantSequence);
+      const rnaSequence = convertToRNA(variantDNA).getSequence();
+
+      if (rnaSequence.length >= CODON_LENGTH) {
+        const startCodon = rnaSequence.substring(0, CODON_LENGTH);
+        if (startCodon !== START_CODON) {
+          return failure(
+            `Variant '${variant.name}' does not start with start codon ${START_CODON}, found '${startCodon}'`,
+          );
         }
-    }
+      }
 
-    // Check first/last exon restrictions
-    if (!opts.allowSkipFirstExon && !variant.includedExons.includes(0)) {
-        return failure(`Variant '${variant.name}' skips the first exon, which is not allowed`);
-    }
-
-    if (!opts.allowSkipLastExon && !variant.includedExons.includes(exons.length - 1)) {
-        return failure(`Variant '${variant.name}' skips the last exon, which is not allowed`);
-    }
-
-    // Validate reading frame if required
-    if (opts.validateReadingFrames) {
-        try {
-            const variantSequence = gene.getVariantSequence(variant);
-            if (variantSequence.length % CODON_LENGTH !== 0) {
-                return failure(
-                    `Variant '${variant.name}' does not maintain reading frame: length ${variantSequence.length} is not divisible by 3`,
-                );
-            }
-        } catch (error) {
-            return failure(`Failed to validate reading frame for variant '${variant.name}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+      if (rnaSequence.length >= CODON_LENGTH) {
+        const lastCodon = rnaSequence.substring(rnaSequence.length - CODON_LENGTH);
+        if (!STOP_CODONS.includes(lastCodon)) {
+          return failure(
+            `Variant '${variant.name}' does not end with stop codon, found '${lastCodon}'`,
+          );
         }
+      }
+    } catch (error) {
+      return failure(
+        `Failed to validate codons for variant '${variant.name}': ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
+  }
 
-    // Validate start/stop codons if required
-    if (opts.validateCodons) {
-        try {
-            const variantSequence = gene.getVariantSequence(variant);
-            const variantDNA = new DNA(variantSequence);
-            const rnaSequence = convertToRNA(variantDNA).getSequence();
-
-            if (rnaSequence.length >= CODON_LENGTH) {
-                const startCodon = rnaSequence.substring(0, CODON_LENGTH);
-                if (startCodon !== START_CODON) {
-                    return failure(
-                        `Variant '${variant.name}' does not start with start codon ${START_CODON}, found '${startCodon}'`,
-                    );
-                }
-            }
-
-            if (rnaSequence.length >= CODON_LENGTH) {
-                const lastCodon = rnaSequence.substring(rnaSequence.length - CODON_LENGTH);
-                if (!STOP_CODONS.includes(lastCodon)) {
-                    return failure(`Variant '${variant.name}' does not end with stop codon, found '${lastCodon}'`);
-                }
-            }
-        } catch (error) {
-            return failure(`Failed to validate codons for variant '${variant.name}': ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-    }
-
-    return success(true);
+  return success(true);
 }
 
 /**
@@ -232,17 +241,17 @@ export function validateSpliceVariant(
  * ```
  */
 export function processDefaultSpliceVariant(
-    preMRNA: PreMRNA,
-    options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS
+  preMRNA: PreMRNA,
+  options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): ValidationResult<RNA> {
-    const sourceGene = preMRNA.getSourceGene();
-    const defaultVariant = sourceGene.getDefaultSplicingVariant();
+  const sourceGene = preMRNA.getSourceGene();
+  const defaultVariant = sourceGene.getDefaultSplicingVariant();
 
-    if (!defaultVariant) {
-        return failure('Gene does not have a default splice variant defined');
-    }
+  if (!defaultVariant) {
+    return failure('Gene does not have a default splice variant defined');
+  }
 
-    return spliceRNAWithVariant(preMRNA, defaultVariant, options);
+  return spliceRNAWithVariant(preMRNA, defaultVariant, options);
 }
 
 /**
@@ -263,21 +272,21 @@ export function processDefaultSpliceVariant(
  * ```
  */
 export function findVariantsByProteinLength(
-    preMRNA: PreMRNA,
-    minLength: number,
-    maxLength: number,
-    options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS
+  preMRNA: PreMRNA,
+  minLength: number,
+  maxLength: number,
+  options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): ValidationResult<SplicingOutcome[]> {
-    const allVariantsResult = processAllSplicingVariants(preMRNA, options);
+  const allVariantsResult = processAllSplicingVariants(preMRNA, options);
 
-    if (!allVariantsResult.success) {
-        return failure(allVariantsResult.error);
-    }
+  if (!allVariantsResult.success) {
+    return failure(allVariantsResult.error);
+  }
 
-    const matchingVariants = allVariantsResult.data.filter(outcome => {
-        const proteinLength = outcome.getAminoAcidCount();
-        return proteinLength >= minLength && proteinLength <= maxLength;
-    });
+  const matchingVariants = allVariantsResult.data.filter(outcome => {
+    const proteinLength = outcome.getAminoAcidCount();
+    return proteinLength >= minLength && proteinLength <= maxLength;
+  });
 
-    return success(matchingVariants);
+  return success(matchingVariants);
 }

@@ -29,20 +29,20 @@ export { unwrap };
  * ```
  */
 export const isValidNucleicAcid = (sequence: string, nucleicAcidType: NucleicAcidType): boolean => {
-    if (!sequence || sequence.length === 0) {
-        return false;
-    }
+  if (!sequence || sequence.length === 0) {
+    return false;
+  }
 
-    let regex = undefined;
-    switch(nucleicAcidType){
-        case NucleicAcidType.DNA:
-            regex = /^[AaTtCcGg]+$/;
-            break;
-        case NucleicAcidType.RNA:
-            regex =  /^[AaUuCcGg]+$/;
-            break;
-    }
-    return regex.test(sequence);
+  let regex = undefined;
+  switch (nucleicAcidType) {
+    case NucleicAcidType.DNA:
+      regex = /^[AaTtCcGg]+$/;
+      break;
+    case NucleicAcidType.RNA:
+      regex = /^[AaUuCcGg]+$/;
+      break;
+  }
+  return regex.test(sequence);
 };
 
 /**
@@ -65,22 +65,27 @@ export const isValidNucleicAcid = (sequence: string, nucleicAcidType: NucleicAci
  *  // returns { success: false, error: 'Invalid DNA sequence: contains invalid characters U, X' }
  * ```
  */
-export const validateNucleicAcid = (sequence: string, nucleicAcidType: NucleicAcidType): ValidationResult<string> => {
-    if (!sequence || sequence.length === 0) {
-        return failure('Sequence cannot be empty');
-    }
+export const validateNucleicAcid = (
+  sequence: string,
+  nucleicAcidType: NucleicAcidType,
+): ValidationResult<string> => {
+  if (!sequence || sequence.length === 0) {
+    return failure('Sequence cannot be empty');
+  }
 
-    const upperSequence = sequence.toUpperCase();
-    const validChars = nucleicAcidType === NucleicAcidType.DNA ? 'ATCG' : 'AUCG';
-    const invalidChars = [...upperSequence].filter(char => !validChars.includes(char));
+  const upperSequence = sequence.toUpperCase();
+  const validChars = nucleicAcidType === NucleicAcidType.DNA ? 'ATCG' : 'AUCG';
+  const invalidChars = [...upperSequence].filter(char => !validChars.includes(char));
 
-    if (invalidChars.length > 0) {
-        const uniqueInvalidChars = [...new Set(invalidChars)].join(', ');
-        const typeStr = nucleicAcidType === NucleicAcidType.DNA ? 'DNA' : 'RNA';
-        return failure(`Invalid ${typeStr} sequence: contains invalid characters ${uniqueInvalidChars}`);
-    }
+  if (invalidChars.length > 0) {
+    const uniqueInvalidChars = [...new Set(invalidChars)].join(', ');
+    const typeStr = nucleicAcidType === NucleicAcidType.DNA ? 'DNA' : 'RNA';
+    return failure(
+      `Invalid ${typeStr} sequence: contains invalid characters ${uniqueInvalidChars}`,
+    );
+  }
 
-    return success(upperSequence);
+  return success(upperSequence);
 };
 
 /**
@@ -97,17 +102,21 @@ export const validateNucleicAcid = (sequence: string, nucleicAcidType: NucleicAc
  *
  * @internal
  */
-export const getComplementSequence = (sequence: string | undefined, nucleicAcidType: NucleicAcidType): string | undefined => {
-    let complement: string | undefined;
-    if(sequence){
-        complement = '';
-        for (const base of sequence) {
-            complement += NucleicAcidType.DNA === nucleicAcidType
-                ? getDNABaseComplement(base) ?? ''
-                : getRNABaseComplement(base) ?? '';
-        }
+export const getComplementSequence = (
+  sequence: string | undefined,
+  nucleicAcidType: NucleicAcidType,
+): string | undefined => {
+  let complement: string | undefined;
+  if (sequence) {
+    complement = '';
+    for (const base of sequence) {
+      complement +=
+        NucleicAcidType.DNA === nucleicAcidType
+          ? (getDNABaseComplement(base) ?? '')
+          : (getRNABaseComplement(base) ?? '');
     }
-    return complement;
+  }
+  return complement;
 };
 
 /**
@@ -120,18 +129,18 @@ export const getComplementSequence = (sequence: string | undefined, nucleicAcidT
  * @internal
  */
 export const getDNABaseComplement = (base: string): string | undefined => {
-    switch(base){
-        case 'A':
-            return 'T';
-        case 'T':
-            return 'A';
-        case 'C':
-            return 'G';
-        case 'G':
-            return 'C';
-        default:
-            return undefined;
-    }
+  switch (base) {
+    case 'A':
+      return 'T';
+    case 'T':
+      return 'A';
+    case 'C':
+      return 'G';
+    case 'G':
+      return 'C';
+    default:
+      return undefined;
+  }
 };
 
 /**
@@ -144,16 +153,16 @@ export const getDNABaseComplement = (base: string): string | undefined => {
  * @internal
  */
 export const getRNABaseComplement = (base: string): string | undefined => {
-    switch(base){
-        case 'A':
-            return 'U';
-        case 'U':
-            return 'A';
-        case 'C':
-            return 'G';
-        case 'G':
-            return 'C';
-        default:
-            return undefined;
-    }
+  switch (base) {
+    case 'A':
+      return 'U';
+    case 'U':
+      return 'A';
+    case 'C':
+      return 'G';
+    case 'G':
+      return 'C';
+    default:
+      return undefined;
+  }
 };

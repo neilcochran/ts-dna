@@ -1,16 +1,15 @@
-
 import { RNA, AminoAcid, InvalidCodonError } from '../../src/model';
 import {
-    getAminoAcidByCodon,
-    getAminoAcidDataByCodon,
-    SLC_ALT_CODONS_MAP,
-    SLC_AMINO_ACID_DATA_MAP
+  getAminoAcidByCodon,
+  getAminoAcidDataByCodon,
+  SLC_ALT_CODONS_MAP,
+  SLC_AMINO_ACID_DATA_MAP,
 } from '../../src/utils/amino-acids';
 import {
-    STOP_CODON_UAA,
-    STOP_CODON_UAG,
-    STOP_CODON_UGA,
-    STOP_CODONS
+  STOP_CODON_UAA,
+  STOP_CODON_UAG,
+  STOP_CODON_UGA,
+  STOP_CODONS,
 } from '../../src/utils/nucleic-acids';
 import { AminoAcidPolarity, AminoAcidCharge, AminoAcidSideChainType } from '../../src';
 import * as TestUtils from './test-utils';
@@ -20,72 +19,81 @@ import * as TestUtils from './test-utils';
 */
 
 test('create AminoAcid (Alanine) from valid RNA codon', () => {
-    expect(
-        TestUtils.isCorrectAminoAcid(new AminoAcid(TestUtils.ALANINE_RNA_CODON_1), SLC_AMINO_ACID_DATA_MAP['A'])
-    ).toEqual(true);
+  expect(
+    TestUtils.isCorrectAminoAcid(
+      new AminoAcid(TestUtils.ALANINE_RNA_CODON_1),
+      SLC_AMINO_ACID_DATA_MAP['A'],
+    ),
+  ).toEqual(true);
 });
 
 test('create invalid AminoAcid from RNA with wrong length', () => {
-    expect(() => new AminoAcid(new RNA('AU'))).toThrowError(InvalidCodonError);
+  expect(() => new AminoAcid(new RNA('AU'))).toThrowError(InvalidCodonError);
 });
 
 test('create invalid AminoAcid (Alanine) from too long RNA', () => {
-    expect(() => new AminoAcid(new RNA('AUCG'))).toThrowError(InvalidCodonError);
+  expect(() => new AminoAcid(new RNA('AUCG'))).toThrowError(InvalidCodonError);
 });
 
 test('create invalid AminoAcid from stop codon UAA', () => {
-    expect(() => new AminoAcid(new RNA(STOP_CODON_UAA))).toThrowError(InvalidCodonError);
+  expect(() => new AminoAcid(new RNA(STOP_CODON_UAA))).toThrowError(InvalidCodonError);
 });
 
 test('create invalid AminoAcid from stop codon UAG', () => {
-    expect(() => new AminoAcid(new RNA(STOP_CODON_UAG))).toThrowError(InvalidCodonError);
+  expect(() => new AminoAcid(new RNA(STOP_CODON_UAG))).toThrowError(InvalidCodonError);
 });
 
 test('create invalid AminoAcid from stop codon UGA', () => {
-    expect(() => new AminoAcid(new RNA(STOP_CODON_UGA))).toThrowError(InvalidCodonError);
+  expect(() => new AminoAcid(new RNA(STOP_CODON_UGA))).toThrowError(InvalidCodonError);
 });
 
 test('getAminoAcidByCodon returns undefined for all stop codons', () => {
-    for (const stopCodon of STOP_CODONS) {
-        expect(getAminoAcidByCodon(new RNA(stopCodon))).toBeUndefined();
-    }
+  for (const stopCodon of STOP_CODONS) {
+    expect(getAminoAcidByCodon(new RNA(stopCodon))).toBeUndefined();
+  }
 });
 
 test('getAminoAcidDataByCodon returns undefined for all stop codons', () => {
-    for (const stopCodon of STOP_CODONS) {
-        expect(getAminoAcidDataByCodon(new RNA(stopCodon))).toBeUndefined();
-    }
+  for (const stopCodon of STOP_CODONS) {
+    expect(getAminoAcidDataByCodon(new RNA(stopCodon))).toBeUndefined();
+  }
 });
 
 test('get all AminoAcid (Alanine) alternate codons', () => {
-    const expectedCodons = SLC_ALT_CODONS_MAP['A'].map(codonStr => new RNA(codonStr));
-    expect(
-        new AminoAcid(TestUtils.ALANINE_RNA_CODON_2).getAllAlternateCodons()
-    ).toEqual(expectedCodons);
+  const expectedCodons = SLC_ALT_CODONS_MAP['A'].map(codonStr => new RNA(codonStr));
+  expect(new AminoAcid(TestUtils.ALANINE_RNA_CODON_2).getAllAlternateCodons()).toEqual(
+    expectedCodons,
+  );
 });
 
 test('ensure alternate AminoAcids (Alanine) return the same alternate RNA codons', () => {
-    expect(
-        new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).getAllAlternateCodons()
-    ).toEqual(new AminoAcid(TestUtils.ALANINE_RNA_CODON_2).getAllAlternateCodons());
+  expect(new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).getAllAlternateCodons()).toEqual(
+    new AminoAcid(TestUtils.ALANINE_RNA_CODON_2).getAllAlternateCodons(),
+  );
 });
 
 test('RNA AminoAcids (Alanine) is equal', () => {
-    expect(
-        new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).equals(new AminoAcid(TestUtils.ALANINE_RNA_CODON_1))
-    ).toEqual(true);
+  expect(
+    new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).equals(
+      new AminoAcid(TestUtils.ALANINE_RNA_CODON_1),
+    ),
+  ).toEqual(true);
 });
 
 test('RNA AminoAcids (Alanine) is not equal', () => {
-    expect(
-        new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).equals(new AminoAcid(TestUtils.ALANINE_RNA_CODON_2))
-    ).toEqual(false);
+  expect(
+    new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).equals(
+      new AminoAcid(TestUtils.ALANINE_RNA_CODON_2),
+    ),
+  ).toEqual(false);
 });
 
 test('RNA AminoAcids (Alanine) are alternates', () => {
-    expect(
-        new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).isAlternateOf(new AminoAcid(TestUtils.ALANINE_RNA_CODON_2))
-    ).toEqual(true);
+  expect(
+    new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).isAlternateOf(
+      new AminoAcid(TestUtils.ALANINE_RNA_CODON_2),
+    ),
+  ).toEqual(true);
 });
 
 /*
@@ -93,31 +101,30 @@ test('RNA AminoAcids (Alanine) are alternates', () => {
 */
 
 test('testing creation of all codon variations for each amino acid', () => {
-    let slc: keyof typeof SLC_AMINO_ACID_DATA_MAP;
-    for(slc in SLC_AMINO_ACID_DATA_MAP) {
-        const aminoAcidData = SLC_AMINO_ACID_DATA_MAP[slc];
-        for(const codonStr of SLC_ALT_CODONS_MAP[slc]) {
-            const codon = new RNA(codonStr);
-            expect(TestUtils.isCorrectAminoAcid(new AminoAcid(codon), aminoAcidData)).toEqual(true);
-        }
+  let slc: keyof typeof SLC_AMINO_ACID_DATA_MAP;
+  for (slc in SLC_AMINO_ACID_DATA_MAP) {
+    const aminoAcidData = SLC_AMINO_ACID_DATA_MAP[slc];
+    for (const codonStr of SLC_ALT_CODONS_MAP[slc]) {
+      const codon = new RNA(codonStr);
+      expect(TestUtils.isCorrectAminoAcid(new AminoAcid(codon), aminoAcidData)).toEqual(true);
     }
+  }
 });
 
 test('testing AminoAcid retrieval via getAminoAcidByCodon() using all codon variations for each amino acid', () => {
-    let slc: keyof typeof SLC_AMINO_ACID_DATA_MAP;
-    for(slc in SLC_AMINO_ACID_DATA_MAP) {
-        const aminoAcidData = SLC_AMINO_ACID_DATA_MAP[slc];
-        for(const codonStr of SLC_ALT_CODONS_MAP[slc]) {
-            const codon = new RNA(codonStr);
-            const aminoAcid = getAminoAcidByCodon(codon);
-            if(aminoAcid) {
-                expect(TestUtils.isCorrectAminoAcid(aminoAcid, aminoAcidData)).toEqual(true);
-            }
-            else {
-                throw new Error(`Invalid codon sequence did not return an AminoAcid: ${codonStr}`);
-            }
-        }
+  let slc: keyof typeof SLC_AMINO_ACID_DATA_MAP;
+  for (slc in SLC_AMINO_ACID_DATA_MAP) {
+    const aminoAcidData = SLC_AMINO_ACID_DATA_MAP[slc];
+    for (const codonStr of SLC_ALT_CODONS_MAP[slc]) {
+      const codon = new RNA(codonStr);
+      const aminoAcid = getAminoAcidByCodon(codon);
+      if (aminoAcid) {
+        expect(TestUtils.isCorrectAminoAcid(aminoAcid, aminoAcidData)).toEqual(true);
+      } else {
+        throw new Error(`Invalid codon sequence did not return an AminoAcid: ${codonStr}`);
+      }
     }
+  }
 });
 
 /*
@@ -125,98 +132,98 @@ test('testing AminoAcid retrieval via getAminoAcidByCodon() using all codon vari
 */
 
 test('AminoAcid has correct molecular weight for Alanine', () => {
-    const alanine = new AminoAcid(new RNA('GCA'));
-    expect(alanine.molecularWeight).toBe(89.094);
+  const alanine = new AminoAcid(new RNA('GCA'));
+  expect(alanine.molecularWeight).toBe(89.094);
 });
 
 test('AminoAcid has correct polarity for Alanine (nonpolar)', () => {
-    const alanine = new AminoAcid(new RNA('GCA'));
-    expect(alanine.polarity).toBe(AminoAcidPolarity.NONPOLAR);
+  const alanine = new AminoAcid(new RNA('GCA'));
+  expect(alanine.polarity).toBe(AminoAcidPolarity.NONPOLAR);
 });
 
 test('AminoAcid has correct charge for Alanine (neutral)', () => {
-    const alanine = new AminoAcid(new RNA('GCA'));
-    expect(alanine.charge).toBe(AminoAcidCharge.NEUTRAL);
+  const alanine = new AminoAcid(new RNA('GCA'));
+  expect(alanine.charge).toBe(AminoAcidCharge.NEUTRAL);
 });
 
 test('AminoAcid has correct hydrophobicity for Alanine', () => {
-    const alanine = new AminoAcid(new RNA('GCA'));
-    expect(alanine.hydrophobicity).toBe(1.8);
+  const alanine = new AminoAcid(new RNA('GCA'));
+  expect(alanine.hydrophobicity).toBe(1.8);
 });
 
 test('AminoAcid has correct side chain type for Alanine (aliphatic)', () => {
-    const alanine = new AminoAcid(new RNA('GCA'));
-    expect(alanine.sideChainType).toBe(AminoAcidSideChainType.ALIPHATIC);
+  const alanine = new AminoAcid(new RNA('GCA'));
+  expect(alanine.sideChainType).toBe(AminoAcidSideChainType.ALIPHATIC);
 });
 
 test('AminoAcid properties for charged amino acids - Lysine (positive)', () => {
-    const lysine = new AminoAcid(new RNA('AAA'));
-    expect(lysine.charge).toBe(AminoAcidCharge.POSITIVE);
-    expect(lysine.polarity).toBe(AminoAcidPolarity.POLAR);
-    expect(lysine.sideChainType).toBe(AminoAcidSideChainType.BASIC);
-    expect(lysine.molecularWeight).toBe(146.189);
-    expect(lysine.hydrophobicity).toBe(-3.9);
+  const lysine = new AminoAcid(new RNA('AAA'));
+  expect(lysine.charge).toBe(AminoAcidCharge.POSITIVE);
+  expect(lysine.polarity).toBe(AminoAcidPolarity.POLAR);
+  expect(lysine.sideChainType).toBe(AminoAcidSideChainType.BASIC);
+  expect(lysine.molecularWeight).toBe(146.189);
+  expect(lysine.hydrophobicity).toBe(-3.9);
 });
 
 test('AminoAcid properties for charged amino acids - Aspartic acid (negative)', () => {
-    const asparticAcid = new AminoAcid(new RNA('GAC'));
-    expect(asparticAcid.charge).toBe(AminoAcidCharge.NEGATIVE);
-    expect(asparticAcid.polarity).toBe(AminoAcidPolarity.POLAR);
-    expect(asparticAcid.sideChainType).toBe(AminoAcidSideChainType.ACIDIC);
-    expect(asparticAcid.molecularWeight).toBe(133.104);
-    expect(asparticAcid.hydrophobicity).toBe(-3.5);
+  const asparticAcid = new AminoAcid(new RNA('GAC'));
+  expect(asparticAcid.charge).toBe(AminoAcidCharge.NEGATIVE);
+  expect(asparticAcid.polarity).toBe(AminoAcidPolarity.POLAR);
+  expect(asparticAcid.sideChainType).toBe(AminoAcidSideChainType.ACIDIC);
+  expect(asparticAcid.molecularWeight).toBe(133.104);
+  expect(asparticAcid.hydrophobicity).toBe(-3.5);
 });
 
 test('AminoAcid properties for aromatic amino acids - Phenylalanine', () => {
-    const phenylalanine = new AminoAcid(new RNA('UUC'));
-    expect(phenylalanine.charge).toBe(AminoAcidCharge.NEUTRAL);
-    expect(phenylalanine.polarity).toBe(AminoAcidPolarity.NONPOLAR);
-    expect(phenylalanine.sideChainType).toBe(AminoAcidSideChainType.AROMATIC);
-    expect(phenylalanine.molecularWeight).toBe(165.192);
-    expect(phenylalanine.hydrophobicity).toBe(2.8);
+  const phenylalanine = new AminoAcid(new RNA('UUC'));
+  expect(phenylalanine.charge).toBe(AminoAcidCharge.NEUTRAL);
+  expect(phenylalanine.polarity).toBe(AminoAcidPolarity.NONPOLAR);
+  expect(phenylalanine.sideChainType).toBe(AminoAcidSideChainType.AROMATIC);
+  expect(phenylalanine.molecularWeight).toBe(165.192);
+  expect(phenylalanine.hydrophobicity).toBe(2.8);
 });
 
 test('AminoAcid properties for sulfur-containing amino acids - Cysteine', () => {
-    const cysteine = new AminoAcid(new RNA('UGC'));
-    expect(cysteine.charge).toBe(AminoAcidCharge.NEUTRAL);
-    expect(cysteine.polarity).toBe(AminoAcidPolarity.POLAR);
-    expect(cysteine.sideChainType).toBe(AminoAcidSideChainType.SULFUR_CONTAINING);
-    expect(cysteine.molecularWeight).toBe(121.154);
-    expect(cysteine.hydrophobicity).toBe(2.5);
+  const cysteine = new AminoAcid(new RNA('UGC'));
+  expect(cysteine.charge).toBe(AminoAcidCharge.NEUTRAL);
+  expect(cysteine.polarity).toBe(AminoAcidPolarity.POLAR);
+  expect(cysteine.sideChainType).toBe(AminoAcidSideChainType.SULFUR_CONTAINING);
+  expect(cysteine.molecularWeight).toBe(121.154);
+  expect(cysteine.hydrophobicity).toBe(2.5);
 });
 
 test('AminoAcid properties for imino acid - Proline', () => {
-    const proline = new AminoAcid(new RNA('CCA'));
-    expect(proline.charge).toBe(AminoAcidCharge.NEUTRAL);
-    expect(proline.polarity).toBe(AminoAcidPolarity.NONPOLAR);
-    expect(proline.sideChainType).toBe(AminoAcidSideChainType.IMINO);
-    expect(proline.molecularWeight).toBe(115.132);
-    expect(proline.hydrophobicity).toBe(-1.6);
+  const proline = new AminoAcid(new RNA('CCA'));
+  expect(proline.charge).toBe(AminoAcidCharge.NEUTRAL);
+  expect(proline.polarity).toBe(AminoAcidPolarity.NONPOLAR);
+  expect(proline.sideChainType).toBe(AminoAcidSideChainType.IMINO);
+  expect(proline.molecularWeight).toBe(115.132);
+  expect(proline.hydrophobicity).toBe(-1.6);
 });
 
 test('AminoAcid properties consistent across alternate codons - Leucine', () => {
-    const leucine1 = new AminoAcid(new RNA('UUA'));
-    const leucine2 = new AminoAcid(new RNA('CUG'));
+  const leucine1 = new AminoAcid(new RNA('UUA'));
+  const leucine2 = new AminoAcid(new RNA('CUG'));
 
-    expect(leucine1.molecularWeight).toBe(leucine2.molecularWeight);
-    expect(leucine1.polarity).toBe(leucine2.polarity);
-    expect(leucine1.charge).toBe(leucine2.charge);
-    expect(leucine1.hydrophobicity).toBe(leucine2.hydrophobicity);
-    expect(leucine1.sideChainType).toBe(leucine2.sideChainType);
+  expect(leucine1.molecularWeight).toBe(leucine2.molecularWeight);
+  expect(leucine1.polarity).toBe(leucine2.polarity);
+  expect(leucine1.charge).toBe(leucine2.charge);
+  expect(leucine1.hydrophobicity).toBe(leucine2.hydrophobicity);
+  expect(leucine1.sideChainType).toBe(leucine2.sideChainType);
 });
 
 test('all amino acids have valid properties from data map', () => {
-    let slc: keyof typeof SLC_AMINO_ACID_DATA_MAP;
-    for(slc in SLC_AMINO_ACID_DATA_MAP) {
-        const data = SLC_AMINO_ACID_DATA_MAP[slc];
+  let slc: keyof typeof SLC_AMINO_ACID_DATA_MAP;
+  for (slc in SLC_AMINO_ACID_DATA_MAP) {
+    const data = SLC_AMINO_ACID_DATA_MAP[slc];
 
-        expect(typeof data.molecularWeight).toBe('number');
-        expect(data.molecularWeight).toBeGreaterThan(0);
+    expect(typeof data.molecularWeight).toBe('number');
+    expect(data.molecularWeight).toBeGreaterThan(0);
 
-        expect(Object.values(AminoAcidPolarity)).toContain(data.polarity);
-        expect(Object.values(AminoAcidCharge)).toContain(data.charge);
-        expect(Object.values(AminoAcidSideChainType)).toContain(data.sideChainType);
+    expect(Object.values(AminoAcidPolarity)).toContain(data.polarity);
+    expect(Object.values(AminoAcidCharge)).toContain(data.charge);
+    expect(Object.values(AminoAcidSideChainType)).toContain(data.sideChainType);
 
-        expect(typeof data.hydrophobicity).toBe('number');
-    }
+    expect(typeof data.hydrophobicity).toBe('number');
+  }
 });

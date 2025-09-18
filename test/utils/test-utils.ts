@@ -12,10 +12,18 @@ export const ALANINE_DNA_CODON_1 = new DNA('GCT');
 export const ALANINE_DNA_CODON_2 = new DNA('GCG');
 
 //ALL_AMINO_ACIDS_1 vs ALL_AMINO_ACIDS_2 use alternate codons but will code for the same amino acid sequence
-export const RNA_ALL_AMINO_ACIDS_1 = new RNA('GCAUGCGACGAAUUCGGACACAUAAAAUUAAUGAACCCACAAAGAAGCACAGUAUGGUAC');
-export const RNA_ALL_AMINO_ACIDS_2 = new RNA('GCCUGUGAUGAGUUUGGCCAUAUCAAGUUGAUGAAUCCCCAGAGGAGUACCGUCUGGUAU');
-export const DNA_ALL_AMINO_ACIDS_1 = new DNA('GCATGCGACGAATTCGGACACATAAAATTAATGAACCCACAAAGAAGCACAGTATGGTAC');
-export const DNA_ALL_AMINO_ACIDS_2 = new DNA('GCCTGTGATGAGTTTGGCCATATCAAGTTGATGAATCCCCAGAGGAGTACCGTCTGGTAT');
+export const RNA_ALL_AMINO_ACIDS_1 = new RNA(
+  'GCAUGCGACGAAUUCGGACACAUAAAAUUAAUGAACCCACAAAGAAGCACAGUAUGGUAC',
+);
+export const RNA_ALL_AMINO_ACIDS_2 = new RNA(
+  'GCCUGUGAUGAGUUUGGCCAUAUCAAGUUGAUGAAUCCCCAGAGGAGUACCGUCUGGUAU',
+);
+export const DNA_ALL_AMINO_ACIDS_1 = new DNA(
+  'GCATGCGACGAATTCGGACACATAAAATTAATGAACCCACAAAGAAGCACAGTATGGTAC',
+);
+export const DNA_ALL_AMINO_ACIDS_2 = new DNA(
+  'GCCTGTGATGAGTTTGGCCATATCAAGTTGATGAATCCCCAGAGGAGTACCGTCTGGTAT',
+);
 
 //the sequence of amino acid SLCs produced by the above codons (all amino acids in alphabetic order by SLC)
 export const ALL_AMINO_ACIDS_SLC_SEQ = 'ACDEFGHIKLMNPQRSTVWY';
@@ -29,38 +37,48 @@ export const NUCLEOTIDE_PATTERN_REGEX = '^[AaGgCcTt]*[CcTt]?[Aa]+([AaTt][CcTt]){
 export const NUCLEOTIDE_PATTERN_REGEX_COMP = '/^[AaGgCcTt]*[GgAa]?[Tt]+([AaTt][GgAa]){3}$/';
 //Examples of sequences that pass the above regex
 export const NUCLEOTIDE_PATTERN_PASSING_SEQS = [
-    //N*             YA+ (WY){3}
-    'ATCGATCGATCGATCGCAAATTTTTT',
-    //N*             YA+ (WY){3}
-    'ATCGATCGATCGATCGCAAAACTCTC',
-    //N*              A+(WY){3}
-    'ATCGATCGATCGATCGCAACTCTC',
-    //N*A+(WY){3}
-    'GAACTCTC',
-    //N*YA+(WY){3}
-    'GCAACTCTC',
-    //N*YA+(WY){3}
-    'GTAACTCTC'
+  //N*             YA+ (WY){3}
+  'ATCGATCGATCGATCGCAAATTTTTT',
+  //N*             YA+ (WY){3}
+  'ATCGATCGATCGATCGCAAAACTCTC',
+  //N*              A+(WY){3}
+  'ATCGATCGATCGATCGCAACTCTC',
+  //N*A+(WY){3}
+  'GAACTCTC',
+  //N*YA+(WY){3}
+  'GCAACTCTC',
+  //N*YA+(WY){3}
+  'GTAACTCTC',
 ];
 
-export const isCorrectAminoAcid = (aminoAcid: AminoAcid, correctAminoAcidData: { name: string; abbrv: string; slc: string }): boolean => {
-    const keysToCheck: (keyof { name: string; abbrv: string; slc: string })[] = ['name', 'abbrv', 'slc'];
-    for(const k of keysToCheck) {
-        if(aminoAcid[k as keyof AminoAcid] !== correctAminoAcidData[k]) {
-            return false;
-        }
+export const isCorrectAminoAcid = (
+  aminoAcid: AminoAcid,
+  correctAminoAcidData: { name: string; abbrv: string; slc: string },
+): boolean => {
+  const keysToCheck: (keyof { name: string; abbrv: string; slc: string })[] = [
+    'name',
+    'abbrv',
+    'slc',
+  ];
+  for (const k of keysToCheck) {
+    if (aminoAcid[k as keyof AminoAcid] !== correctAminoAcidData[k]) {
+      return false;
     }
-    return true;
+  }
+  return true;
 };
 
-export const isCorrectAminoAcidSequence = (aminoAcidSequence: AminoAcid[], correctSLCSequence: string): boolean => {
-    if(aminoAcidSequence.length !== correctSLCSequence.length) {
-        return false;
+export const isCorrectAminoAcidSequence = (
+  aminoAcidSequence: AminoAcid[],
+  correctSLCSequence: string,
+): boolean => {
+  if (aminoAcidSequence.length !== correctSLCSequence.length) {
+    return false;
+  }
+  for (let i = 0; i < correctSLCSequence.length; i++) {
+    if (aminoAcidSequence[i].slc !== correctSLCSequence[i]) {
+      return false;
     }
-    for(let i = 0; i < correctSLCSequence.length; i++) {
-        if(aminoAcidSequence[i].slc !== correctSLCSequence[i]) {
-            return false;
-        }
-    }
-    return true;
+  }
+  return true;
 };

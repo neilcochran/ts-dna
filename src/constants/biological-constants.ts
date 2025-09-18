@@ -24,15 +24,15 @@ export const DEFAULT_CLEAVAGE_OFFSET = 15; // Default cleavage site offset when 
 
 // Polyadenylation signal variants with their relative strengths
 export const POLYA_SIGNALS = {
-    AAUAAA: 100, // Canonical signal - strongest
-    AUUAAA: 80, // Most common variant
-    AGUAAA: 30, // Weaker but functional
-    AAUAUA: 25, // Less efficient
-    AAUACA: 20, // Weak but documented
-    CAUAAA: 18, // Rare variant
-    GAUAAA: 15, // Very rare
-    AAAAAG: 12, // Alternative pathway
-    AAAACA: 10, // Very weak
+  AAUAAA: 100, // Canonical signal - strongest
+  AUUAAA: 80, // Most common variant
+  AGUAAA: 30, // Weaker but functional
+  AAUAUA: 25, // Less efficient
+  AAUACA: 20, // Weak but documented
+  CAUAAA: 18, // Rare variant
+  GAUAAA: 15, // Very rare
+  AAAAAG: 12, // Alternative pathway
+  AAAACA: 10, // Very weak
 } as const;
 
 // Default signal strength for unrecognized polyadenylation signals

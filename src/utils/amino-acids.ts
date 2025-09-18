@@ -25,14 +25,14 @@ export { SLC_AMINO_ACID_DATA_MAP, SLC_ALT_CODONS_MAP, CODON_TO_SLC_MAP } from '.
  * ```
  */
 export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
-    //leverage the AminoAcid constructor validation and simply attempt to create the AminoAcid object
-    //if it is not a valid amino acid codon it will throw an error
-    try {
-        const aminoAcid = new AminoAcid(codon);
-        return aminoAcid;
-    } catch (error) {
-        return undefined;
-    }
+  //leverage the AminoAcid constructor validation and simply attempt to create the AminoAcid object
+  //if it is not a valid amino acid codon it will throw an error
+  try {
+    const aminoAcid = new AminoAcid(codon);
+    return aminoAcid;
+  } catch (error) {
+    return undefined;
+  }
 };
 
 /**
@@ -45,17 +45,17 @@ export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
  * @internal
  */
 const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined => {
-    const sequence = codon.getSequence();
-    if (sequence.length !== CODON_LENGTH) {
-        return undefined;
-    }
+  const sequence = codon.getSequence();
+  if (sequence.length !== CODON_LENGTH) {
+    return undefined;
+  }
 
-    const slc = CODON_TO_SLC_MAP[sequence];
-    if (!slc) {
-        return undefined;
-    }
+  const slc = CODON_TO_SLC_MAP[sequence];
+  if (!slc) {
+    return undefined;
+  }
 
-    return SLC_AMINO_ACID_DATA_MAP[slc];
+  return SLC_AMINO_ACID_DATA_MAP[slc];
 };
 
 /**
@@ -78,25 +78,25 @@ const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined => {
  * ```
  */
 export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
-    const sequence = rna.getSequence();
-    const aminoAcids: AminoAcid[] = [];
+  const sequence = rna.getSequence();
+  const aminoAcids: AminoAcid[] = [];
 
-    if (sequence.length % CODON_LENGTH !== 0) {
-        throw new InvalidSequenceError(
-            `Invalid codon: ${sequence} The RNA sequence length must be divisible by ${CODON_LENGTH} to be comprised of only codons`,
-            sequence,
-            NucleicAcidType.RNA,
-        );
+  if (sequence.length % CODON_LENGTH !== 0) {
+    throw new InvalidSequenceError(
+      `Invalid codon: ${sequence} The RNA sequence length must be divisible by ${CODON_LENGTH} to be comprised of only codons`,
+      sequence,
+      NucleicAcidType.RNA,
+    );
+  }
+  //parse sequence into groups of ${CODON_LENGTH} (codons)
+  sequence.match(new RegExp(`.{1,${CODON_LENGTH}}`, 'g'))?.forEach(codonSeq => {
+    const aminoAcid = getAminoAcidByCodon(new RNA(codonSeq));
+    if (!aminoAcid) {
+      throw new InvalidCodonError(`Invalid codon encountered: ${codonSeq}`, codonSeq);
     }
-    //parse sequence into groups of ${CODON_LENGTH} (codons)
-    sequence.match(new RegExp(`.{1,${CODON_LENGTH}}`, 'g'))?.forEach(codonSeq => {
-        const aminoAcid = getAminoAcidByCodon(new RNA(codonSeq));
-        if (!aminoAcid) {
-            throw new InvalidCodonError(`Invalid codon encountered: ${codonSeq}`, codonSeq);
-        }
-        aminoAcids.push(aminoAcid);
-    });
-    return aminoAcids;
+    aminoAcids.push(aminoAcid);
+  });
+  return aminoAcids;
 };
 
 // Export for internal use by model classes

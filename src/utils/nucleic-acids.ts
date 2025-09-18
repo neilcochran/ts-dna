@@ -1,15 +1,7 @@
 import { NucleotidePatternSymbol } from '../model/nucleic-acids/NucleotidePatternSymbol';
-import {
-    NucleotidePattern,
-    NucleicAcid,
-    DNA,
-    RNA,
-    InvalidNucleotidePatternError
-} from '../model';
+import { NucleotidePattern, NucleicAcid, DNA, RNA, InvalidNucleotidePatternError } from '../model';
 import { NucleicAcidType } from '../enums/nucleic-acid-type';
 import { RNASubType } from '../enums/rna-sub-type';
-
-
 
 /**
  * Checks if a string is a valid nucleotide pattern
@@ -30,12 +22,12 @@ import { RNASubType } from '../enums/rna-sub-type';
  * ```
  */
 export const isValidNucleotidePattern = (pattern: string): boolean => {
-    try {
-        new NucleotidePattern(pattern);
-        return true;
-    } catch(error) {
-        return false;
-    }
+  try {
+    new NucleotidePattern(pattern);
+    return true;
+  } catch (error) {
+    return false;
+  }
 };
 
 /**
@@ -52,44 +44,46 @@ export const isValidNucleotidePattern = (pattern: string): boolean => {
  *  getNucleotidePatternSymbolComplement(symbol); //returns the nucleotide pattern symbol 'Y'
  * ```
  */
-export const getNucleotidePatternSymbolComplement = (patternSymbol: NucleotidePatternSymbol): NucleotidePatternSymbol => {
-    switch(patternSymbol.symbol) {
-        case 'A':
-            return new NucleotidePatternSymbol('T');
-        case 'T':
-            return new NucleotidePatternSymbol('A');
-        case 'C':
-            return new NucleotidePatternSymbol('G');
-        case 'G':
-            return new NucleotidePatternSymbol('C');
-        case 'U':
-            return new NucleotidePatternSymbol('A');
-        case 'R':
-            return new NucleotidePatternSymbol('Y');
-        case 'Y':
-            return new NucleotidePatternSymbol('R');
-        case 'K':
-            return new NucleotidePatternSymbol('M');
-        case 'M':
-            return new NucleotidePatternSymbol('K');
-        case 'S':
-            return new NucleotidePatternSymbol('S');
-        case 'W':
-            return new NucleotidePatternSymbol('W');
-        case 'B':
-            return new NucleotidePatternSymbol('V');
-        case 'V':
-            return new NucleotidePatternSymbol('B');
-        case 'D':
-            return new NucleotidePatternSymbol('H');
-        case 'H':
-            return new NucleotidePatternSymbol('D');
-        case 'N':
-            return new NucleotidePatternSymbol('N');
-        default:
-            //since the input param is a NucleotidePatternSymbol it must be valid so this case is just to satisfy the compiler so we don't have to return | undefined
-            return new NucleotidePatternSymbol('N');
-    }
+export const getNucleotidePatternSymbolComplement = (
+  patternSymbol: NucleotidePatternSymbol,
+): NucleotidePatternSymbol => {
+  switch (patternSymbol.symbol) {
+    case 'A':
+      return new NucleotidePatternSymbol('T');
+    case 'T':
+      return new NucleotidePatternSymbol('A');
+    case 'C':
+      return new NucleotidePatternSymbol('G');
+    case 'G':
+      return new NucleotidePatternSymbol('C');
+    case 'U':
+      return new NucleotidePatternSymbol('A');
+    case 'R':
+      return new NucleotidePatternSymbol('Y');
+    case 'Y':
+      return new NucleotidePatternSymbol('R');
+    case 'K':
+      return new NucleotidePatternSymbol('M');
+    case 'M':
+      return new NucleotidePatternSymbol('K');
+    case 'S':
+      return new NucleotidePatternSymbol('S');
+    case 'W':
+      return new NucleotidePatternSymbol('W');
+    case 'B':
+      return new NucleotidePatternSymbol('V');
+    case 'V':
+      return new NucleotidePatternSymbol('B');
+    case 'D':
+      return new NucleotidePatternSymbol('H');
+    case 'H':
+      return new NucleotidePatternSymbol('D');
+    case 'N':
+      return new NucleotidePatternSymbol('N');
+    default:
+      //since the input param is a NucleotidePatternSymbol it must be valid so this case is just to satisfy the compiler so we don't have to return | undefined
+      return new NucleotidePatternSymbol('N');
+  }
 };
 
 /**
@@ -106,9 +100,11 @@ export const getNucleotidePatternSymbolComplement = (patternSymbol: NucleotidePa
  *  getNucleotidePatternComplement(pattern); //returns the complement pattern 'YRNT'
  * ```
  */
-export const getNucleotidePatternComplement = (nucleotidePattern: NucleotidePattern): NucleotidePattern => {
-    const complementPattern = getNucleotidePattern(nucleotidePattern.pattern, true, false) as string;
-    return new NucleotidePattern(complementPattern);
+export const getNucleotidePatternComplement = (
+  nucleotidePattern: NucleotidePattern,
+): NucleotidePattern => {
+  const complementPattern = getNucleotidePattern(nucleotidePattern.pattern, true, false) as string;
+  return new NucleotidePattern(complementPattern);
 };
 
 /**
@@ -126,35 +122,41 @@ export const getNucleotidePatternComplement = (nucleotidePattern: NucleotidePatt
  *
  * @internal
  */
-const getNucleotidePattern = (pattern: string, getComplement = false, getRegex = true): RegExp | string => {
-    if(pattern === '') {
-        throw new InvalidNucleotidePatternError('Nucleotide pattern cannot be empty.', '');
+const getNucleotidePattern = (
+  pattern: string,
+  getComplement = false,
+  getRegex = true,
+): RegExp | string => {
+  if (pattern === '') {
+    throw new InvalidNucleotidePatternError('Nucleotide pattern cannot be empty.', '');
+  }
+  let result = '';
+  for (let i = 0; i < pattern.length; i++) {
+    const currChar = pattern[i];
+    //check if it's an alpha character. If so, it either has to be a valid IUPAC nucleotide symbol or part of an escape sequence
+    if (/[a-zA-Z]/.test(currChar)) {
+      const isValidNucleotideSymbol = /^[AaTtCcGgUuRrYyKkMmSsWwBbVvDdHhNn]$/.test(currChar);
+      const isEscapeSeq = i > 0 && pattern[i - 1] === '\\' ? true : false;
+      if (isEscapeSeq) {
+        result += currChar;
+      } else if (isValidNucleotideSymbol) {
+        const patternSymbol = getComplement
+          ? getNucleotidePatternSymbolComplement(new NucleotidePatternSymbol(currChar))
+          : new NucleotidePatternSymbol(currChar);
+        result += getRegex ? patternSymbol.matchingRegex.source : patternSymbol.symbol;
+      } else {
+        throw new InvalidNucleotidePatternError(
+          `Invalid nucleotide pattern character encountered: ${currChar}`,
+          currChar,
+        );
+      }
+    } else {
+      //non alpha character
+      result += currChar;
     }
-    let result = '';
-    for(let i = 0; i < pattern.length; i++) {
-        const currChar = pattern[i];
-        //check if it's an alpha character. If so, it either has to be a valid IUPAC nucleotide symbol or part of an escape sequence
-        if(/[a-zA-Z]/.test(currChar)) {
-            const isValidNucleotideSymbol = /^[AaTtCcGgUuRrYyKkMmSsWwBbVvDdHhNn]$/.test(currChar);
-            const isEscapeSeq = (i > 0 && pattern[i - 1] === '\\') ? true : false;
-            if(isEscapeSeq) {
-                result += currChar;
-            }
-            else if(isValidNucleotideSymbol) {
-                const patternSymbol = getComplement ? getNucleotidePatternSymbolComplement(new NucleotidePatternSymbol(currChar)): new NucleotidePatternSymbol(currChar);
-                result += getRegex ? patternSymbol.matchingRegex.source : patternSymbol.symbol;
-            }
-            else {
-                throw new InvalidNucleotidePatternError(`Invalid nucleotide pattern character encountered: ${currChar}`, currChar);
-            }
-        }
-        else { //non alpha character
-            result += currChar;
-        }
-    }
-    return getRegex ? new RegExp(result) : result;
+  }
+  return getRegex ? new RegExp(result) : result;
 };
-
 
 /**
  * Type guard for checking if a nucleic acid is DNA
@@ -173,7 +175,7 @@ const getNucleotidePattern = (pattern: string, getComplement = false, getRegex =
  * ```
  */
 export const isDNA = (nucleicAcid: NucleicAcid): nucleicAcid is DNA => {
-    return nucleicAcid.nucleicAcidType === NucleicAcidType.DNA;
+  return nucleicAcid.nucleicAcidType === NucleicAcidType.DNA;
 };
 
 /**
@@ -193,17 +195,16 @@ export const isDNA = (nucleicAcid: NucleicAcid): nucleicAcid is DNA => {
  * ```
  */
 export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
-    return nucleicAcid.nucleicAcidType === NucleicAcidType.RNA;
+  return nucleicAcid.nucleicAcidType === NucleicAcidType.RNA;
 };
 
 // Re-export validation functions
 export {
-    getComplementSequence,
-    isValidNucleicAcid,
-    getDNABaseComplement,
-    getRNABaseComplement
+  getComplementSequence,
+  isValidNucleicAcid,
+  getDNABaseComplement,
+  getRNABaseComplement,
 } from './validation';
-
 
 /**
  * Convert the given DNA into RNA, optionally providing an RNA sub type
@@ -224,8 +225,8 @@ export {
  * ```
  */
 export const convertToRNA = (dna: DNA, rnaSubType?: RNASubType): RNA => {
-    const sequence = dna.getSequence();
-    return new RNA(sequence.replaceAll('T', 'U'), rnaSubType);
+  const sequence = dna.getSequence();
+  return new RNA(sequence.replaceAll('T', 'U'), rnaSubType);
 };
 
 /**
@@ -242,8 +243,8 @@ export const convertToRNA = (dna: DNA, rnaSubType?: RNASubType): RNA => {
  * ```
  */
 export const convertToDNA = (rna: RNA): DNA => {
-    const sequence = rna.getSequence();
-    return new DNA(sequence.replaceAll('U', 'T'));
+  const sequence = rna.getSequence();
+  return new DNA(sequence.replaceAll('U', 'T'));
 };
 
 /**
@@ -273,4 +274,3 @@ export const STOP_CODONS = [STOP_CODON_UAA, STOP_CODON_UAG, STOP_CODON_UGA] as r
 
 // Export for internal use by model classes
 export { getNucleotidePattern };
-

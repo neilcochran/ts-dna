@@ -5,9 +5,9 @@ import { spliceRNA } from './rna-processing';
 import { findPolyadenylationSites, getStrongestPolyadenylationSite } from './polyadenylation';
 import { START_CODON, STOP_CODONS } from './nucleic-acids';
 import {
-    DEFAULT_POLY_A_TAIL_LENGTH,
-    CODON_LENGTH,
-    DEFAULT_CLEAVAGE_OFFSET,
+  DEFAULT_POLY_A_TAIL_LENGTH,
+  CODON_LENGTH,
+  DEFAULT_CLEAVAGE_OFFSET,
 } from '../constants/biological-constants';
 
 /**
@@ -37,78 +37,78 @@ import {
  * ```
  */
 export function processRNA(
-    preMRNA: PreMRNA,
-    options: RNAProcessingOptions = DEFAULT_RNA_PROCESSING_OPTIONS
+  preMRNA: PreMRNA,
+  options: RNAProcessingOptions = DEFAULT_RNA_PROCESSING_OPTIONS,
 ): ValidationResult<MRNA> {
-    const opts = { ...DEFAULT_RNA_PROCESSING_OPTIONS, ...options };
+  const opts = { ...DEFAULT_RNA_PROCESSING_OPTIONS, ...options };
 
-    try {
-        // Step 1 & 2: Splice out introns to create mature RNA sequence
-        const splicingResult = spliceRNA(preMRNA);
-        if (!isSuccess(splicingResult)) {
-            return failure(`Splicing failed: ${splicingResult.error}`);
-        }
+  try {
+    // Step 1 & 2: Splice out introns to create mature RNA sequence
+    const splicingResult = spliceRNA(preMRNA);
+    if (!isSuccess(splicingResult)) {
+      return failure(`Splicing failed: ${splicingResult.error}`);
+    }
 
-        const splicedRNA = splicingResult.data;
-        const processedSequence = splicedRNA.getSequence();
+    const splicedRNA = splicingResult.data;
+    const processedSequence = splicedRNA.getSequence();
 
-        // Step 3: Find polyadenylation site and determine cleavage site
-        let cleavageSite = processedSequence.length;
-        const polyATailLength = opts.polyATailLength;
+    // Step 3: Find polyadenylation site and determine cleavage site
+    let cleavageSite = processedSequence.length;
+    const polyATailLength = opts.polyATailLength;
 
-        if (opts.addPolyATail) {
-            const polySites = findPolyadenylationSites(splicedRNA);
-            if (polySites.length > 0) {
-                const strongestSite = getStrongestPolyadenylationSite(polySites);
-                if (strongestSite) {
-                    cleavageSite =
+    if (opts.addPolyATail) {
+      const polySites = findPolyadenylationSites(splicedRNA);
+      if (polySites.length > 0) {
+        const strongestSite = getStrongestPolyadenylationSite(polySites);
+        if (strongestSite) {
+          cleavageSite =
             strongestSite.cleavageSite ??
             strongestSite.position + strongestSite.signal.length + DEFAULT_CLEAVAGE_OFFSET;
 
-                    // Ensure cleavage site is within sequence bounds
-                    cleavageSite = Math.min(cleavageSite, processedSequence.length);
-                }
-            }
+          // Ensure cleavage site is within sequence bounds
+          cleavageSite = Math.min(cleavageSite, processedSequence.length);
         }
-
-        // Step 4: Cleave at polyadenylation site and add poly-A tail
-        let finalSequence = processedSequence;
-        let polyATail = '';
-
-        if (opts.addPolyATail) {
-            // If polyadenylation site found and cleavage needed, cleave the sequence
-            if (cleavageSite < processedSequence.length) {
-                finalSequence = processedSequence.substring(0, cleavageSite);
-            }
-            // Always add poly-A tail when option is enabled
-            polyATail = 'A'.repeat(polyATailLength);
-            finalSequence += polyATail;
-        }
-
-        // Step 5: Identify coding sequence boundaries
-        const codingBoundaries = findCodingSequence(finalSequence, polyATail.length);
-        if (!isSuccess(codingBoundaries)) {
-            return failure(`Failed to identify coding sequence: ${codingBoundaries.error}`);
-        }
-
-        const { codingStart, codingEnd, codingSequence } = codingBoundaries.data;
-
-        // Step 6: Create mature MRNA with all processing modifications
-        const mRNA = new MRNA(
-            finalSequence,
-            codingSequence,
-            codingStart,
-            codingEnd,
-            opts.addFivePrimeCap,
-            polyATail,
-        );
-
-        return success(mRNA);
-    } catch (error) {
-        return failure(
-            `RNA processing failed: ${error instanceof Error ? error.message : String(error)}`,
-        );
+      }
     }
+
+    // Step 4: Cleave at polyadenylation site and add poly-A tail
+    let finalSequence = processedSequence;
+    let polyATail = '';
+
+    if (opts.addPolyATail) {
+      // If polyadenylation site found and cleavage needed, cleave the sequence
+      if (cleavageSite < processedSequence.length) {
+        finalSequence = processedSequence.substring(0, cleavageSite);
+      }
+      // Always add poly-A tail when option is enabled
+      polyATail = 'A'.repeat(polyATailLength);
+      finalSequence += polyATail;
+    }
+
+    // Step 5: Identify coding sequence boundaries
+    const codingBoundaries = findCodingSequence(finalSequence, polyATail.length);
+    if (!isSuccess(codingBoundaries)) {
+      return failure(`Failed to identify coding sequence: ${codingBoundaries.error}`);
+    }
+
+    const { codingStart, codingEnd, codingSequence } = codingBoundaries.data;
+
+    // Step 6: Create mature MRNA with all processing modifications
+    const mRNA = new MRNA(
+      finalSequence,
+      codingSequence,
+      codingStart,
+      codingEnd,
+      opts.addFivePrimeCap,
+      polyATail,
+    );
+
+    return success(mRNA);
+  } catch (error) {
+    return failure(
+      `RNA processing failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }
 
 /**
@@ -135,11 +135,11 @@ export interface RNAProcessingOptions {
  * Default RNA processing options.
  */
 export const DEFAULT_RNA_PROCESSING_OPTIONS: Required<RNAProcessingOptions> = {
-    addFivePrimeCap: true,
-    addPolyATail: true,
-    polyATailLength: DEFAULT_POLY_A_TAIL_LENGTH,
-    validateCodons: true,
-    minimumCodingLength: true,
+  addFivePrimeCap: true,
+  addPolyATail: true,
+  polyATailLength: DEFAULT_POLY_A_TAIL_LENGTH,
+  validateCodons: true,
+  minimumCodingLength: true,
 };
 
 /**
@@ -159,43 +159,43 @@ interface CodingSequenceInfo {
  * @returns ValidationResult with coding sequence information
  */
 function findCodingSequence(
-    sequence: string,
-    polyATailLength: number = 0,
+  sequence: string,
+  polyATailLength: number = 0,
 ): ValidationResult<CodingSequenceInfo> {
-    // Search region excludes poly-A tail
-    const searchSequence = sequence.substring(0, sequence.length - polyATailLength);
+  // Search region excludes poly-A tail
+  const searchSequence = sequence.substring(0, sequence.length - polyATailLength);
 
-    // Find start codon (AUG)
-    const startCodonIndex = searchSequence.indexOf(START_CODON);
-    if (startCodonIndex === -1) {
-        return failure(`No start codon (${START_CODON}) found in sequence`);
+  // Find start codon (AUG)
+  const startCodonIndex = searchSequence.indexOf(START_CODON);
+  if (startCodonIndex === -1) {
+    return failure(`No start codon (${START_CODON}) found in sequence`);
+  }
+
+  // Find stop codon in frame after start codon
+  let stopCodonIndex = -1;
+  for (
+    let i = startCodonIndex + CODON_LENGTH;
+    i <= searchSequence.length - CODON_LENGTH;
+    i += CODON_LENGTH
+  ) {
+    const codon = searchSequence.substring(i, i + CODON_LENGTH);
+    if (STOP_CODONS.includes(codon)) {
+      stopCodonIndex = i + CODON_LENGTH; // Include stop codon in coding sequence
+      break;
     }
+  }
 
-    // Find stop codon in frame after start codon
-    let stopCodonIndex = -1;
-    for (
-        let i = startCodonIndex + CODON_LENGTH;
-        i <= searchSequence.length - CODON_LENGTH;
-        i += CODON_LENGTH
-    ) {
-        const codon = searchSequence.substring(i, i + CODON_LENGTH);
-        if (STOP_CODONS.includes(codon)) {
-            stopCodonIndex = i + CODON_LENGTH; // Include stop codon in coding sequence
-            break;
-        }
-    }
+  if (stopCodonIndex === -1) {
+    return failure('No in-frame stop codon found after start codon');
+  }
 
-    if (stopCodonIndex === -1) {
-        return failure('No in-frame stop codon found after start codon');
-    }
+  const codingSequence = searchSequence.substring(startCodonIndex, stopCodonIndex);
 
-    const codingSequence = searchSequence.substring(startCodonIndex, stopCodonIndex);
-
-    return success({
-        codingStart: startCodonIndex,
-        codingEnd: stopCodonIndex,
-        codingSequence,
-    });
+  return success({
+    codingStart: startCodonIndex,
+    codingEnd: stopCodonIndex,
+    codingSequence,
+  });
 }
 
 /**
@@ -216,26 +216,26 @@ export function convertProcessedRNAToMRNA(processedRNA: {
   polyATail?: string;
   hasFivePrimeCap?: boolean;
 }): ValidationResult<MRNA> {
-    try {
-        const sequence = processedRNA.getSequence();
-        const polyATail = processedRNA.polyATail || '';
-        const hasCap = processedRNA.hasFivePrimeCap || false;
+  try {
+    const sequence = processedRNA.getSequence();
+    const polyATail = processedRNA.polyATail || '';
+    const hasCap = processedRNA.hasFivePrimeCap || false;
 
-        // Find coding sequence in the processed RNA
-        const codingBoundaries = findCodingSequence(sequence + polyATail, polyATail.length);
-        if (!isSuccess(codingBoundaries)) {
-            return failure(`Failed to identify coding sequence: ${codingBoundaries.error}`);
-        }
-
-        const { codingStart, codingEnd, codingSequence } = codingBoundaries.data;
-        const fullSequence = sequence + polyATail;
-
-        const mRNA = new MRNA(fullSequence, codingSequence, codingStart, codingEnd, hasCap, polyATail);
-
-        return success(mRNA);
-    } catch (error) {
-        return failure(
-            `Failed to convert ProcessedRNA to MRNA: ${error instanceof Error ? error.message : String(error)}`,
-        );
+    // Find coding sequence in the processed RNA
+    const codingBoundaries = findCodingSequence(sequence + polyATail, polyATail.length);
+    if (!isSuccess(codingBoundaries)) {
+      return failure(`Failed to identify coding sequence: ${codingBoundaries.error}`);
     }
+
+    const { codingStart, codingEnd, codingSequence } = codingBoundaries.data;
+    const fullSequence = sequence + polyATail;
+
+    const mRNA = new MRNA(fullSequence, codingSequence, codingStart, codingEnd, hasCap, polyATail);
+
+    return success(mRNA);
+  } catch (error) {
+    return failure(
+      `Failed to convert ProcessedRNA to MRNA: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }
