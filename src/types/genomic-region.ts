@@ -46,7 +46,9 @@ export function regionsOverlap(region1: GenomicRegion, region2: GenomicRegion): 
  * @returns true if no regions overlap, false otherwise
  */
 export function validateNonOverlappingRegions(regions: GenomicRegion[]): boolean {
-  if (regions.length <= 1) return true;
+  if (regions.length <= 1) {
+    return true;
+  }
 
   // Sort by start position
   const sorted = [...regions].sort((a, b) => a.start - b.start);
@@ -294,8 +296,9 @@ export class IntervalTree {
   }
 
   private buildTree(intervals: GenomicRegion[], start: number, end: number): IntervalNode | null {
-    if (start > end) return null;
-
+    if (start > end) {
+      return null;
+    }
     const mid = Math.floor((start + end) / 2);
     const node = new IntervalNode(intervals[mid]);
 
@@ -325,7 +328,9 @@ export class IntervalTree {
     query: GenomicRegion,
     result: GenomicRegion[],
   ): void {
-    if (!node) return;
+    if (!node) {
+      return;
+    }
 
     // Check if current interval overlaps
     if (regionsOverlap(node.interval, query)) {
@@ -353,7 +358,9 @@ export class IntervalTree {
   }
 
   private checkOverlap(node: IntervalNode | null, query: GenomicRegion): boolean {
-    if (!node) return false;
+    if (!node) {
+      return false;
+    }
 
     // Check current interval
     if (regionsOverlap(node.interval, query)) {
@@ -362,11 +369,15 @@ export class IntervalTree {
 
     // Search subtrees with early termination
     if (node.left && node.left.maxEnd >= query.start) {
-      if (this.checkOverlap(node.left, query)) return true;
+      if (this.checkOverlap(node.left, query)) {
+        return true;
+      }
     }
 
     if (node.right && node.interval.start <= query.end) {
-      if (this.checkOverlap(node.right, query)) return true;
+      if (this.checkOverlap(node.right, query)) {
+        return true;
+      }
     }
 
     return false;

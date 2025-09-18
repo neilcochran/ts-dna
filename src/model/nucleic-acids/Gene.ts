@@ -179,7 +179,9 @@ export class Gene extends DNA {
    * @returns The default splice variant, or undefined if no splicing profile
    */
   getDefaultSplicingVariant(): SpliceVariant | undefined {
-    if (!this.splicingProfile) return undefined;
+    if (!this.splicingProfile) {
+      return undefined;
+    }
     return this.splicingProfile.variants.find(v => v.name === this.splicingProfile!.defaultVariant);
   }
 

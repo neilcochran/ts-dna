@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'util';
-import { getComplementSequence } from '../../utils/validation';
+import { getComplementSequence } from '../../utils/complement';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type';
 
 /**

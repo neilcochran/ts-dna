@@ -1,4 +1,4 @@
-import { RNA, DNA, AminoAcid } from '../../src/model';
+import { RNA, DNA, MRNA, AminoAcid } from '../../src/model';
 
 //ensure RNA and DNA sequences are the same (excluding base differences) since some tests rely it
 export const RNA_SEQ = 'AUCGGCUA';
@@ -17,6 +17,21 @@ export const RNA_ALL_AMINO_ACIDS_1 = new RNA(
 );
 export const RNA_ALL_AMINO_ACIDS_2 = new RNA(
   'GCCUGUGAUGAGUUUGGCCAUAUCAAGUUGAUGAAUCCCCAGAGGAGUACCGUCUGGUAU',
+);
+
+// MRNA versions for Polypeptide tests - use the coding sequences directly
+export const MRNA_ALL_AMINO_ACIDS_1 = new MRNA(
+  'GCAUGCGACGAAUUCGGACACAUAAAAUUAAUGAACCCACAAAGAAGCACAGUAUGGUAC',
+  'GCAUGCGACGAAUUCGGACACAUAAAAUUAAUGAACCCACAAAGAAGCACAGUAUGGUAC',
+  0,
+  60,
+);
+
+export const MRNA_ALL_AMINO_ACIDS_2 = new MRNA(
+  'GCCUGUGAUGAGUUUGGCCAUAUCAAGUUGAUGAAUCCCCAGAGGAGUACCGUCUGGUAU',
+  'GCCUGUGAUGAGUUUGGCCAUAUCAAGUUGAUGAAUCCCCAGAGGAGUACCGUCUGGUAU',
+  0,
+  60,
 );
 export const DNA_ALL_AMINO_ACIDS_1 = new DNA(
   'GCATGCGACGAATTCGGACACATAAAATTAATGAACCCACAAAGAAGCACAGTATGGTAC',

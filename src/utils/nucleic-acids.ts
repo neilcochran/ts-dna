@@ -1,5 +1,5 @@
 import { NucleotidePatternSymbol } from '../model/nucleic-acids/NucleotidePatternSymbol';
-import { NucleotidePattern, NucleicAcid, DNA, RNA } from '../model';
+import { NucleicAcid, DNA, RNA } from '../model';
 import { NucleicAcidType } from '../enums/nucleic-acid-type';
 import { RNASubType } from '../enums/rna-sub-type';
 
@@ -60,26 +60,6 @@ export const getNucleotidePatternSymbolComplement = (
 };
 
 /**
- * Get the complement of the given nucleotide pattern
- *
- * @param nucleotidePattern - The nucleotide pattern to get the complement of
- *
- * @returns The complement of the given nucleotide pattern
- *
- * @example
- * ```typescript
- *  const pattern = new NucleotidePattern('RYNA');
- *  //pass a valid nucleotide pattern and get it's complement pattern
- *  getNucleotidePatternComplement(pattern); //returns the complement pattern 'YRNT'
- * ```
- */
-export const getNucleotidePatternComplement = (
-  nucleotidePattern: NucleotidePattern,
-): NucleotidePattern => {
-  return NucleotidePattern.createComplement(nucleotidePattern);
-};
-
-/**
  * Type guard for checking if a nucleic acid is DNA
  *
  * @param nucleicAcid - The nucleic acid to check
@@ -120,12 +100,10 @@ export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
 };
 
 // Re-export validation functions
-export {
-  getComplementSequence,
-  isValidNucleicAcid,
-  getDNABaseComplement,
-  getRNABaseComplement,
-} from './validation';
+export { isValidNucleicAcid } from './validation';
+
+// Re-export complement functions from dedicated module
+export { getComplementSequence, getDNABaseComplement, getRNABaseComplement } from './complement';
 
 /**
  * Convert the given DNA into RNA, optionally providing an RNA sub type

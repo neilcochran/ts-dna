@@ -14,7 +14,6 @@ import {
   getDNABaseComplement,
   getRNABaseComplement,
   isValidNucleicAcid,
-  getNucleotidePatternComplement,
   STOP_CODON_UAA,
   STOP_CODON_UAG,
   STOP_CODON_UGA,
@@ -84,13 +83,13 @@ test("create valid NucleotidePattern and check it's patternString", () => {
 
 test('get complement NucleotidePattern (all symbols, no regex)', () => {
   expect(
-    getNucleotidePatternComplement(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS)),
+    NucleotidePattern.createComplement(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS)),
   ).toEqual(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS_COMP));
 });
 
 test('get complement NucleotidePattern (regex)', () => {
   expect(
-    getNucleotidePatternComplement(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN)),
+    NucleotidePattern.createComplement(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN)),
   ).toEqual(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN_COMP));
 });
 

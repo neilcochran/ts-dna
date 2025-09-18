@@ -28,7 +28,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "doc": "rimraf doc/ && typedoc --includeVersion --readme none --out doc src/",
+    "doc": "rimraf doc/ && typedoc --includeVersion --readme none --out docs src/",
     "build": "node scripts/build.js",
     "clean": "rimraf dist/ dist-cjs/ doc/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
