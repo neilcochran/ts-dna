@@ -110,7 +110,7 @@ export function transcribe(
     const polyadenylationSite = isSuccess(polyAResult) ? polyAResult.data : undefined;
 
     // Step 4: Determine transcript end position
-    const transcriptEnd = polyadenylationSite || gene.getSequence().length;
+    const transcriptEnd = polyadenylationSite ?? gene.getSequence().length;
 
     // Step 5: Extract and transcribe the sequence
     const geneSequence = gene.getSequence();

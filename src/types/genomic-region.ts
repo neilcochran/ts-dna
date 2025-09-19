@@ -285,7 +285,7 @@ export function buildOptimizedIntervalTree(intervals: GenomicRegion[]): Interval
  * Provides O(log n) query time for overlap detection in large datasets.
  */
 export class IntervalTree {
-  private root: IntervalNode | null = null;
+  private readonly root: IntervalNode | null = null;
 
   constructor(intervals: GenomicRegion[]) {
     if (intervals.length > 0) {

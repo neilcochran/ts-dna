@@ -10,14 +10,23 @@
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaVersion": "latest"
+        "ecmaVersion": "latest",
+        "project": "./tsconfig.json"
     },
     "plugins": [
         "@typescript-eslint",
         "eslint-plugin-tsdoc",
         "prettier"
     ],
-    "ignorePatterns": "scripts/**",
+    "ignorePatterns": ["scripts/**", "dist/**", "docs/**", "*.js", "*.cjs"],
+    "overrides": [
+        {
+            "files": ["test/**/*.ts", "**/*.test.ts"],
+            "rules": {
+                "@typescript-eslint/explicit-function-return-type": "off"
+            }
+        }
+    ],
     "rules": {
         "no-unused-vars": "warn",
         "@typescript-eslint/no-unused-vars": [
@@ -30,6 +39,29 @@
                 "ignoreRestSiblings": true
             }
         ],
+
+        // Explicit typing rules
+        "@typescript-eslint/explicit-function-return-type": [
+            "error",
+            {
+                "allowExpressions": true,
+                "allowTypedFunctionExpressions": true,
+                "allowHigherOrderFunctions": true,
+                "allowDirectConstAssertionInArrowFunctions": true
+            }
+        ],
+        "@typescript-eslint/explicit-module-boundary-types": "error",
+
+        // Additional strict typing rules
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-inferrable-types": "off",
+
+        // Code quality rules (non-intrusive but helpful)
+        "@typescript-eslint/prefer-readonly": "error",
+        "@typescript-eslint/no-unnecessary-type-assertion": "error",
+        "@typescript-eslint/prefer-nullish-coalescing": "error",
+        "@typescript-eslint/prefer-optional-chain": "error",
+
         "prettier/prettier": "error",
         "tsdoc/syntax": "error"
     }

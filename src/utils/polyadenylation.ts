@@ -281,7 +281,7 @@ function analyzeUSEQuality(sequence: string, useRegion: GenomicRegion): number {
   // UYU motifs get high score
   else if (new NucleotidePattern('U[CU]U').testString(useSequence)) score = HIGH_USE_SCORE;
   // High U content gets medium score
-  else if ((useSequence.match(/U/g) || []).length / useSequence.length > HIGH_U_CONTENT_THRESHOLD)
+  else if ((useSequence.match(/U/g) ?? []).length / useSequence.length > HIGH_U_CONTENT_THRESHOLD)
     score = MODERATE_USE_SCORE;
 
   return Math.min(score, PERFECT_USE_SCORE);
@@ -305,7 +305,7 @@ function analyzeDSEQuality(sequence: string, dseRegion: GenomicRegion): number {
   }
   // U-rich gets medium score
   else if (
-    (dseSequence.match(/U/g) || []).length / dseSequence.length >
+    (dseSequence.match(/U/g) ?? []).length / dseSequence.length >
     MODERATE_U_CONTENT_THRESHOLD
   ) {
     score = MODERATE_USE_SCORE;

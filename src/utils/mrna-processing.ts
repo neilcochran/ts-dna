@@ -218,8 +218,8 @@ export function convertProcessedRNAToMRNA(processedRNA: {
 }): ValidationResult<MRNA> {
   try {
     const sequence = processedRNA.getSequence();
-    const polyATail = processedRNA.polyATail || '';
-    const hasCap = processedRNA.hasFivePrimeCap || false;
+    const polyATail = processedRNA.polyATail ?? '';
+    const hasCap = processedRNA.hasFivePrimeCap ?? false;
 
     // Find coding sequence in the processed RNA
     const codingBoundaries = findCodingSequence(sequence + polyATail, polyATail.length);

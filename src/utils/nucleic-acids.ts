@@ -149,22 +149,22 @@ export const convertToDNA = (rna: RNA): DNA => {
 /**
  * Stop codon UAA - does not code for an amino acid
  */
-export const STOP_CODON_UAA = 'UAA' as const;
+export const STOP_CODON_UAA = 'UAA';
 
 /**
  * Stop codon UAG - does not code for an amino acid
  */
-export const STOP_CODON_UAG = 'UAG' as const;
+export const STOP_CODON_UAG = 'UAG';
 
 /**
  * Stop codon UGA - does not code for an amino acid
  */
-export const STOP_CODON_UGA = 'UGA' as const;
+export const STOP_CODON_UGA = 'UGA';
 
 /**
  * Start codon AUG - codes for methionine and initiates translation
  */
-export const START_CODON = 'AUG' as const;
+export const START_CODON = 'AUG';
 
 /**
  * Array of all stop codons
