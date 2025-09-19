@@ -2,7 +2,7 @@
 
 A comprehensive TypeScript library for molecular biology simulation, modeling the gene expression pathway from DNA transcription to polypeptide translation with biological accuracy.
 
-[![npm version](https://badge.fury.io/js/ts-dna.svg)](https://www.npmjs.com/package/ts-dna)
+[![npm version](https://img.shields.io/npm/v/ts-dna)](https://www.npmjs.com/package/ts-dna)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://badges.frapsoft.com/typescript/version/typescript-next.svg?v=101)](https://github.com/ellerbrock/typescript-badges/)
 

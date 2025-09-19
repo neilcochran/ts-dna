@@ -1,3 +1,11 @@
+# Version 1.0.2
+
+- Update the README to use the shields.io npm version badge to avoid long caching issues
+
+## Version 1.0.1
+
+- Update README documentation link to point to GitHub pages
+
 ## Version 1.0.0
 
 - First full release!
