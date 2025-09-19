@@ -1,3 +1,7 @@
+# Version 1.0.3
+
+- Added strict TypeScript linting rules for explicit return types, nullish coalescing, and enhanced type safety
+
 # Version 1.0.2
 
 - Update the README to use the shields.io npm version badge to avoid long caching issues

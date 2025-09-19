@@ -222,7 +222,7 @@ export class PreMRNA extends RNA {
    * Gets a string representation of this pre-mRNA.
    * @returns String showing sequence length, exon/intron counts, and source gene
    */
-  toString(): string {
+  override toString(): string {
     const exonCount = this.getExonRegions().length;
     const intronCount = this.getIntronRegions().length;
     return `PreMRNA(${this.getSequence().length}nt, ${exonCount} exons, ${intronCount} introns)`;
