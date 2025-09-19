@@ -1,7 +1,7 @@
-import { RNA } from './RNA';
-import { Gene } from './Gene';
-import { RNASubType } from '../../enums/rna-sub-type';
-import { GenomicRegion } from '../../types/genomic-region';
+import { RNA } from './RNA.js';
+import { Gene } from './Gene.js';
+import { RNASubType } from '../../enums/rna-sub-type.js';
+import { GenomicRegion } from '../../types/genomic-region.js';
 
 /**
  * Represents pre-mRNA (precursor mRNA) - the initial RNA transcript containing both exons and introns.

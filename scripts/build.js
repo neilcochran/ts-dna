@@ -27,7 +27,7 @@ import { existsSync, copyFileSync } from 'fs';
 
     // Clear previous build
     console.log('\n🧹 Step 3: Clearing previous build...');
-    execSync('rimraf dist/ dist-cjs/');
+    execSync('rimraf dist/');
     console.log('✅ Previous build cleared');
 
     // Build ESM only
@@ -43,5 +43,5 @@ import { existsSync, copyFileSync } from 'fs';
     }
 
     console.log('\n🎉 Build completed successfully! Package is ready for publishing.');
-    console.log('📁 Output: dist/ (ESM: .js, CommonJS: .cjs, Types: .d.ts)');
+    console.log('📁 Output: dist/ (ESM: .js, Types: .d.ts)');
 })();

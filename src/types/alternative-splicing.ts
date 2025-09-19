@@ -1,4 +1,4 @@
-import { MRNA } from '../model/nucleic-acids/MRNA';
+import { MRNA } from '../model/nucleic-acids/MRNA.js';
 
 /**
  * Represents a specific splice variant with information about which exons to include.

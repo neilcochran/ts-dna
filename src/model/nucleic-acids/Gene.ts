@@ -1,9 +1,9 @@
-import { DNA } from './DNA';
-import { GenomicRegion, validateExons } from '../../types/genomic-region';
-import { ValidationResult } from '../../types/validation-result';
-import { InvalidSequenceError } from '../errors/InvalidSequenceError';
-import { NucleicAcidType } from '../../enums/nucleic-acid-type';
-import { AlternativeSplicingProfile, SpliceVariant } from '../../types/alternative-splicing';
+import { DNA } from './DNA.js';
+import { GenomicRegion, validateExons } from '../../types/genomic-region.js';
+import { ValidationResult } from '../../types/validation-result.js';
+import { InvalidSequenceError } from '../errors/InvalidSequenceError.js';
+import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
+import { AlternativeSplicingProfile, SpliceVariant } from '../../types/alternative-splicing.js';
 
 /**
  * A class representing a Gene with exons and introns.

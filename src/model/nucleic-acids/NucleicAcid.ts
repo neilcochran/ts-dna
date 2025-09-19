@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from 'util';
-import { getComplementSequence } from '../../utils/complement';
-import { NucleicAcidType } from '../../enums/nucleic-acid-type';
+import { getComplementSequence } from '../../utils/complement.js';
+import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
 
 /**
  * An abstract class representing a general nucleic acid (a sequence of nucleotides)

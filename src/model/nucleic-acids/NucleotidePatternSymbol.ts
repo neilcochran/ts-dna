@@ -1,5 +1,5 @@
-import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../../data/iupac-symbols';
-import { InvalidNucleotidePatternError } from '../../model';
+import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../../data/iupac-symbols.js';
+import { InvalidNucleotidePatternError } from '../../model/index.js';
 /**
  * A class representing a single nucleotide IUPAC notation symbol.
  * The constructor enforces validation, and all members are readonly. Therefor, all NucleotidePatternSymbol

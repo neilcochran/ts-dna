@@ -1,13 +1,13 @@
-import { RNA } from './nucleic-acids';
-import { NucleicAcidType } from '../enums/nucleic-acid-type';
-import { getAminoAcidDataByCodon, SLC_ALT_CODONS_MAP } from '../utils/amino-acids';
-import { AminoAcidData } from '../types/amino-acid-data';
-import { AminoAcidPolarity } from '../enums/amino-acid-polarity';
-import { AminoAcidCharge } from '../enums/amino-acid-charge';
-import { AminoAcidSideChainType } from '../enums/amino-acid-side-chain-type';
+import { RNA } from './nucleic-acids/index.js';
+import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
+import { getAminoAcidDataByCodon, SLC_ALT_CODONS_MAP } from '../utils/amino-acids.js';
+import { AminoAcidData } from '../types/amino-acid-data.js';
+import { AminoAcidPolarity } from '../enums/amino-acid-polarity.js';
+import { AminoAcidCharge } from '../enums/amino-acid-charge.js';
+import { AminoAcidSideChainType } from '../enums/amino-acid-side-chain-type.js';
 import { isDeepStrictEqual } from 'util';
-import { InvalidCodonError } from './errors/InvalidCodonError';
-import { CODON_LENGTH } from '../constants/biological-constants';
+import { InvalidCodonError } from './errors/InvalidCodonError.js';
+import { CODON_LENGTH } from '../constants/biological-constants.js';
 
 /**
  * A class representing an amino acid instance with its backing RNA codon.

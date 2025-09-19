@@ -1,4 +1,4 @@
-import { NucleicAcidType } from '../enums/nucleic-acid-type';
+import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
 
 /**
  * Given a string sequence and a nucleic acid type, get the complement sequence

@@ -1,11 +1,11 @@
-import { GenomicRegion } from './genomic-region';
+import { GenomicRegion } from './genomic-region.js';
 import {
   DEFAULT_POLYA_SIGNALS,
   DEFAULT_UPSTREAM_USE_PATTERN,
   DEFAULT_DOWNSTREAM_DSE_PATTERN,
   DEFAULT_CLEAVAGE_PREFERENCE,
   DEFAULT_CLEAVAGE_DISTANCE_RANGE,
-} from '../constants/biological-constants';
+} from '../constants/biological-constants.js';
 
 /**
  * Represents a polyadenylation site with detailed information about

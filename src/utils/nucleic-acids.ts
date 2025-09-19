@@ -1,7 +1,7 @@
-import { NucleotidePatternSymbol } from '../model/nucleic-acids/NucleotidePatternSymbol';
-import { NucleicAcid, DNA, RNA } from '../model';
-import { NucleicAcidType } from '../enums/nucleic-acid-type';
-import { RNASubType } from '../enums/rna-sub-type';
+import { NucleotidePatternSymbol } from '../model/nucleic-acids/NucleotidePatternSymbol.js';
+import { NucleicAcid, DNA, RNA } from '../model/index.js';
+import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
+import { RNASubType } from '../enums/rna-sub-type.js';
 
 /**
  * Get the complement of the given nucleotide pattern symbol
@@ -100,10 +100,10 @@ export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
 };
 
 // Re-export validation functions
-export { isValidNucleicAcid } from './validation';
+export { isValidNucleicAcid } from './validation.js';
 
 // Re-export complement functions from dedicated module
-export { getComplementSequence, getDNABaseComplement, getRNABaseComplement } from './complement';
+export { getComplementSequence, getDNABaseComplement, getRNABaseComplement } from './complement.js';
 
 /**
  * Convert the given DNA into RNA, optionally providing an RNA sub type

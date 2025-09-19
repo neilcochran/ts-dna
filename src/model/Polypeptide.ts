@@ -1,6 +1,6 @@
-import { MRNA, RNA } from './nucleic-acids';
-import { AminoAcid } from './AminoAcid';
-import { RNAtoAminoAcids } from '../utils/amino-acids';
+import { MRNA, RNA } from './nucleic-acids/index.js';
+import { AminoAcid } from './AminoAcid.js';
+import { RNAtoAminoAcids } from '../utils/amino-acids.js';
 
 /**
  * A class representing a polypeptide. It has a sequence of amino acids and an mRNA sequence that contains the coding sequence.

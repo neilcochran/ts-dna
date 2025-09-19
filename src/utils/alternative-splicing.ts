@@ -1,16 +1,16 @@
-import { PreMRNA } from '../model/nucleic-acids/PreMRNA';
-import { MRNA } from '../model/nucleic-acids/MRNA';
-import { DNA } from '../model/nucleic-acids/DNA';
-import { Gene } from '../model/nucleic-acids/Gene';
-import { ValidationResult, success, failure } from '../types/validation-result';
-import { convertToRNA, START_CODON, STOP_CODONS } from './nucleic-acids';
-import { CODON_LENGTH } from '../constants/biological-constants';
+import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
+import { MRNA } from '../model/nucleic-acids/MRNA.js';
+import { DNA } from '../model/nucleic-acids/DNA.js';
+import { Gene } from '../model/nucleic-acids/Gene.js';
+import { ValidationResult, success, failure } from '../types/validation-result.js';
+import { convertToRNA, START_CODON, STOP_CODONS } from './nucleic-acids.js';
+import { CODON_LENGTH } from '../constants/biological-constants.js';
 import {
   SpliceVariant,
   SplicingOutcome,
   AlternativeSplicingOptions,
   DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
-} from '../types/alternative-splicing';
+} from '../types/alternative-splicing.js';
 
 /**
  * Processes a pre-mRNA with a specific splice variant to produce mature mRNA.

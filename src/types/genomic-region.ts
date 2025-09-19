@@ -3,7 +3,7 @@ import {
   MAX_EXON_SIZE,
   MIN_INTRON_SIZE,
   MAX_INTRON_SIZE,
-} from '../constants/biological-constants';
+} from '../constants/biological-constants.js';
 
 /**
  * Represents a region within a genomic sequence using 0-based indexing.

@@ -1,5 +1,5 @@
-import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern';
-import { PromoterElement } from '../model/PromoterElement';
+import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern.js';
+import { PromoterElement } from '../model/PromoterElement.js';
 import {
   TATA_BOX_CONSENSUS,
   INITIATOR_CONSENSUS,
@@ -17,7 +17,7 @@ import {
   CEBP_SITE_NAME,
   E_BOX_NAME,
   AP1_SITE_NAME,
-} from '../constants/biological-constants';
+} from '../constants/biological-constants.js';
 
 /**
  * Common promoter elements found in eukaryotic gene promoters.

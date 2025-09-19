@@ -1,4 +1,4 @@
-import { PromoterElement } from './PromoterElement';
+import { PromoterElement } from './PromoterElement.js';
 import {
   PROMOTER_ELEMENT_SCORE_BOOST,
   INR_ELEMENT_SCORE_BOOST,
@@ -11,7 +11,7 @@ import {
   DPE_NAME,
   CAAT_BOX_NAME,
   GC_BOX_NAME,
-} from '../constants/biological-constants';
+} from '../constants/biological-constants.js';
 
 /**
  * Represents a gene promoter containing multiple regulatory elements.

@@ -1,10 +1,10 @@
-import { RNA } from '../model/nucleic-acids/RNA';
-import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern';
+import { RNA } from '../model/nucleic-acids/RNA.js';
+import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern.js';
 import {
   PolyadenylationSite,
   CleavageSiteOptions,
   DEFAULT_CLEAVAGE_OPTIONS,
-} from '../types/polyadenylation-site';
+} from '../types/polyadenylation-site.js';
 import {
   POLYA_SIGNALS,
   DEFAULT_POLYA_SIGNAL_STRENGTH,
@@ -22,8 +22,8 @@ import {
   HIGH_USE_SCORE,
   PERFECT_DSE_SCORE,
   MIN_POLYA_SITE_STRENGTH,
-} from '../constants/biological-constants';
-import { GenomicRegion } from '../types/genomic-region';
+} from '../constants/biological-constants.js';
+import { GenomicRegion } from '../types/genomic-region.js';
 
 /**
  * Finds polyadenylation sites in an RNA sequence with enhanced analysis

@@ -6,16 +6,18 @@
 export default {
   // The glob patterns Jest uses to detect test files
   testMatch: ['**/test/**/*.test.ts'],
-  preset: 'ts-jest',
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
-  // Improve performance for TypeScript compilation
-  extensionsToTreatAsEsm: [],
+  extensionsToTreatAsEsm: ['.ts'],
   transform: {
     '^.+\\.ts$': [
       'ts-jest',
       {
-        useESM: false,
+        useESM: true,
       },
     ],
+  },
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
 };

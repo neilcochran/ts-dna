@@ -1,13 +1,13 @@
-import { DNA } from '../model/nucleic-acids/DNA';
-import { Promoter } from '../model/Promoter';
-import { PromoterElement } from '../model/PromoterElement';
-import { STANDARD_PROMOTER_ELEMENTS, CORE_PROMOTER_ELEMENTS } from '../data/promoter-elements';
+import { DNA } from '../model/nucleic-acids/DNA.js';
+import { Promoter } from '../model/Promoter.js';
+import { PromoterElement } from '../model/PromoterElement.js';
+import { STANDARD_PROMOTER_ELEMENTS, CORE_PROMOTER_ELEMENTS } from '../data/promoter-elements.js';
 import {
   MAX_PROMOTER_SEARCH_DISTANCE,
   TATA_BOX_TYPICAL_POSITION,
   DPE_TYPICAL_POSITION,
   TSS_PROXIMITY_THRESHOLD,
-} from '../constants/biological-constants';
+} from '../constants/biological-constants.js';
 
 /**
  * Configuration options for promoter finding.

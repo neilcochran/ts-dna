@@ -1,3 +1,3 @@
-export * from './InvalidNucleotidePatternError';
-export * from './InvalidSequenceError';
-export * from './InvalidCodonError';
+export * from './InvalidNucleotidePatternError.js';
+export * from './InvalidSequenceError.js';
+export * from './InvalidCodonError.js';
