@@ -1,8 +1,8 @@
 {
   "name": "ts-dna",
-  "version": "0.17.0",
+  "version": "1.0.0",
   "license": "MIT",
-  "description": "A simple typescript utility library for working with nucleic acids, amino acids, and polypeptides",
+  "description": "A comprehensive TypeScript library for molecular biology simulation, modeling the gene expression pathway from DNA transcription to polypeptide translation with biological accuracy.",
   "author": {
     "name": "Neil Cochran",
     "email": "dev.neil.cochran@pm.me",
