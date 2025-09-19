@@ -1,20 +1,38 @@
-# **ts-dna**
+# ts-dna
 
-A modern TypeScript library for working with nucleic acids, amino acids, and polypeptides. Going from DNA → RNA → Polypeptides has never been easier!
+A comprehensive TypeScript library for molecular biology simulation, modeling the gene expression pathway from DNA transcription to polypeptide translation with biological accuracy.
+
+[![npm version](https://badge.fury.io/js/ts-dna.svg)](https://www.npmjs.com/package/ts-dna)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://badges.frapsoft.com/typescript/version/typescript-next.svg?v=101)](https://github.com/ellerbrock/typescript-badges/)
 
 ## Features
 
-- 🧬 **Type-safe** models for DNA, RNA, amino acids, and polypeptides
-- 🛡️ **Immutable** objects with validation enforced at construction
-- 🔄 **Functional error handling** with ValidationResult pattern (no exceptions)
-- 📦 **Zero dependencies** - lightweight and secure
-- 🌐 **Dual module support** - works with both ESM and CommonJS
-- 🧪 **IUPAC compliant** nucleotide pattern matching
+🧬 **Complete Gene Expression Pipeline**
+- Gene structure modeling with exons, introns, and promoters
+- Realistic transcription with promoter recognition
+- RNA processing including 5' capping, splicing, and polyadenylation
+- Alternative splicing with multiple variant support
+- Translation to amino acid sequences
 
-## Requirements
+🛡️ **Type-Safe & Immutable**
+- Full TypeScript support with strict typing
+- Immutable objects with validation enforced at construction
+- Functional error handling with `ValidationResult` pattern
+- Zero runtime dependencies
 
-- Node.js ≥18.0.0
-- TypeScript ≥5.0 (recommended)
+🔬 **Biologically Accurate**
+- IUPAC-compliant nucleotide patterns and symbols
+- Real splice site consensus sequences (GT-AG, GC-AG)
+- Accurate promoter elements (TATA, Inr, DPE, CAAT, GC boxes)
+- Proper polyadenylation signals and cleavage sites
+- Codon usage tables and amino acid properties
+
+🚀 **Performance Optimized**
+- O(n log n) exon validation with interval trees
+- O(1) codon lookups with optimized maps
+- Efficient pattern matching with compiled regex
+- Memory-efficient processing for large genes
 
 ## Installation
 
@@ -26,220 +44,257 @@ npm install ts-dna
 yarn add ts-dna
 ```
 
-## What You Can Do
+## Requirements
 
-### 🧬 Model Biological Sequences
+- Node.js ≥18.0.0
+- TypeScript ≥5.0 (recommended)
+
+## Quick Start
+
+### Basic DNA/RNA Operations
 
 ```typescript
+import { DNA, RNA, convertToRNA, NucleicAcidType } from 'ts-dna';
+
+// Create and manipulate nucleic acids
 const dna = new DNA('ATGTGCGACGAATTC');
-const rna = new RNA('AUGCCCAAAUUU', RNASubType.M_RNA);
-console.log(dna.getComplement()); // "TACGCGCTCAAG"
+const rna = convertToRNA(dna);
+
+console.log(dna.getComplement()); // 'TACGCGCTGTTAAG'
+console.log(rna.getSequence());   // 'AUGUGCGACGAAUC'
 ```
 
-### 🔄 Convert Between Nucleic Acids
-
-```typescript
-const dna = new DNA('ATGTGCGACGAATTC');
-const rna = convertToRNA(dna);        // DNA → RNA
-const backToDna = convertToDNA(rna);  // RNA → DNA
-```
-
-### 🧪 Work with Amino Acids & Proteins
-
-```typescript
-const rna = new RNA('AUGAAAGGG');  // 3 codons
-const polypeptide = new Polypeptide(rna);
-console.log(polypeptide.aminoAcidSequence.length); // 3
-console.log(polypeptide.aminoAcidSequence[0].name); // "Methionine"
-
-const aminoAcid = new AminoAcid(new RNA('UUU'));
-console.log(aminoAcid.name); // "Phenylalanine"
-console.log(aminoAcid.molecularWeight); // 165.19
-console.log(aminoAcid.polarity); // AminoAcidPolarity.NONPOLAR
-console.log(aminoAcid.getAllAlternateCodons()); // All codons for Phenylalanine
-```
-
-### 🔍 Advanced Pattern Matching
-
-```typescript
-const pattern = new NucleotidePattern('^N*Y?A+(WY){3}$');
-const dna = new DNA('ATCGATCGCAAAACTCTC');
-console.log(pattern.matches(dna)); // true
-console.log(pattern.patternRegex); // '^[AaGgCcTt]*[CcTt]?[Aa]+([AaTt][CcTt]){3}$'
-```
-
-### 🛡️ Safe Error Handling
-
-```typescript
-// No exceptions thrown - use ValidationResult pattern
-const result = DNA.create('INVALID_SEQUENCE');
-if (result.success) {
-    console.log('Valid DNA:', result.data.getSequence());
-} else {
-    console.log('Error:', result.error); // Detailed validation message
-}
-```
-
-## Complete Gene Expression Example
-
-Here's a comprehensive example showing the complete gene expression pathway from DNA to protein, including alternative splicing using a BRCA1-inspired gene:
+### Gene Expression Pipeline
 
 ```typescript
 import {
-    DNA,
-    Gene,
-    NucleotidePattern,
-    transcribe,
-    processAllSplicingVariants,
-    SpliceVariantPatterns,
-    AlternativeSplicingProfile,
-    Polypeptide,
-    isSuccess
+  Gene,
+  transcribe,
+  processRNA,
+  Polypeptide,
+  isSuccess
 } from 'ts-dna';
 
-// Create a simplified BRCA1-like gene with alternative splicing
-const brca1Sequence =
-    // Promoter region with TATA box
-    'GCGCGCGCGCGCGCGCGCGCTATAAAAGGCGCGCGCGCGCGCGCGC' +
-    // Exon 1: Start codon + DNA binding domain
-    'ATGGATTTATCTGCTCTTCGCGTTGAAGAAGTACAAAATGTCA' +
-    // Intron 1 with GT...AG splice sites
-    'GTAAGTGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCGCAG' +
-    // Exon 2: BRCT domain part 1
-    'TTCGATGCCATGGATGAAGCAGAGGCTGGGATAGTATTG' +
-    // Intron 2
-    'GTAAGTAAAAAAAAAAAAAAAAAAAAAAAAAAAG' +
-    // Exon 3: BRCT domain part 2 (cancer-critical)
-    'AAGATCCGGAAGCTTCTGACAAAGCTGTATCGTGAG' +
-    // Intron 3
-    'GTAAGTCCCCCCCCCCCCCCCCCCCCCCCCCCAG' +
-    // Exon 4: C-terminal + stop codon
-    'CTGAAGGACCTGCGCTACAAGTAAGGCGCGCGC';
+// Define a simple gene
+const geneSequence =
+  'GCGCTATAAAAGGCGC' +           // Promoter with TATA box
+  'ATGAAAGCCTTTGAG' +            // Exon 1: start codon + coding
+  'GTAAGTCCCCCCCAG' +            // Intron 1: GT...AG splice sites
+  'TTCGATGCCATGGAG' +            // Exon 2: more coding
+  'GTAAGTAAAAAAAAG' +            // Intron 2
+  'CTGAAGGACCTGTAG';             // Exon 3: coding + stop codon
 
-// Define exon boundaries
 const exons = [
-    { start: 47, end: 89, name: 'exon1' },   // DNA binding domain
-    { start: 128, end: 166, name: 'exon2' },  // BRCT domain part 1
-    { start: 200, end: 236, name: 'exon3' },  // BRCT domain part 2
-    { start: 270, end: 300, name: 'exon4' }   // C-terminal region
+  { start: 16, end: 31 },         // Exon 1
+  { start: 46, end: 61 },         // Exon 2
+  { start: 76, end: 91 }          // Exon 3
 ];
 
-// Define alternative splicing profile for BRCA1
-const splicingProfile: AlternativeSplicingProfile = {
-    geneId: 'BRCA1',
-    defaultVariant: 'full-length',
-    variants: [
-        // Full-length functional protein
-        SpliceVariantPatterns.fullLength('full-length', 4,
-            'Complete BRCA1 with all domains'),
+// Complete gene expression pathway
+const gene = new Gene(geneSequence, exons);
+const preMRNA = transcribe(gene).unwrap();
+const mRNA = processRNA(preMRNA).unwrap();
+const polypeptide = new Polypeptide(mRNA);
 
-        // Cancer-associated splice variant (skips critical BRCT domain)
-        SpliceVariantPatterns.exonSkipping('cancer-variant', 4, [2],
-            'Oncogenic variant missing BRCT domain part 1'),
-
-        // Tissue-specific shorter isoform
-        SpliceVariantPatterns.truncation('short-isoform', 3,
-            'Truncated isoform missing C-terminus')
-    ]
-};
-
-// Create gene with alternative splicing capability
-const brca1Gene = new Gene(brca1Sequence, exons, 'BRCA1', splicingProfile);
-
-// Transcribe the gene
-const transcriptionResult = transcribe(brca1Gene);
-
-if (isSuccess(transcriptionResult)) {
-    const preMRNA = transcriptionResult.data;
-    console.log(`BRCA1 pre-mRNA transcribed: ${preMRNA.getSequence().length} bp`);
-
-    // Process all splice variants
-    const splicingResult = processAllSplicingVariants(preMRNA, {
-        validateReadingFrames: true,
-        allowSkipLastExon: true, // Allow truncation variants
-        validateCodons: true     // Ensure proper start/stop codons
-    });
-
-    if (isSuccess(splicingResult)) {
-        const outcomes = splicingResult.data;
-        console.log(`\nBRCA1 Alternative Splice Variants:`);
-
-        for (const outcome of outcomes) {
-            const variant = outcome.variant;
-            const matureRNA = outcome.matureMRNA;
-
-            console.log(`\n🧬 ${variant.name}:`);
-            console.log(`   Description: ${variant.description}`);
-            console.log(`   Exons included: [${variant.includedExons.join(', ')}]`);
-            console.log(`   mRNA length: ${outcome.getMRNALength()} bp`);
-            console.log(`   Protein length: ${outcome.getAminoAcidCount()} amino acids`);
-            console.log(`   Reading frame intact: ${outcome.hasValidReadingFrame()}`);
-
-            // Create protein from mature mRNA
-            try {
-                const protein = new Polypeptide(matureRNA);
-                console.log(`   First amino acid: ${protein.aminoAcidSequence[0].name}`);
-                console.log(`   Last amino acid: ${protein.aminoAcidSequence[protein.aminoAcidSequence.length - 1].name}`);
-
-                // Check for functional domains
-                if (variant.name === 'cancer-variant') {
-                    console.log(`   ⚠️  WARNING: Missing critical BRCT domain - may be oncogenic`);
-                } else if (variant.name === 'full-length') {
-                    console.log(`   ✅ Complete functional protein with all domains`);
-                }
-            } catch (error) {
-                console.log(`   ❌ Cannot translate: ${error.message}`);
-            }
-        }
-
-        // Compare variant effects
-        console.log(`\n📊 Clinical Significance:`);
-        const fullLength = outcomes.find(o => o.variant.name === 'full-length');
-        const cancerVariant = outcomes.find(o => o.variant.name === 'cancer-variant');
-
-        if (fullLength && cancerVariant) {
-            const proteinLoss = fullLength.getAminoAcidCount() - cancerVariant.getAminoAcidCount();
-            console.log(`   Cancer variant loses ${proteinLoss} amino acids`);
-            console.log(`   Represents ${((proteinLoss / fullLength.getAminoAcidCount()) * 100).toFixed(1)}% protein loss`);
-        }
-    }
-}
-
-// Output example:
-// BRCA1 pre-mRNA transcribed: 253 bp
-//
-// 🧬 BRCA1 Alternative Splice Variants:
-//
-// 🧬 full-length:
-//    Description: Complete BRCA1 with all domains
-//    Exons included: [0, 1, 2, 3]
-//    mRNA length: 144 bp
-//    Protein length: 48 amino acids
-//    Reading frame intact: true
-//    First amino acid: Methionine
-//    Last amino acid: Lysine
-//    ✅ Complete functional protein with all domains
-//
-// 🧬 cancer-variant:
-//    Description: Oncogenic variant missing BRCT domain part 1
-//    Exons included: [0, 2, 3]
-//    mRNA length: 106 bp
-//    Protein length: 35 amino acids
-//    Reading frame intact: true
-//    First amino acid: Methionine
-//    Last amino acid: Lysine
-//    ⚠️  WARNING: Missing critical BRCT domain - may be oncogenic
-//
-// 📊 Clinical Significance:
-//    Cancer variant loses 13 amino acids
-//    Represents 27.1% protein loss
+console.log(`Gene length: ${gene.getSequence().length} bp`);
+console.log(`mRNA length: ${mRNA.getCodingSequence().length} bp`);
+console.log(`Polypeptide length: ${polypeptide.aminoAcidSequence.length} amino acids`);
+console.log(`First amino acid: ${polypeptide.aminoAcidSequence[0].name}`);
 ```
 
-This example demonstrates the complete molecular biology pipeline: **Gene → Pre-mRNA → Alternative Splicing → Mature mRNA → Protein**, showing how alternative splicing can create functionally different protein isoforms with varying clinical significance.
+### Alternative Splicing
+
+```typescript
+import {
+  Gene,
+  AlternativeSplicingProfile,
+  transcribe,
+  processAllSplicingVariants
+} from 'ts-dna';
+
+// Define splicing variants
+const splicingProfile: AlternativeSplicingProfile = {
+  geneId: 'EXAMPLE',
+  defaultVariant: 'full-length',
+  variants: [
+    {
+      name: 'full-length',
+      includedExons: [0, 1, 2, 3],
+      description: 'Complete polypeptide with all domains'
+    },
+    {
+      name: 'short-isoform',
+      includedExons: [0, 1, 3],
+      description: 'Alternative splicing skips exon 2'
+    }
+  ]
+};
+
+const gene = new Gene(sequence, exons, 'EXAMPLE', splicingProfile);
+const preMRNA = transcribe(gene).unwrap();
+const outcomes = processAllSplicingVariants(preMRNA).unwrap();
+
+for (const outcome of outcomes) {
+  console.log(`${outcome.variant.name}: ${outcome.proteinLength} amino acids`);
+}
+```
+
+### Pattern Matching
+
+```typescript
+import { NucleotidePattern, DNA } from 'ts-dna';
+
+// IUPAC pattern matching
+const tataBox = new NucleotidePattern('TATAAWAW');
+const promoterDNA = new DNA('GCGCTATAAAAGGCGC');
+
+console.log(tataBox.test(promoterDNA));           // true
+console.log(tataBox.findFirst(promoterDNA));      // { start: 4, end: 12 }
+
+// Find all TATA box occurrences
+const matches = tataBox.findAll(promoterDNA);
+console.log(`Found ${matches.length} TATA boxes`);
+```
+
+### Amino Acid Analysis
+
+```typescript
+import { AminoAcid, RNA, getAminoAcidByCodon } from 'ts-dna';
+
+// Single amino acid properties
+const phe = new AminoAcid(new RNA('UUU'));
+console.log(phe.name);                    // 'Phenylalanine'
+console.log(phe.singleLetterCode);        // 'F'
+console.log(phe.molecularWeight);         // 165.19
+console.log(phe.polarity);                // AminoAcidPolarity.NONPOLAR
+console.log(phe.getAllAlternateCodons()); // ['UUU', 'UUC']
+
+// Direct codon lookup
+const codonData = getAminoAcidByCodon('UUU');
+console.log(codonData.name);              // 'Phenylalanine'
+```
+
+## Advanced Features
+
+### Promoter Recognition
+
+```typescript
+import { findPromoters, TATA_BOX, GC_BOX } from 'ts-dna';
+
+const dna = new DNA('GCGCTATAAAAGGCCAATCGGGGCGG');
+const promoters = findPromoters(dna, {
+  elements: [TATA_BOX, GC_BOX],
+  maxDistance: 200,
+  minStrength: 0.7
+});
+
+for (const promoter of promoters) {
+  console.log(`Promoter at ${promoter.transcriptionStartSite}`);
+  console.log(`Elements: ${promoter.elements.map(e => e.name).join(', ')}`);
+}
+```
+
+### RNA Processing Control
+
+```typescript
+import {
+  processRNA,
+  findPolyadenylationSites,
+  add5PrimeCap,
+  add3PrimePolyATail
+} from 'ts-dna';
+
+// Custom RNA processing
+const preMRNA = transcribe(gene).unwrap();
+
+// Manual processing steps
+const cappedRNA = add5PrimeCap(preMRNA);
+const splicedRNA = spliceRNA(cappedRNA).unwrap();
+
+// Find poly-A sites
+const polyASites = findPolyadenylationSites(splicedRNA);
+const strongestSite = polyASites[0];
+
+const mRNA = add3PrimePolyATailAtSite(
+  splicedRNA,
+  strongestSite.position,
+  200  // tail length
+);
+```
+
+### Error Handling
+
+```typescript
+import { DNA, ValidationResult, isSuccess, isFailure } from 'ts-dna';
+
+// Safe construction with validation
+const result: ValidationResult<DNA> = DNA.create('INVALID_SEQUENCE');
+
+if (isSuccess(result)) {
+  console.log('Valid DNA:', result.data.getSequence());
+} else {
+  console.log('Validation error:', result.error);
+}
+
+// Functional error handling
+const processedResult = transcribe(gene)
+  .chain(preMRNA => processRNA(preMRNA))
+  .map(mRNA => new Polypeptide(mRNA));
+
+if (isSuccess(processedResult)) {
+  console.log('Polypeptide created successfully');
+} else {
+  console.log('Pipeline failed:', processedResult.error);
+}
+```
+
+## Biological Constants
+
+The library includes comprehensive biological constants for realistic simulations:
+
+```typescript
+import {
+  // Genetic code
+  START_CODON,
+  STOP_CODONS,
+  CODON_LENGTH,
+
+  // Splice sites
+  DONOR_SPLICE_CONSENSUS,
+  ACCEPTOR_SPLICE_CONSENSUS,
+
+  // Promoter elements
+  TATA_BOX_CONSENSUS,
+  INITIATOR_CONSENSUS,
+  GC_BOX_CONSENSUS,
+
+  // Polyadenylation
+  DEFAULT_POLYA_SIGNALS,
+  CANONICAL_POLYA_SIGNAL_DNA,
+
+  // Gene structure
+  MIN_EXON_SIZE,
+  MAX_EXON_SIZE,
+  MIN_INTRON_SIZE,
+  MAX_INTRON_SIZE
+} from 'ts-dna';
+```
+
+## Module Support
+
+ts-dna supports both ES modules and CommonJS:
+
+```typescript
+// ES modules
+import { DNA, RNA, Gene } from 'ts-dna';
+
+// CommonJS
+const { DNA, RNA, Gene } = require('ts-dna');
+```
 
 ## API Documentation
 
-Full API documentation with detailed examples is available at [neilcochran.com/ts-dna](http://www.neilcochran.com/ts-dna/).
+Complete API documentation with detailed examples is available at [docs](./docs).
 
 ## License
 

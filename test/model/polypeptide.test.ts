@@ -1,40 +1,40 @@
-import { RNA, Polypeptide, InvalidSequenceError, InvalidCodonError } from '../../src/model';
+import { RNA, MRNA, Polypeptide, InvalidSequenceError, InvalidCodonError } from '../../src/model';
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import { STOP_CODONS } from '../../src/utils/nucleic-acids';
 import { CODON_LENGTH } from '../../src/constants/biological-constants';
 import * as TestUtils from '../utils/test-utils';
 
-test('create invalid polypeptide from RNA with wrong length', () => {
+test('create invalid polypeptide from mRNA with wrong length', () => {
   expect(() => {
-    new Polypeptide(new RNA('AUGC'));
+    new Polypeptide(new MRNA('AUGC', 'AUGC', 0, 4));
   }).toThrowError(InvalidSequenceError);
 });
 
-test('create invalid polypeptide from invalid length RNA sequence', () => {
+test('create invalid polypeptide from invalid length mRNA sequence', () => {
   expect(() => {
-    new Polypeptide(new RNA('AUGC'));
+    new Polypeptide(new MRNA('AUGC', 'AUGC', 0, 4));
   }).toThrowError(InvalidSequenceError);
 });
 
-test('create invalid polypeptide from invalid (short) length RNA sequence', () => {
+test('create invalid polypeptide from invalid (short) length mRNA sequence', () => {
   expect(() => {
-    new Polypeptide(new RNA('AU'));
+    new Polypeptide(new MRNA('AU', 'AU', 0, 2));
   }).toThrowError(InvalidSequenceError);
 });
 
-test('create valid polypeptide from RNA_ALL_AMINO_ACIDS_1', () => {
+test('create valid polypeptide from MRNA_ALL_AMINO_ACIDS_1', () => {
   expect(
     TestUtils.isCorrectAminoAcidSequence(
-      new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_1).aminoAcidSequence,
+      new Polypeptide(TestUtils.MRNA_ALL_AMINO_ACIDS_1).aminoAcidSequence,
       TestUtils.ALL_AMINO_ACIDS_SLC_SEQ,
     ),
   ).toEqual(true);
 });
 
-test('create valid polypeptide from RNA_ALL_AMINO_ACIDS_2', () => {
+test('create valid polypeptide from MRNA_ALL_AMINO_ACIDS_2', () => {
   expect(
     TestUtils.isCorrectAminoAcidSequence(
-      new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_2).aminoAcidSequence,
+      new Polypeptide(TestUtils.MRNA_ALL_AMINO_ACIDS_2).aminoAcidSequence,
       TestUtils.ALL_AMINO_ACIDS_SLC_SEQ,
     ),
   ).toEqual(true);
@@ -76,14 +76,14 @@ test('RNAtoAminoAcids() throws InvalidCodonError for RNA containing stop codon',
 test('Polypeptide constructor throws InvalidCodonError for stop codons', () => {
   for (const stopCodon of STOP_CODONS) {
     expect(() => {
-      new Polypeptide(new RNA(stopCodon));
+      new Polypeptide(new MRNA(stopCodon, stopCodon, 0, 3));
     }).toThrowError(InvalidCodonError);
   }
 });
 
 test('Polypeptide constructor throws InvalidCodonError for RNA containing stop codon', () => {
   expect(() => {
-    new Polypeptide(new RNA('AUGUAG')); // Met + Stop(UAG)
+    new Polypeptide(new MRNA('AUGUAG', 'AUGUAG', 0, 6)); // Met + Stop(UAG)
   }).toThrowError(InvalidCodonError);
 });
 
@@ -109,33 +109,33 @@ test('RNAtoAminoAcids() from RNA_ALL_AMINO_ACIDS_2', () => {
     --- Additional Polypeptide Tests ---
 */
 
-test('polypeptide maintains reference to original RNA', () => {
-  const rna = TestUtils.RNA_ALL_AMINO_ACIDS_1;
-  const polypeptide = new Polypeptide(rna);
-  expect(polypeptide.rna).toBe(rna);
-  expect(polypeptide.rna.getSequence()).toEqual(rna.getSequence());
+test('polypeptide maintains reference to original mRNA', () => {
+  const mRNA = TestUtils.MRNA_ALL_AMINO_ACIDS_1;
+  const polypeptide = new Polypeptide(mRNA);
+  expect(polypeptide.mRNA).toBe(mRNA);
+  expect(polypeptide.mRNA.getSequence()).toEqual(mRNA.getSequence());
 });
 
 test('polypeptide amino acid sequence has correct length', () => {
-  const polypeptide = new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_1);
-  const expectedLength = TestUtils.RNA_ALL_AMINO_ACIDS_1.getSequence().length / CODON_LENGTH;
+  const polypeptide = new Polypeptide(TestUtils.MRNA_ALL_AMINO_ACIDS_1);
+  const expectedLength = TestUtils.MRNA_ALL_AMINO_ACIDS_1.getCodingSequence().length / CODON_LENGTH;
   expect(polypeptide.aminoAcidSequence.length).toEqual(expectedLength);
 });
 
 test('polypeptide from single codon creates single amino acid', () => {
-  const rna = new RNA('AUG'); // Methionine
-  const polypeptide = new Polypeptide(rna);
+  const mRNA = new MRNA('AUG', 'AUG', 0, 3); // Methionine
+  const polypeptide = new Polypeptide(mRNA);
   expect(polypeptide.aminoAcidSequence.length).toEqual(1);
   expect(polypeptide.aminoAcidSequence[0].slc).toEqual('M');
   expect(polypeptide.aminoAcidSequence[0].name).toEqual('Methionine');
 });
 
 test('polypeptide properties are readonly', () => {
-  const polypeptide = new Polypeptide(TestUtils.RNA_ALL_AMINO_ACIDS_1);
+  const polypeptide = new Polypeptide(TestUtils.MRNA_ALL_AMINO_ACIDS_1);
 
   // Verify properties are readonly by checking they exist and are not undefined
   expect(polypeptide.aminoAcidSequence).toBeDefined();
-  expect(polypeptide.rna).toBeDefined();
+  expect(polypeptide.mRNA).toBeDefined();
 
   // Properties should be consistent on multiple reads
   const sequence1 = polypeptide.aminoAcidSequence;
@@ -145,8 +145,8 @@ test('polypeptide properties are readonly', () => {
 
 test('create polypeptide with start and stop codons', () => {
   // AUG (start) + UUU (Phe) + UAG (stop, but should still create Polypeptide with 2 amino acids since UAG codes for nothing)
-  const rna = new RNA('AUGUUU'); // Met-Phe (6 nucleotides = 2 codons)
-  const polypeptide = new Polypeptide(rna);
+  const mRNA = new MRNA('AUGUUU', 'AUGUUU', 0, 6); // Met-Phe (6 nucleotides = 2 codons)
+  const polypeptide = new Polypeptide(mRNA);
   expect(polypeptide.aminoAcidSequence.length).toEqual(2);
   expect(polypeptide.aminoAcidSequence[0].slc).toEqual('M'); // Methionine
   expect(polypeptide.aminoAcidSequence[1].slc).toEqual('F'); // Phenylalanine
@@ -161,9 +161,9 @@ test('RNAtoAminoAcids returns empty array for empty string (if it could exist)',
   expect(aminoAcids[0].slc).toEqual('M');
 });
 
-test('polypeptide immutability - RNA changes do not affect polypeptide', () => {
-  const originalRNA = TestUtils.RNA_ALL_AMINO_ACIDS_1;
-  const polypeptide = new Polypeptide(originalRNA);
+test('polypeptide immutability - mRNA changes do not affect polypeptide', () => {
+  const originalMRNA = TestUtils.MRNA_ALL_AMINO_ACIDS_1;
+  const polypeptide = new Polypeptide(originalMRNA);
 
   // Store original values
   const originalAminoAcidCount = polypeptide.aminoAcidSequence.length;
@@ -172,5 +172,5 @@ test('polypeptide immutability - RNA changes do not affect polypeptide', () => {
   // Verify polypeptide maintains its state
   expect(polypeptide.aminoAcidSequence.length).toEqual(originalAminoAcidCount);
   expect(polypeptide.aminoAcidSequence[0].slc).toEqual(originalFirstAminoAcid);
-  expect(polypeptide.rna.getSequence()).toEqual(originalRNA.getSequence());
+  expect(polypeptide.mRNA.getSequence()).toEqual(originalMRNA.getSequence());
 });

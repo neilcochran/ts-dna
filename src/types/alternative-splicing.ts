@@ -38,7 +38,7 @@ export class SplicingOutcome {
     public readonly variant: SpliceVariant,
     public readonly matureMRNA: RNA,
     public readonly codingSequence: string,
-    public readonly proteinLength: number,
+    public readonly polypeptideLength: number,
   ) {}
 
   /**
@@ -125,9 +125,9 @@ export interface AlternativeSplicingOptions {
    * Biologically relevant for:
    * - Alternative polyadenylation (early termination with different 3' UTR)
    * - Nonsense-mediated decay escape mechanisms
-   * - Research into truncated protein isoforms
+   * - Research into truncated polypeptide isoforms
    *
-   * When false, enforces that functional proteins retain proper C-terminus
+   * When false, enforces that functional polypeptides retain proper C-terminus
    * and termination signals. Use true for modeling alternative polyadenylation
    * or studying naturally occurring truncated isoforms.
    */

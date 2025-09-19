@@ -1,4 +1,11 @@
 import { GenomicRegion } from './genomic-region';
+import {
+  DEFAULT_POLYA_SIGNALS,
+  DEFAULT_UPSTREAM_USE_PATTERN,
+  DEFAULT_DOWNSTREAM_DSE_PATTERN,
+  DEFAULT_CLEAVAGE_PREFERENCE,
+  DEFAULT_CLEAVAGE_DISTANCE_RANGE,
+} from '../constants/biological-constants';
 
 /**
  * Represents a polyadenylation site with detailed information about
@@ -48,9 +55,9 @@ export interface CleavageSiteOptions {
  * Default polyadenylation signal recognition options based on biological data.
  */
 export const DEFAULT_CLEAVAGE_OPTIONS: CleavageSiteOptions = {
-  polyASignal: ['AAUAAA', 'AUUAAA', 'AGUAAA', 'AAUAUA', 'AAUACA'],
-  upstreamUSE: 'U{3,}|UGUA',
-  downstreamDSE: 'U{3,}|GU{2,}',
-  cleavagePreference: ['A', 'U', 'C', 'G'],
-  distanceRange: [11, 23],
+  polyASignal: DEFAULT_POLYA_SIGNALS,
+  upstreamUSE: DEFAULT_UPSTREAM_USE_PATTERN,
+  downstreamDSE: DEFAULT_DOWNSTREAM_DSE_PATTERN,
+  cleavagePreference: DEFAULT_CLEAVAGE_PREFERENCE,
+  distanceRange: DEFAULT_CLEAVAGE_DISTANCE_RANGE,
 } as const;

@@ -1,3 +1,10 @@
+## Version 1.0.0
+
+- First full release!
+- Added more biological constants
+- Exported a few missing items
+- Change documentation output dir to `docs` for use with GitHub pages
+
 ## Version 0.16.0
 
 - Add realistic gene test sequences with proper biological constraints (20bp+ introns, valid splice sites, start/stop codons)

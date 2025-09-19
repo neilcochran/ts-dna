@@ -42,9 +42,9 @@ export const getAminoAcidByCodon = (codon: RNA): AminoAcid | undefined => {
  *
  * @returns The corresponding amino acid data or undefined if the codon is invalid
  *
- * @internal
+ * @internal For internal use by model classes
  */
-const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined => {
+export const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined => {
   const sequence = codon.getSequence();
   if (sequence.length !== CODON_LENGTH) {
     return undefined;
@@ -98,6 +98,3 @@ export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
   });
   return aminoAcids;
 };
-
-// Export for internal use by model classes
-export { getAminoAcidDataByCodon };

@@ -15,7 +15,11 @@ import {
   DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE,
   DEFAULT_DOWNSTREAM_SEARCH_DISTANCE,
   POLYA_SIGNAL_OFFSET,
+  DEFAULT_MIN_PROMOTER_STRENGTH,
+  FORCE_TSS_DISABLED,
+  CANONICAL_POLYA_SIGNAL_DNA,
 } from '../constants/biological-constants';
+import { TATA_BOX } from '../data/promoter-elements';
 
 /**
  * Configuration options for transcription.
@@ -39,10 +43,10 @@ export interface TranscriptionOptions {
  */
 function getDefaultTranscriptionOptions(): Required<TranscriptionOptions> {
   return {
-    promoterPattern: new NucleotidePattern('TATAAA'), // TATA box as default
+    promoterPattern: TATA_BOX.pattern, // Use existing TATA box consensus (TATAWAR)
     maxPromoterSearchDistance: DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE,
-    minPromoterStrength: 5,
-    forceTranscriptionStartSite: -1, // -1 means don't force
+    minPromoterStrength: DEFAULT_MIN_PROMOTER_STRENGTH,
+    forceTranscriptionStartSite: FORCE_TSS_DISABLED,
   };
 }
 
@@ -210,7 +214,7 @@ function findPolyadenylationSite(gene: Gene, tss: number): ValidationResult<numb
     const searchDNA = new DNA(searchRegion);
 
     // Look for canonical polyadenylation signal AATAAA in DNA
-    const polyAPattern = new NucleotidePattern('AATAAA');
+    const polyAPattern = new NucleotidePattern(CANONICAL_POLYA_SIGNAL_DNA);
     const matches = polyAPattern.findMatches(searchDNA);
 
     if (matches.length === 0) {

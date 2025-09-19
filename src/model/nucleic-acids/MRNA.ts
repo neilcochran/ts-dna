@@ -79,7 +79,7 @@ export class MRNA extends RNA {
    * Gets the coding sequence (CDS) for translation.
    * This excludes 5' UTR, 3' UTR, cap, and poly-A tail.
    *
-   * @returns The coding sequence that will be translated to protein
+   * @returns The coding sequence that will be translated to a polypeptide
    *
    * @example
    * ```typescript

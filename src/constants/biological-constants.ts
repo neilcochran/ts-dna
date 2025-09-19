@@ -22,6 +22,7 @@ export const POLY_A_TAIL_PATTERN = /A+$/; // Regex pattern for detecting trailin
 // Polyadenylation signal constants
 export const POLYA_SIGNAL_OFFSET = 6; // Offset from AATAAA/AAUAAA to typical cleavage site
 export const DEFAULT_CLEAVAGE_OFFSET = 15; // Default cleavage site offset when not specified
+export const CANONICAL_POLYA_SIGNAL_DNA = 'AATAAA'; // Canonical polyadenylation signal in DNA (becomes AAUAAA in RNA)
 
 // Polyadenylation signal variants with their relative strengths
 export const POLYA_SIGNALS = {
@@ -84,6 +85,8 @@ export const DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE = 1000; // Default maximum ups
 export const DEFAULT_DOWNSTREAM_SEARCH_DISTANCE = 100; // Default downstream search distance for promoter elements
 export const MAX_POLY_A_TAIL_LENGTH = 1000; // Maximum allowed poly-A tail length
 export const TSS_PROXIMITY_THRESHOLD = 10; // Maximum distance between TSS candidates to consider them the same
+export const DEFAULT_MIN_PROMOTER_STRENGTH = 5; // Default minimum promoter strength for transcription
+export const FORCE_TSS_DISABLED = -1; // Value indicating forced TSS is disabled
 
 // Promoter scoring constants
 export const PROMOTER_ELEMENT_SCORE_BOOST = 10; // Score boost for finding a promoter element (TATA)
@@ -92,3 +95,30 @@ export const WEAKER_ELEMENT_SCORE_BOOST = 6; // Score boost for weaker promoter 
 export const CAAT_ELEMENT_SCORE_BOOST = 5; // Score boost for CAAT box elements
 export const GC_ELEMENT_SCORE_BOOST = 4; // Score boost for GC box elements
 export const PROMOTER_SYNERGY_MULTIPLIER = 2; // Multiplier for multiple element synergy bonus
+
+// Cleavage site recognition constants
+export const DEFAULT_POLYA_SIGNALS = ['AAUAAA', 'AUUAAA', 'AGUAAA', 'AAUAUA', 'AAUACA'] as const;
+export const DEFAULT_UPSTREAM_USE_PATTERN = 'U{3,}|UGUA';
+export const DEFAULT_DOWNSTREAM_DSE_PATTERN = 'U{3,}|GU{2,}';
+export const DEFAULT_CLEAVAGE_PREFERENCE = ['A', 'U', 'C', 'G'] as const;
+export const DEFAULT_CLEAVAGE_DISTANCE_RANGE = [11, 23] as const;
+
+// Promoter element consensus sequences (IUPAC nucleotide code)
+export const TATA_BOX_CONSENSUS = 'TATAWAR'; // TATA box consensus sequence (W = A/T, R = A/G)
+export const INITIATOR_CONSENSUS = 'BBCABW'; // Initiator (Inr) consensus (B = C/G/T, W = A/T)
+export const DPE_CONSENSUS = 'RGWYV'; // Downstream Promoter Element (R = A/G, G = G, W = A/T, Y = C/T, V = A/C/G)
+export const CAAT_BOX_CONSENSUS = 'GGCCAATCT'; // CAAT box consensus sequence
+export const GC_BOX_CONSENSUS = 'GGGCGG'; // GC box (Sp1 binding site) consensus sequence
+export const CEBP_SITE_CONSENSUS = 'RTTGCGYAAY'; // C/EBP binding site consensus (R = A/G, Y = C/T)
+export const E_BOX_CONSENSUS = 'CANNTG'; // E-box consensus sequence (N = any nucleotide)
+export const AP1_SITE_CONSENSUS = 'TGASTCA'; // AP-1 binding site consensus (S = G/C)
+
+// Promoter element names (used for identification and searching)
+export const TATA_BOX_NAME = 'TATA';
+export const INITIATOR_NAME = 'Inr';
+export const DPE_NAME = 'DPE';
+export const CAAT_BOX_NAME = 'CAAT';
+export const GC_BOX_NAME = 'GC';
+export const CEBP_SITE_NAME = 'C/EBP';
+export const E_BOX_NAME = 'E-box';
+export const AP1_SITE_NAME = 'AP-1';

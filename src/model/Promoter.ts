@@ -6,6 +6,11 @@ import {
   CAAT_ELEMENT_SCORE_BOOST,
   GC_ELEMENT_SCORE_BOOST,
   PROMOTER_SYNERGY_MULTIPLIER,
+  TATA_BOX_NAME,
+  INITIATOR_NAME,
+  DPE_NAME,
+  CAAT_BOX_NAME,
+  GC_BOX_NAME,
 } from '../constants/biological-constants';
 
 /**
@@ -88,19 +93,19 @@ export class Promoter {
     let score = 0;
 
     // Add points for key elements (simplified scoring)
-    if (this.hasElement('TATA')) {
+    if (this.hasElement(TATA_BOX_NAME)) {
       score += PROMOTER_ELEMENT_SCORE_BOOST;
     }
-    if (this.hasElement('Inr')) {
+    if (this.hasElement(INITIATOR_NAME)) {
       score += INR_ELEMENT_SCORE_BOOST;
     }
-    if (this.hasElement('DPE')) {
+    if (this.hasElement(DPE_NAME)) {
       score += WEAKER_ELEMENT_SCORE_BOOST;
     }
-    if (this.hasElement('CAAT')) {
+    if (this.hasElement(CAAT_BOX_NAME)) {
       score += CAAT_ELEMENT_SCORE_BOOST;
     }
-    if (this.hasElement('GC')) {
+    if (this.hasElement(GC_BOX_NAME)) {
       score += GC_ELEMENT_SCORE_BOOST;
     }
 

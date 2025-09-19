@@ -13,7 +13,7 @@ import {
   processAllSplicingVariants,
   validateSpliceVariant,
   processDefaultSpliceVariant,
-  findVariantsByProteinLength,
+  findVariantsByPolypeptideLength,
 } from '../../src/utils/alternative-splicing';
 import { FOUR_EXON_GENE } from '../test-genes';
 
@@ -291,8 +291,8 @@ describe('Alternative Splicing Functions', () => {
     });
   });
 
-  describe('findVariantsByProteinLength', () => {
-    test('finds variants within protein length range', () => {
+  describe('findVariantsByPolypeptideLength', () => {
+    test('finds variants within polypeptide length range', () => {
       const splicingProfile: AlternativeSplicingProfile = {
         geneId: 'TEST_GENE',
         defaultVariant: 'full-length',
@@ -307,7 +307,7 @@ describe('Alternative Splicing Functions', () => {
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       // Look for variants producing 5-6 amino acids (excludes full-length with 7)
-      const result = findVariantsByProteinLength(preMRNA, 5, 6);
+      const result = findVariantsByPolypeptideLength(preMRNA, 5, 6);
 
       expect(result.success).toBe(true);
       if (result.success) {
@@ -336,7 +336,7 @@ describe('Alternative Splicing Functions', () => {
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       // Look for variants producing 10-20 amino acids (none match)
-      const result = findVariantsByProteinLength(preMRNA, 10, 20, {
+      const result = findVariantsByPolypeptideLength(preMRNA, 10, 20, {
         allowSkipLastExon: true,
         validateCodons: false,
       });
@@ -358,9 +358,9 @@ describe('Alternative Splicing Functions', () => {
 
       const rna = new RNA('AUGAAAGGGUUUAAAUAG', RNASubType.M_RNA);
       const codingSequence = 'AUGAAAGGGUUUAAAUAG';
-      const proteinLength = 6;
+      const polypeptideLength = 6;
 
-      const outcome = new SplicingOutcome(variant, rna, codingSequence, proteinLength);
+      const outcome = new SplicingOutcome(variant, rna, codingSequence, polypeptideLength);
 
       expect(outcome.getVariantName()).toBe('test-variant');
       expect(outcome.getVariantDescription()).toBe('Test variant for metadata');
@@ -381,9 +381,9 @@ describe('Alternative Splicing Functions', () => {
       // 7 nucleotides - not divisible by 3
       const rna = new RNA('AUGAAAG', RNASubType.M_RNA);
       const codingSequence = 'AUGAAAG';
-      const proteinLength = 2;
+      const polypeptideLength = 2;
 
-      const outcome = new SplicingOutcome(variant, rna, codingSequence, proteinLength);
+      const outcome = new SplicingOutcome(variant, rna, codingSequence, polypeptideLength);
 
       expect(outcome.hasValidReadingFrame()).toBe(false);
       expect(outcome.getAminoAcidCount()).toBe(2); // Floor of 7/3

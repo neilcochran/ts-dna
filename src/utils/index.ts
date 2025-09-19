@@ -1,5 +1,6 @@
 export * from './amino-acids';
 export * from './nucleic-acids';
+export * from './complement';
 export * from './promoter-recognition';
 export * from './splice-sites';
 export * from './transcription';
@@ -7,3 +8,5 @@ export * from './validation';
 export * from './polyadenylation';
 export * from './rna-processing';
 export * from './rna-modifications';
+export * from './alternative-splicing';
+export * from './mrna-processing';

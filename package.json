@@ -1,8 +1,8 @@
 {
   "name": "ts-dna",
-  "version": "0.16.0",
+  "version": "1.0.0",
   "license": "MIT",
-  "description": "A simple typescript utility library for working with nucleic acids, amino acids, and polypeptides",
+  "description": "A comprehensive TypeScript library for molecular biology simulation, modeling the gene expression pathway from DNA transcription to polypeptide translation with biological accuracy.",
   "author": {
     "name": "Neil Cochran",
     "email": "dev.neil.cochran@pm.me",
@@ -28,7 +28,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "doc": "rimraf doc/ && typedoc --includeVersion --readme none --out doc src/",
+    "doc": "rimraf doc/ && typedoc --includeVersion --readme none --out docs src/",
     "build": "node scripts/build.js",
     "clean": "rimraf dist/ dist-cjs/ doc/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

@@ -4,23 +4,13 @@ import { existsSync, copyFileSync } from 'fs';
 (function main() {
     console.log('🏗️  Starting ts-dna build process...\n');
 
-    // Run linting
+    // Run linting (ESLint + CSpell)
     console.log('🔍 Step 1: Linting code...');
-    console.log('Running ESLint...');
     try {
-        execSync('eslint --ext .ts --fix .', {stdio: 'inherit'});
-        console.log('✅ ESLint completed successfully');
+        execSync('npm run lint', {stdio: 'inherit'});
+        console.log('✅ Linting completed successfully - no issues found');
     } catch (error) {
-        console.error('❌ ESLint found issues that need to be fixed');
-        process.exit(1);
-    }
-
-    console.log('\nRunning CSpell...');
-    try {
-        execSync('cspell lint --unique --words-only "src/**/*"', {stdio: 'inherit'});
-        console.log('✅ CSpell completed successfully - no spelling issues found');
-    } catch (error) {
-        console.error('❌ CSpell found spelling issues. Fix them or add to project-words.txt');
+        console.error('❌ Linting found issues that need to be fixed');
         process.exit(1);
     }
 
