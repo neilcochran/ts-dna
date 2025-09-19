@@ -98,9 +98,9 @@ export function processAllSplicingVariants(
       try {
         const matureRNA = splicingResult.data;
         const codingSequence = matureRNA.getSequence();
-        const proteinLength = Math.floor(codingSequence.length / CODON_LENGTH);
+        const polypeptideLength = Math.floor(codingSequence.length / CODON_LENGTH);
 
-        const outcome = new SplicingOutcome(variant, matureRNA, codingSequence, proteinLength);
+        const outcome = new SplicingOutcome(variant, matureRNA, codingSequence, polypeptideLength);
 
         outcomes.push(outcome);
       } catch (error) {
@@ -255,23 +255,23 @@ export function processDefaultSpliceVariant(
 }
 
 /**
- * Finds all splice variants that produce proteins of a specific length range.
+ * Finds all splice variants that produce polypeptides of a specific length range.
  *
  * @param preMRNA - The pre-mRNA to analyze
- * @param minLength - Minimum protein length in amino acids
- * @param maxLength - Maximum protein length in amino acids
+ * @param minLength - Minimum polypeptide length in amino acids
+ * @param maxLength - Maximum polypeptide length in amino acids
  * @param options - Optional configuration for splicing validation
  * @returns ValidationResult containing array of matching SplicingOutcome objects
  *
  * @example
  * ```typescript
- * const result = findVariantsByProteinLength(preMRNA, 100, 200);
+ * const result = findVariantsByPolypeptideLength(preMRNA, 100, 200);
  * if (result.success) {
- *     console.log(`Found ${result.data.length} variants with proteins 100-200 amino acids`);
+ *     console.log(`Found ${result.data.length} variants with polypeptides 100-200 amino acids`);
  * }
  * ```
  */
-export function findVariantsByProteinLength(
+export function findVariantsByPolypeptideLength(
   preMRNA: PreMRNA,
   minLength: number,
   maxLength: number,
@@ -284,8 +284,8 @@ export function findVariantsByProteinLength(
   }
 
   const matchingVariants = allVariantsResult.data.filter(outcome => {
-    const proteinLength = outcome.getAminoAcidCount();
-    return proteinLength >= minLength && proteinLength <= maxLength;
+    const polypeptideLength = outcome.getAminoAcidCount();
+    return polypeptideLength >= minLength && polypeptideLength <= maxLength;
   });
 
   return success(matchingVariants);

@@ -96,7 +96,7 @@ function validateAllSpliceSites(
 
 /**
  * Checks if a spliced RNA maintains proper reading frame for translation.
- * This is important for ensuring the resulting protein will be correctly translated.
+ * This is important for ensuring the resulting polypeptide will be correctly translated.
  */
 export function validateReadingFrame(rna: RNA, expectedStart?: number): ValidationResult<boolean> {
   const sequence = rna.getSequence();
