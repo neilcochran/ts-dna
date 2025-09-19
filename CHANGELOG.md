@@ -1,5 +1,5 @@
 # Version 1.0.3
-
+- Remove CJS and dual build support, targeting only ESM
 - Added strict TypeScript linting rules for explicit return types, nullish coalescing, and enhanced type safety
 - Remove RNASubType since we now have classes for RNA types
 - Correct Polypeptide constructor to take in MRNA not RNA
