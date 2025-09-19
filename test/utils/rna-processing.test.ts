@@ -2,6 +2,7 @@ import { RNA } from '../../src/model/nucleic-acids/RNA';
 import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
 import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { spliceRNA, validateReadingFrame } from '../../src/utils/rna-processing';
+import { transcribe } from '../../src/utils/transcription';
 import { CODON_LENGTH } from '../../src/constants/biological-constants';
 import { GenomicRegion } from '../../src/types/genomic-region';
 import { isSuccess, isFailure } from '../../src/types/validation-result';
@@ -85,6 +86,43 @@ describe('rna-processing', () => {
       expect(isFailure(geneResult)).toBe(true);
       if (isFailure(geneResult)) {
         expect(geneResult.error).toContain('extends beyond sequence length');
+      }
+    });
+    test('validates splice sites using transcript coordinates (coordinate system fix)', () => {
+      // This test specifically verifies the coordinate system fix for issue where
+      // splice site validation was using gene coordinates against transcript sequence
+
+      // Create a gene where transcription starts from a non-zero position
+      const geneSequence =
+        'GCGCGCGCGCTATAAAAGGCGCGCGCGCGCGC' + // Promoter region (32 bp)
+        'ATGAAAGTAAGGGGGGGGGGGGGGGAGCCCGGG' + // Exon 1 + Intron 1 (32 bp)
+        'GTAAGGGGGGGGGGGGGGGAGTAGAAACCC'; // Intron 1 end + Exon 2 (27 bp)
+
+      const exons = [
+        { start: 32, end: 38, name: 'exon1' }, // ATGAAA in gene coordinates
+        { start: 59, end: 65, name: 'exon2' }, // CCCGGG in gene coordinates
+        { start: 86, end: 91, name: 'exon3' }, // TAGAA in gene coordinates
+      ];
+
+      const gene = new Gene(geneSequence, exons, 'COORD_TEST');
+
+      // Transcribe from TSS at position 32 (not position 0)
+      const transcriptionResult = transcribe(gene, { forceTranscriptionStartSite: 32 });
+      expect(isSuccess(transcriptionResult)).toBe(true);
+
+      if (isSuccess(transcriptionResult)) {
+        const preMRNA = transcriptionResult.data;
+
+        // Before the fix: This would fail because validation used gene coordinates
+        // After the fix: This should succeed because validation uses transcript coordinates
+        const splicingResult = spliceRNA(preMRNA);
+        expect(isSuccess(splicingResult)).toBe(true);
+
+        if (isSuccess(splicingResult)) {
+          const mRNA = splicingResult.data;
+          // Should be: AUGAAA + CCCGGG + UAGAA = AUGAAACCCGGGUAGAA
+          expect(mRNA.getSequence()).toBe('AUGAAACCCGGGUAGAA');
+        }
       }
     });
   });

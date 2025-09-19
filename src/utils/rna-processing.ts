@@ -12,7 +12,6 @@ import { START_CODON } from './nucleic-acids.js';
  */
 export function spliceRNA(preMRNA: PreMRNA): ValidationResult<RNA> {
   try {
-    const sourceGene = preMRNA.getSourceGene();
     const exonRegions = preMRNA.getExonRegions();
     const sequence = preMRNA.getSequence();
 
@@ -21,8 +20,8 @@ export function spliceRNA(preMRNA: PreMRNA): ValidationResult<RNA> {
       return failure('Cannot splice RNA: no exons found in pre-mRNA');
     }
 
-    // Validate splice sites before proceeding
-    const spliceSiteValidation = validateAllSpliceSites(sourceGene, exonRegions);
+    // Validate splice sites before proceeding using transcript coordinates
+    const spliceSiteValidation = validateTranscriptSpliceSites(preMRNA);
     if (isFailure(spliceSiteValidation)) {
       return failure(`Splice site validation failed: ${spliceSiteValidation.error}`);
     }
@@ -55,7 +54,7 @@ export function spliceRNA(preMRNA: PreMRNA): ValidationResult<RNA> {
 /**
  * Validates all splice sites in a gene to ensure proper splicing can occur.
  */
-function validateAllSpliceSites(
+function _validateAllSpliceSites(
   gene: Gene,
   exonRegions: GenomicRegion[],
 ): ValidationResult<boolean> {
@@ -86,6 +85,51 @@ function validateAllSpliceSites(
       if (acceptorSite !== 'AG') {
         return failure(
           `Invalid 3' splice site at position ${intron.end - 2}: expected AG, found ${acceptorSite}`,
+        );
+      }
+    }
+  }
+
+  return success(true);
+}
+
+/**
+ * Validates splice sites using transcript coordinates and pre-mRNA sequence.
+ * This fixes the coordinate system mismatch in the original validateAllSpliceSites function.
+ *
+ * @param preMRNA - The pre-mRNA to validate splice sites for
+ * @returns ValidationResult indicating whether all splice sites are valid
+ */
+function validateTranscriptSpliceSites(preMRNA: PreMRNA): ValidationResult<boolean> {
+  const intronRegions = preMRNA.getIntronRegions();
+
+  if (intronRegions.length === 0) {
+    // Single exon transcripts don't need splice site validation
+    return success(true);
+  }
+
+  const transcriptSequence = preMRNA.getSequence();
+
+  for (let i = 0; i < intronRegions.length; i++) {
+    const intron = intronRegions[i];
+
+    // Check 5' splice site (donor) - should start with GT (or GU in RNA)
+    if (intron.start + 1 < transcriptSequence.length) {
+      const donorSite = transcriptSequence.substring(intron.start, intron.start + 2);
+      if (donorSite !== 'GU') {
+        // RNA uses U instead of T
+        return failure(
+          `Invalid 5' splice site at transcript position ${intron.start}: expected GU, found ${donorSite}`,
+        );
+      }
+    }
+
+    // Check 3' splice site (acceptor) - should end with AG
+    if (intron.end >= 2) {
+      const acceptorSite = transcriptSequence.substring(intron.end - 2, intron.end);
+      if (acceptorSite !== 'AG') {
+        return failure(
+          `Invalid 3' splice site at transcript position ${intron.end - 2}: expected AG, found ${acceptorSite}`,
         );
       }
     }

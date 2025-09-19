@@ -183,13 +183,13 @@ describe('Gene', () => {
     test('getIntrons returns calculated introns', () => {
       const introns = gene.getIntrons();
       expect(introns).toHaveLength(2);
-      expect(introns[0]).toEqual({ start: 6, end: 26, name: 'intron1' });
-      expect(introns[1]).toEqual({ start: 32, end: 52, name: 'intron2' });
+      expect(introns[0]).toEqual({ start: 6, end: 27, name: 'intron1' });
+      expect(introns[1]).toEqual({ start: 33, end: 54, name: 'intron2' });
     });
 
     test('getIntronSequence returns correct sequence', () => {
-      expect(gene.getIntronSequence(0)).toBe('GTAAGGGGGGGGGGGGGGAG'); // 6-26 (20bp intron)
-      expect(gene.getIntronSequence(1)).toBe('GTAAGGGGGGGGGGGGGGAG'); // 32-52 (20bp intron)
+      expect(gene.getIntronSequence(0)).toBe('GTAAGGGGGGGGGGGGGGGAG'); // 6-27 (21bp intron)
+      expect(gene.getIntronSequence(1)).toBe('GTAAGGGGGGGGGGGGGGGAG'); // 33-54 (21bp intron)
     });
 
     test('getIntronSequence throws error for invalid index', () => {
@@ -206,11 +206,11 @@ describe('Gene', () => {
 
       expect(gene.getExons()).toHaveLength(3);
       expect(gene.getIntrons()).toHaveLength(2);
-      expect(gene.getMatureSequence()).toBe('ATGAAATTCGTCTAGAAA');
+      expect(gene.getMatureSequence()).toBe('ATGAAACCCGGGTAGAAA');
 
       // Verify intron boundaries
-      expect(gene.getIntrons()[0]).toEqual({ start: 6, end: 26, name: 'intron1' });
-      expect(gene.getIntrons()[1]).toEqual({ start: 32, end: 52, name: 'intron2' });
+      expect(gene.getIntrons()[0]).toEqual({ start: 6, end: 27, name: 'intron1' });
+      expect(gene.getIntrons()[1]).toEqual({ start: 33, end: 54, name: 'intron2' });
     });
 
     test('handles single exon gene (no introns)', () => {

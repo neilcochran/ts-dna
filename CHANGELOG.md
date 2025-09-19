@@ -1,5 +1,10 @@
-# Version 1.0.3
+# Version 1.3.0
+- Fix coordinate system mismatch in splice site validation
+
+# Version 1.2.0
 - Remove CJS and dual build support, targeting only ESM
+
+# Version 1.0.3
 - Added strict TypeScript linting rules for explicit return types, nullish coalescing, and enhanced type safety
 - Remove RNASubType since we now have classes for RNA types
 - Correct Polypeptide constructor to take in MRNA not RNA

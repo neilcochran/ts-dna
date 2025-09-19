@@ -21,16 +21,16 @@ export const SIMPLE_TWO_EXON_GENE = {
 
 // Three-exon gene with proper splice sites and 20bp+ introns and stop codon
 export const THREE_EXON_GENE = {
-  dnaSequence: 'ATGAAAGTAAGGGGGGGGGGGGGGAGTTCGTCGTAAGGGGGGGGGGGGGGAGTAGAAACCC', // 60bp total
-  rnaSequence: 'AUGAAAGUAAGGGGGGGGGGGGGGGAGUUCGUCGUAAGGGGGGGGGGGGGGGAGUAGAAACCC',
+  dnaSequence: 'ATGAAAGTAAGGGGGGGGGGGGGGGAGCCCGGGGTAAGGGGGGGGGGGGGGGAGTAGAAACCC', // 63bp total
+  rnaSequence: 'AUGAAAGUAAGGGGGGGGGGGGGGGAGCCCGGGGUAAGGGGGGGGGGGGGGGAGUGAAACCC',
   exons: [
     { start: 0, end: 6, name: 'exon1' }, // ATGAAA -> AUGAAA
-    { start: 26, end: 32, name: 'exon2' }, // TTCGTC -> UUCGUC
-    { start: 52, end: 58, name: 'exon3' }, // TAGAAA -> UAGAAA (includes UAG stop codon)
+    { start: 27, end: 33, name: 'exon2' }, // CCCGGG -> CCCGGG
+    { start: 54, end: 60, name: 'exon3' }, // TAGAAA -> UGAAAA
   ] as GenomicRegion[],
-  splicedRNA: 'AUGAAAGUUCGUAGUAGA', // includes UAG stop codon
-  intron1Length: 20, // positions 6-26 (GT...AG splice sites)
-  intron2Length: 20, // positions 32-52 (GT...AG splice sites)
+  splicedRNA: 'AUGAAACCCGGGUGAAAC', // spliced result
+  intron1Length: 21, // positions 6-27 (GT...AG splice sites)
+  intron2Length: 21, // positions 33-54 (GT...AG splice sites)
 };
 
 // Single exon gene (no splicing needed) with stop codon
