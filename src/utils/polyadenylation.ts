@@ -1,10 +1,10 @@
-import { RNA } from '../model/nucleic-acids/RNA';
-import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern';
+import { RNA } from '../model/nucleic-acids/RNA.js';
+import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern.js';
 import {
   PolyadenylationSite,
   CleavageSiteOptions,
   DEFAULT_CLEAVAGE_OPTIONS,
-} from '../types/polyadenylation-site';
+} from '../types/polyadenylation-site.js';
 import {
   POLYA_SIGNALS,
   DEFAULT_POLYA_SIGNAL_STRENGTH,
@@ -22,8 +22,8 @@ import {
   HIGH_USE_SCORE,
   PERFECT_DSE_SCORE,
   MIN_POLYA_SITE_STRENGTH,
-} from '../constants/biological-constants';
-import { GenomicRegion } from '../types/genomic-region';
+} from '../constants/biological-constants.js';
+import { GenomicRegion } from '../types/genomic-region.js';
 
 /**
  * Finds polyadenylation sites in an RNA sequence with enhanced analysis
@@ -281,7 +281,7 @@ function analyzeUSEQuality(sequence: string, useRegion: GenomicRegion): number {
   // UYU motifs get high score
   else if (new NucleotidePattern('U[CU]U').testString(useSequence)) score = HIGH_USE_SCORE;
   // High U content gets medium score
-  else if ((useSequence.match(/U/g) || []).length / useSequence.length > HIGH_U_CONTENT_THRESHOLD)
+  else if ((useSequence.match(/U/g) ?? []).length / useSequence.length > HIGH_U_CONTENT_THRESHOLD)
     score = MODERATE_USE_SCORE;
 
   return Math.min(score, PERFECT_USE_SCORE);
@@ -305,7 +305,7 @@ function analyzeDSEQuality(sequence: string, dseRegion: GenomicRegion): number {
   }
   // U-rich gets medium score
   else if (
-    (dseSequence.match(/U/g) || []).length / dseSequence.length >
+    (dseSequence.match(/U/g) ?? []).length / dseSequence.length >
     MODERATE_U_CONTENT_THRESHOLD
   ) {
     score = MODERATE_USE_SCORE;

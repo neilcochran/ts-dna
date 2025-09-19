@@ -1,3 +1,9 @@
+# Version 1.0.3
+- Remove CJS and dual build support, targeting only ESM
+- Added strict TypeScript linting rules for explicit return types, nullish coalescing, and enhanced type safety
+- Remove RNASubType since we now have classes for RNA types
+- Correct Polypeptide constructor to take in MRNA not RNA
+
 # Version 1.0.2
 
 - Update the README to use the shields.io npm version badge to avoid long caching issues

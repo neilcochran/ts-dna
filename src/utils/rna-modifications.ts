@@ -1,19 +1,20 @@
-import { RNA } from '../model/nucleic-acids/RNA';
-import { RNASubType } from '../enums/rna-sub-type';
-import { PolyadenylationSite } from '../types/polyadenylation-site';
-import { ValidationResult, success, failure } from '../types/validation-result';
+import { RNA } from '../model/nucleic-acids/RNA.js';
+import { RNASubType } from '../enums/rna-sub-type.js';
+import { PolyadenylationSite } from '../types/polyadenylation-site.js';
+import { ValidationResult, success, failure } from '../types/validation-result.js';
 import {
   DEFAULT_POLY_A_TAIL_LENGTH,
   MAX_POLY_A_TAIL_LENGTH,
   MIN_POLY_A_DETECTION_LENGTH,
   POLY_A_TAIL_PATTERN,
-} from '../constants/biological-constants';
+} from '../constants/biological-constants.js';
 
 /**
  * Represents a processed mRNA with 5' cap and 3' poly-A tail modifications.
  * This is a temporary class until we implement the full MRNA class in Phase 5.
  */
 export class ProcessedRNA extends RNA {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(
     sequence: string,
     rnaSubType?: RNASubType,

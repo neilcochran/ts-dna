@@ -1,14 +1,14 @@
-import { PreMRNA } from '../model/nucleic-acids/PreMRNA';
-import { MRNA } from '../model/nucleic-acids/MRNA';
-import { ValidationResult, success, failure, isSuccess } from '../types/validation-result';
-import { spliceRNA } from './rna-processing';
-import { findPolyadenylationSites, getStrongestPolyadenylationSite } from './polyadenylation';
-import { START_CODON, STOP_CODONS } from './nucleic-acids';
+import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
+import { MRNA } from '../model/nucleic-acids/MRNA.js';
+import { ValidationResult, success, failure, isSuccess } from '../types/validation-result.js';
+import { spliceRNA } from './rna-processing.js';
+import { findPolyadenylationSites, getStrongestPolyadenylationSite } from './polyadenylation.js';
+import { START_CODON, STOP_CODONS } from './nucleic-acids.js';
 import {
   DEFAULT_POLY_A_TAIL_LENGTH,
   CODON_LENGTH,
   DEFAULT_CLEAVAGE_OFFSET,
-} from '../constants/biological-constants';
+} from '../constants/biological-constants.js';
 
 /**
  * Processes a pre-mRNA through the complete RNA processing pipeline to produce mature mRNA.
@@ -218,8 +218,8 @@ export function convertProcessedRNAToMRNA(processedRNA: {
 }): ValidationResult<MRNA> {
   try {
     const sequence = processedRNA.getSequence();
-    const polyATail = processedRNA.polyATail || '';
-    const hasCap = processedRNA.hasFivePrimeCap || false;
+    const polyATail = processedRNA.polyATail ?? '';
+    const hasCap = processedRNA.hasFivePrimeCap ?? false;
 
     // Find coding sequence in the processed RNA
     const codingBoundaries = findCodingSequence(sequence + polyATail, polyATail.length);

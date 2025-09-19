@@ -1,10 +1,10 @@
-import { GenomicRegion } from '../types/genomic-region';
+import { GenomicRegion } from '../types/genomic-region.js';
 import {
   MIN_INTRON_LENGTH_FOR_SPLICING,
   DONOR_SPLICE_CONSENSUS,
   ACCEPTOR_SPLICE_CONSENSUS,
   DEFAULT_MAX_INTRON_SEARCH,
-} from '../constants/biological-constants';
+} from '../constants/biological-constants.js';
 
 /**
  * Common splice site donor sequences (5' splice sites).

@@ -1,8 +1,8 @@
-import { NucleicAcid } from './NucleicAcid';
-import { validateNucleicAcid, unwrap } from '../../utils/validation';
-import { NucleicAcidType } from '../../enums/nucleic-acid-type';
-import { ValidationResult } from '../../types/validation-result';
-import { InvalidSequenceError } from '../errors/InvalidSequenceError';
+import { NucleicAcid } from './NucleicAcid.js';
+import { validateNucleicAcid, unwrap } from '../../utils/validation.js';
+import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
+import { ValidationResult } from '../../types/validation-result.js';
+import { InvalidSequenceError } from '../errors/InvalidSequenceError.js';
 
 /**
  * A class representing DNA with a valid sequence.

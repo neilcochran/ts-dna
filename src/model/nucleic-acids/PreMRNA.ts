@@ -1,7 +1,7 @@
-import { RNA } from './RNA';
-import { Gene } from './Gene';
-import { RNASubType } from '../../enums/rna-sub-type';
-import { GenomicRegion } from '../../types/genomic-region';
+import { RNA } from './RNA.js';
+import { Gene } from './Gene.js';
+import { RNASubType } from '../../enums/rna-sub-type.js';
+import { GenomicRegion } from '../../types/genomic-region.js';
 
 /**
  * Represents pre-mRNA (precursor mRNA) - the initial RNA transcript containing both exons and introns.
@@ -222,7 +222,7 @@ export class PreMRNA extends RNA {
    * Gets a string representation of this pre-mRNA.
    * @returns String showing sequence length, exon/intron counts, and source gene
    */
-  toString(): string {
+  override toString(): string {
     const exonCount = this.getExonRegions().length;
     const intronCount = this.getIntronRegions().length;
     return `PreMRNA(${this.getSequence().length}nt, ${exonCount} exons, ${intronCount} introns)`;

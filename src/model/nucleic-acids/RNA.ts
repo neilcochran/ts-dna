@@ -1,9 +1,9 @@
-import { validateNucleicAcid, unwrap } from '../../utils/validation';
-import { NucleicAcidType } from '../../enums/nucleic-acid-type';
-import { RNASubType } from '../../enums/rna-sub-type';
-import { ValidationResult } from '../../types/validation-result';
-import { InvalidSequenceError } from '../errors/InvalidSequenceError';
-import { NucleicAcid } from './NucleicAcid';
+import { validateNucleicAcid, unwrap } from '../../utils/validation.js';
+import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
+import { RNASubType } from '../../enums/rna-sub-type.js';
+import { ValidationResult } from '../../types/validation-result.js';
+import { InvalidSequenceError } from '../errors/InvalidSequenceError.js';
+import { NucleicAcid } from './NucleicAcid.js';
 
 /**
  * A class representing RNA with a valid sequence.

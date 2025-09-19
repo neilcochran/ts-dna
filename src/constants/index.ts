@@ -1,1 +1,1 @@
-export * from './biological-constants';
+export * from './biological-constants.js';

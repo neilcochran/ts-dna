@@ -1,4 +1,4 @@
-import { NucleicAcidType } from '../../enums/nucleic-acid-type';
+import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
 
 /**
  * A class representing an invalid nucleic acid sequence

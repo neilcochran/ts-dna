@@ -1,7 +1,7 @@
-import { NucleotidePatternSymbol } from '../model/nucleic-acids/NucleotidePatternSymbol';
-import { NucleicAcid, DNA, RNA } from '../model';
-import { NucleicAcidType } from '../enums/nucleic-acid-type';
-import { RNASubType } from '../enums/rna-sub-type';
+import { NucleotidePatternSymbol } from '../model/nucleic-acids/NucleotidePatternSymbol.js';
+import { NucleicAcid, DNA, RNA } from '../model/index.js';
+import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
+import { RNASubType } from '../enums/rna-sub-type.js';
 
 /**
  * Get the complement of the given nucleotide pattern symbol
@@ -100,10 +100,10 @@ export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
 };
 
 // Re-export validation functions
-export { isValidNucleicAcid } from './validation';
+export { isValidNucleicAcid } from './validation.js';
 
 // Re-export complement functions from dedicated module
-export { getComplementSequence, getDNABaseComplement, getRNABaseComplement } from './complement';
+export { getComplementSequence, getDNABaseComplement, getRNABaseComplement } from './complement.js';
 
 /**
  * Convert the given DNA into RNA, optionally providing an RNA sub type
@@ -149,22 +149,22 @@ export const convertToDNA = (rna: RNA): DNA => {
 /**
  * Stop codon UAA - does not code for an amino acid
  */
-export const STOP_CODON_UAA = 'UAA' as const;
+export const STOP_CODON_UAA = 'UAA';
 
 /**
  * Stop codon UAG - does not code for an amino acid
  */
-export const STOP_CODON_UAG = 'UAG' as const;
+export const STOP_CODON_UAG = 'UAG';
 
 /**
  * Stop codon UGA - does not code for an amino acid
  */
-export const STOP_CODON_UGA = 'UGA' as const;
+export const STOP_CODON_UGA = 'UGA';
 
 /**
  * Start codon AUG - codes for methionine and initiates translation
  */
-export const START_CODON = 'AUG' as const;
+export const START_CODON = 'AUG';
 
 /**
  * Array of all stop codons

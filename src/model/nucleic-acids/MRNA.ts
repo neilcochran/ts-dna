@@ -1,6 +1,6 @@
-import { RNA } from './RNA';
-import { RNASubType } from '../../enums/rna-sub-type';
-import { MIN_POLY_A_DETECTION_LENGTH, CODON_LENGTH } from '../../constants/biological-constants';
+import { RNA } from './RNA.js';
+import { RNASubType } from '../../enums/rna-sub-type.js';
+import { MIN_POLY_A_DETECTION_LENGTH, CODON_LENGTH } from '../../constants/biological-constants.js';
 
 /**
  * Represents mature messenger RNA (mRNA) that has undergone complete processing.

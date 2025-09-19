@@ -1,12 +1,16 @@
-import { AminoAcid, RNA } from '../model';
-import { InvalidCodonError } from '../model/errors/InvalidCodonError';
-import { InvalidSequenceError } from '../model/errors/InvalidSequenceError';
-import { NucleicAcidType } from '../enums/nucleic-acid-type';
-import { AminoAcidData } from '../types/amino-acid-data';
-import { CODON_LENGTH } from '../constants/biological-constants';
-import { SLC_AMINO_ACID_DATA_MAP, CODON_TO_SLC_MAP } from '../data/codon-map';
+import { AminoAcid, RNA } from '../model/index.js';
+import { InvalidCodonError } from '../model/errors/InvalidCodonError.js';
+import { InvalidSequenceError } from '../model/errors/InvalidSequenceError.js';
+import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
+import { AminoAcidData } from '../types/amino-acid-data.js';
+import { CODON_LENGTH } from '../constants/biological-constants.js';
+import { SLC_AMINO_ACID_DATA_MAP, CODON_TO_SLC_MAP } from '../data/codon-map.js';
 
-export { SLC_AMINO_ACID_DATA_MAP, SLC_ALT_CODONS_MAP, CODON_TO_SLC_MAP } from '../data/codon-map';
+export {
+  SLC_AMINO_ACID_DATA_MAP,
+  SLC_ALT_CODONS_MAP,
+  CODON_TO_SLC_MAP,
+} from '../data/codon-map.js';
 
 /**
  * Given a valid RNA codon, return the corresponding amino acid

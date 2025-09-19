@@ -1,4 +1,4 @@
-import { RNA } from '../model/nucleic-acids/RNA';
+import { MRNA } from '../model/nucleic-acids/MRNA.js';
 
 /**
  * Represents a specific splice variant with information about which exons to include.
@@ -34,9 +34,10 @@ export interface AlternativeSplicingProfile {
  * containing the resulting mRNA and associated metadata.
  */
 export class SplicingOutcome {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(
     public readonly variant: SpliceVariant,
-    public readonly matureMRNA: RNA,
+    public readonly matureMRNA: MRNA,
     public readonly codingSequence: string,
     public readonly polypeptideLength: number,
   ) {}

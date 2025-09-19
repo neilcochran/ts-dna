@@ -1,9 +1,9 @@
-import { RNA } from '../model/nucleic-acids/RNA';
-import { PreMRNA } from '../model/nucleic-acids/PreMRNA';
-import { Gene } from '../model/nucleic-acids/Gene';
-import { GenomicRegion } from '../types/genomic-region';
-import { ValidationResult, success, failure, isFailure } from '../types/validation-result';
-import { START_CODON } from './nucleic-acids';
+import { RNA } from '../model/nucleic-acids/RNA.js';
+import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
+import { Gene } from '../model/nucleic-acids/Gene.js';
+import { GenomicRegion } from '../types/genomic-region.js';
+import { ValidationResult, success, failure, isFailure } from '../types/validation-result.js';
+import { START_CODON } from './nucleic-acids.js';
 
 /**
  * Splices a pre-mRNA by removing introns and joining exons to produce mature mRNA.

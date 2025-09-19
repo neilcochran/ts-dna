@@ -1,16 +1,16 @@
-import { Gene } from '../model/nucleic-acids/Gene';
-import { PreMRNA } from '../model/nucleic-acids/PreMRNA';
-import { DNA } from '../model/nucleic-acids/DNA';
-import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern';
+import { Gene } from '../model/nucleic-acids/Gene.js';
+import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
+import { DNA } from '../model/nucleic-acids/DNA.js';
+import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern.js';
 import {
   ValidationResult,
   success,
   failure,
   isFailure,
   isSuccess,
-} from '../types/validation-result';
-import { findPromoters, identifyTSS, PromoterSearchOptions } from './promoter-recognition';
-import { convertToRNA } from './nucleic-acids';
+} from '../types/validation-result.js';
+import { findPromoters, identifyTSS, PromoterSearchOptions } from './promoter-recognition.js';
+import { convertToRNA } from './nucleic-acids.js';
 import {
   DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE,
   DEFAULT_DOWNSTREAM_SEARCH_DISTANCE,
@@ -18,8 +18,8 @@ import {
   DEFAULT_MIN_PROMOTER_STRENGTH,
   FORCE_TSS_DISABLED,
   CANONICAL_POLYA_SIGNAL_DNA,
-} from '../constants/biological-constants';
-import { TATA_BOX } from '../data/promoter-elements';
+} from '../constants/biological-constants.js';
+import { TATA_BOX } from '../data/promoter-elements.js';
 
 /**
  * Configuration options for transcription.
@@ -110,7 +110,7 @@ export function transcribe(
     const polyadenylationSite = isSuccess(polyAResult) ? polyAResult.data : undefined;
 
     // Step 4: Determine transcript end position
-    const transcriptEnd = polyadenylationSite || gene.getSequence().length;
+    const transcriptEnd = polyadenylationSite ?? gene.getSequence().length;
 
     // Step 5: Extract and transcribe the sequence
     const geneSequence = gene.getSequence();

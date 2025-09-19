@@ -1,10 +1,10 @@
 import {
   getComplementSequence,
   getNucleotidePatternSymbolComplement,
-} from '../../utils/nucleic-acids';
-import { InvalidNucleotidePatternError } from '../errors/InvalidNucleotidePatternError';
-import { NucleicAcid } from './NucleicAcid';
-import { NucleotidePatternSymbol } from './NucleotidePatternSymbol';
+} from '../../utils/nucleic-acids.js';
+import { InvalidNucleotidePatternError } from '../errors/InvalidNucleotidePatternError.js';
+import { NucleicAcid } from './NucleicAcid.js';
+import { NucleotidePatternSymbol } from './NucleotidePatternSymbol.js';
 
 /**
  * A class to represent patterns comprised of nucleotide IUPAC notation symbols.

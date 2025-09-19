@@ -1,4 +1,4 @@
-import { NucleotidePattern } from './nucleic-acids/NucleotidePattern';
+import { NucleotidePattern } from './nucleic-acids/NucleotidePattern.js';
 
 /**
  * Represents a single promoter element with its pattern, name, and position relative to TSS.
