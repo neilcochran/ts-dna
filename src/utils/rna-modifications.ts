@@ -14,6 +14,7 @@ import {
  * This is a temporary class until we implement the full MRNA class in Phase 5.
  */
 export class ProcessedRNA extends RNA {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(
     sequence: string,
     rnaSubType?: RNASubType,

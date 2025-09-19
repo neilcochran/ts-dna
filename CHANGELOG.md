@@ -1,6 +1,8 @@
 # Version 1.0.3
 
 - Added strict TypeScript linting rules for explicit return types, nullish coalescing, and enhanced type safety
+- Remove RNASubType since we now have classes for RNA types
+- Correct Polypeptide constructor to take in MRNA not RNA
 
 # Version 1.0.2
 

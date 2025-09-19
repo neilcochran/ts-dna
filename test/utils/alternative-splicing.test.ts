@@ -1,7 +1,6 @@
 import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
-import { RNA } from '../../src/model/nucleic-acids/RNA';
-import { RNASubType } from '../../src/enums/rna-sub-type';
+import { MRNA } from '../../src/model/nucleic-acids/MRNA';
 import {
   SpliceVariant,
   AlternativeSplicingProfile,
@@ -356,11 +355,12 @@ describe('Alternative Splicing Functions', () => {
         description: 'Test variant for metadata',
       };
 
-      const rna = new RNA('AUGAAAGGGUUUAAAUAG', RNASubType.M_RNA);
+      const sequence = 'AUGAAAGGGUUUAAAUAG';
       const codingSequence = 'AUGAAAGGGUUUAAAUAG';
       const polypeptideLength = 6;
+      const mRNA = new MRNA(sequence, codingSequence, 0, sequence.length, true, '');
 
-      const outcome = new SplicingOutcome(variant, rna, codingSequence, polypeptideLength);
+      const outcome = new SplicingOutcome(variant, mRNA, codingSequence, polypeptideLength);
 
       expect(outcome.getVariantName()).toBe('test-variant');
       expect(outcome.getVariantDescription()).toBe('Test variant for metadata');
@@ -379,11 +379,12 @@ describe('Alternative Splicing Functions', () => {
       };
 
       // 7 nucleotides - not divisible by 3
-      const rna = new RNA('AUGAAAG', RNASubType.M_RNA);
+      const sequence = 'AUGAAAG';
       const codingSequence = 'AUGAAAG';
       const polypeptideLength = 2;
+      const mRNA = new MRNA(sequence, codingSequence, 0, sequence.length, true, '');
 
-      const outcome = new SplicingOutcome(variant, rna, codingSequence, polypeptideLength);
+      const outcome = new SplicingOutcome(variant, mRNA, codingSequence, polypeptideLength);
 
       expect(outcome.hasValidReadingFrame()).toBe(false);
       expect(outcome.getAminoAcidCount()).toBe(2); // Floor of 7/3

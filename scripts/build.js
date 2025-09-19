@@ -30,7 +30,7 @@ import { existsSync, copyFileSync } from 'fs';
     execSync('rimraf dist/ dist-cjs/');
     console.log('✅ Previous build cleared');
 
-    // Build ESM
+    // Build ESM only
     console.log('\n📦 Step 4: Compiling ESM build...');
     try {
         execSync('tsc', {stdio: 'inherit'});
@@ -39,26 +39,6 @@ import { existsSync, copyFileSync } from 'fs';
         console.log('\n🧹 Cleaning failed ESM build...');
         execSync('rimraf dist/');
         console.error('❌ TypeScript compilation failed for ESM build');
-        process.exit(1);
-    }
-
-    // Build CommonJS
-    console.log('\n📦 Step 5: Compiling CommonJS build...');
-    try {
-        execSync('tsc -p tsconfig.cjs.json', {stdio: 'inherit'});
-
-        // Rename the main CommonJS file to .cjs extension
-        if (existsSync('dist-cjs/index.js')) {
-            copyFileSync('dist-cjs/index.js', 'dist/index.cjs');
-            console.log('✅ CommonJS entry point created: dist/index.cjs');
-        }
-
-        execSync('rimraf dist-cjs/');
-        console.log('✅ CommonJS build completed successfully');
-    } catch (error) {
-        console.log('\n🧹 Cleaning failed CommonJS build...');
-        execSync('rimraf dist-cjs/');
-        console.error('❌ TypeScript compilation failed for CommonJS build');
         process.exit(1);
     }
 

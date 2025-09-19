@@ -284,18 +284,6 @@ import {
 } from 'ts-dna';
 ```
 
-## Module Support
-
-ts-dna supports both ES modules and CommonJS:
-
-```typescript
-// ES modules
-import { DNA, RNA, Gene } from 'ts-dna';
-
-// CommonJS
-const { DNA, RNA, Gene } = require('ts-dna');
-```
-
 ## License
 
 MIT License - see [LICENSE.md](LICENSE.md) for details.

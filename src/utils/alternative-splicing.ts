@@ -1,8 +1,7 @@
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA';
-import { RNA } from '../model/nucleic-acids/RNA';
+import { MRNA } from '../model/nucleic-acids/MRNA';
 import { DNA } from '../model/nucleic-acids/DNA';
 import { Gene } from '../model/nucleic-acids/Gene';
-import { RNASubType } from '../enums/rna-sub-type';
 import { ValidationResult, success, failure } from '../types/validation-result';
 import { convertToRNA, START_CODON, STOP_CODONS } from './nucleic-acids';
 import { CODON_LENGTH } from '../constants/biological-constants';
@@ -34,7 +33,7 @@ export function spliceRNAWithVariant(
   preMRNA: PreMRNA,
   variant: SpliceVariant,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
-): ValidationResult<RNA> {
+): ValidationResult<MRNA> {
   const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
   const sourceGene = preMRNA.getSourceGene();
 
@@ -50,9 +49,20 @@ export function spliceRNAWithVariant(
 
     // Convert DNA to RNA
     const variantDNA = new DNA(variantSequence);
-    const matureRNA = convertToRNA(variantDNA, RNASubType.M_RNA);
+    const rnaSequence = convertToRNA(variantDNA).getSequence();
 
-    return success(matureRNA);
+    // Create MRNA with the entire sequence as coding sequence
+    // In alternative splicing, we're dealing with processed exons only
+    const mRNA = new MRNA(
+      rnaSequence, // Full sequence
+      rnaSequence, // Coding sequence (same as full for spliced exons)
+      0, // Coding starts at beginning
+      rnaSequence.length, // Coding ends at sequence end
+      true, // Has 5' cap
+      '', // No poly-A tail added yet
+    );
+
+    return success(mRNA);
   } catch (error) {
     return failure(
       `Failed to process splice variant: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -243,7 +253,7 @@ export function validateSpliceVariant(
 export function processDefaultSpliceVariant(
   preMRNA: PreMRNA,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
-): ValidationResult<RNA> {
+): ValidationResult<MRNA> {
   const sourceGene = preMRNA.getSourceGene();
   const defaultVariant = sourceGene.getDefaultSplicingVariant();
 
