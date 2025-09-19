@@ -49,6 +49,10 @@ yarn add ts-dna
 - Node.js ≥18.0.0
 - TypeScript ≥5.0 (recommended)
 
+## API Documentation
+
+Complete API documentation with detailed examples is available at [GitHub pages](https://neilcochran.github.io/ts-dna/).
+
 ## Quick Start
 
 ### Basic DNA/RNA Operations
@@ -291,10 +295,6 @@ import { DNA, RNA, Gene } from 'ts-dna';
 // CommonJS
 const { DNA, RNA, Gene } = require('ts-dna');
 ```
-
-## API Documentation
-
-Complete API documentation with detailed examples is available at [docs](./docs).
 
 ## License
 
