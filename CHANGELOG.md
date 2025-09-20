@@ -1,3 +1,11 @@
+# Version 2.0.0
+
+- Added comprehensive DNA replication simulation with biologically accurate enzyme modeling
+- Added new classes: `Helicase`, `Primase`, `DNAPolymerase`, `DNALigase`, `Exonuclease`, `Replisome`, `OkazakiFragment`, `RNAPrimer`, `ReplicationFork`
+- Added `EnzymeFactory` for validated enzyme creation with proper error handling
+- Added simple replication API: `replicateDNA()` and `replicateDNASimple()` functions for easy DNA duplication
+- Added comprehensive replication types and organism profiles (E. coli, Human) with biologically accurate parameters
+
 # Version 1.5.1
 
 - Add optional skipSpliceSiteValidation parameter to processRNA (which passes it through to spliceRNA)
