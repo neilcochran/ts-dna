@@ -134,6 +134,34 @@ describe('mrna-processing', () => {
         expect(result.error).toContain('Splicing failed');
       }
     });
+
+    test('bypasses splice site validation when skipSpliceSiteValidation is true', () => {
+      // Use the same INVALID_SPLICE_GENE that fails in the previous test
+      const gene = new Gene(INVALID_SPLICE_GENE.dnaSequence, INVALID_SPLICE_GENE.exons);
+      const preMRNA = new PreMRNA(INVALID_SPLICE_GENE.rnaSequence, gene, 0);
+
+      // First verify it still fails with default processing
+      const defaultResult = processRNA(preMRNA);
+      expect(isFailure(defaultResult)).toBe(true);
+
+      // Now test that it succeeds when splice site validation is bypassed
+      const bypassResult = processRNA(preMRNA, {
+        skipSpliceSiteValidation: true,
+        validateCodons: false, // Also disable codon validation since test sequence lacks stop codon
+      });
+      expect(isSuccess(bypassResult)).toBe(true);
+
+      if (isSuccess(bypassResult)) {
+        const mRNA = bypassResult.data;
+        expect(mRNA).toBeInstanceOf(MRNA);
+        expect(mRNA.hasFivePrimeCap()).toBe(true);
+        expect(mRNA.getPolyATailLength()).toBe(DEFAULT_POLY_A_TAIL_LENGTH);
+        expect(mRNA.isFullyProcessed()).toBe(true);
+        // Should successfully process despite invalid splice sites
+        // INVALID_SPLICE_GENE exons: 'AUGAAA' (0-6) + 'UCGGG' (26-31) = 'AUGAAAUCGGG'
+        expect(mRNA.getCodingSequence()).toBe('AUGAAAUCGGG');
+      }
+    });
   });
 
   describe('DEFAULT_RNA_PROCESSING_OPTIONS', () => {
@@ -143,6 +171,7 @@ describe('mrna-processing', () => {
       expect(DEFAULT_RNA_PROCESSING_OPTIONS.polyATailLength).toBe(DEFAULT_POLY_A_TAIL_LENGTH);
       expect(DEFAULT_RNA_PROCESSING_OPTIONS.validateCodons).toBe(true);
       expect(DEFAULT_RNA_PROCESSING_OPTIONS.minimumCodingLength).toBe(true);
+      expect(DEFAULT_RNA_PROCESSING_OPTIONS.skipSpliceSiteValidation).toBe(false);
     });
   });
 
