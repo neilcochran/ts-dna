@@ -40,6 +40,19 @@ export const POLYA_SIGNALS = {
 // Default signal strength for unrecognized polyadenylation signals
 export const DEFAULT_POLYA_SIGNAL_STRENGTH = 8;
 
+// DNA Replication constants
+export const MIN_RNA_PRIMER_LENGTH = 3; // Minimum RNA primer length in nucleotides
+export const MAX_RNA_PRIMER_LENGTH = 10; // Maximum RNA primer length in nucleotides
+
+// DNA Polymerase relative speeds (as fraction of organism base speed)
+export const DNA_POL_I_SPEED_FACTOR = 0.05; // 5% for primer removal/repair
+export const DNA_POL_II_SPEED_FACTOR = 0.04; // 4% for repair
+export const DNA_POL_III_SPEED_FACTOR = 1.0; // Full speed for main replication
+
+// Other replication enzyme speeds (relative to polymerase)
+export const PRIMASE_SPEED_FACTOR = 0.1; // 10% of polymerase speed
+export const EXONUCLEASE_SPEED_FACTOR = 0.1; // Similar to primase
+
 // Splice site sequences
 export const DONOR_SPLICE_CONSENSUS = 'GT'; // 5' splice site (donor)
 export const ACCEPTOR_SPLICE_CONSENSUS = 'AG'; // 3' splice site (acceptor)
