@@ -10,3 +10,4 @@ export * from './rna-processing.js';
 export * from './rna-modifications.js';
 export * from './alternative-splicing.js';
 export * from './mrna-processing.js';
+export * from './replication/index.js';
