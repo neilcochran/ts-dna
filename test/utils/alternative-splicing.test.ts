@@ -98,6 +98,41 @@ describe('Alternative Splicing Functions', () => {
 
       expect(result.success).toBe(true);
     });
+
+    test('handles exception during variant processing', () => {
+      // Create a mock preMRNA that will cause an error during processing
+      // Need to use a valid variant that passes validation but fails during processing
+      const mockGene = {
+        getExons: () => testExons,
+        getVariantSequence: () => {
+          throw new Error('Mock variant sequence error');
+        },
+      } as any;
+
+      const mockPreMRNA = {
+        getSourceGene: () => mockGene,
+      } as any;
+
+      const variant: SpliceVariant = {
+        name: 'error-variant',
+        includedExons: [0, 1, 2, 3], // Include all exons to pass validation
+        description: 'Causes error during processing',
+      };
+
+      const result = spliceRNAWithVariant(mockPreMRNA, variant, {
+        allowSkipLastExon: true,
+        allowSkipFirstExon: true,
+        validateReadingFrames: false, // Disable all validation to reach processing error
+        validateCodons: false,
+        requireMinimumExons: false,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toContain('Failed to process splice variant');
+        expect(result.error).toContain('Mock variant sequence error');
+      }
+    });
   });
 
   describe('processAllSplicingVariants', () => {
@@ -150,6 +185,99 @@ describe('Alternative Splicing Functions', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toContain('does not have an alternative splicing profile');
+      }
+    });
+
+    test('handles mixed success and failure variants with warning', () => {
+      // Create a valid gene first
+      const gene = new Gene(testSequence, testExons, 'TEST_GENE');
+      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+
+      // Mock the processAllSplicingVariants to test the mixed success path
+      // We'll override the gene's getSplicingProfile method to return a mock profile
+      const mockProfile = {
+        geneId: 'TEST_GENE',
+        defaultVariant: 'valid-variant',
+        variants: [
+          { name: 'valid-variant', includedExons: [0, 1, 2, 3], description: 'Valid variant' },
+          { name: 'invalid-variant', includedExons: [0, 1, 99], description: 'Invalid variant' }, // This will cause validation to fail
+        ],
+      };
+
+      // Override the preMRNA's getSourceGene to return a gene with our mock profile
+      const mockGene = {
+        ...gene,
+        getSplicingProfile: () => mockProfile,
+        getExons: () => testExons,
+        getVariantSequence: (variant: any) => {
+          if (variant.name === 'valid-variant') {
+            return testSequence; // Valid sequence
+          } else {
+            throw new Error('Invalid variant sequence'); // This will cause the error
+          }
+        },
+      } as any;
+
+      const mockPreMRNA = {
+        ...preMRNA,
+        getSourceGene: () => mockGene,
+      } as any;
+
+      // Mock console.warn to test the warning path
+      const originalWarn = console.warn;
+      const mockWarn = jest.fn();
+      console.warn = mockWarn;
+
+      const result = processAllSplicingVariants(mockPreMRNA);
+
+      expect(result.success).toBe(true); // Partial success
+      if (result.success) {
+        expect(result.data).toHaveLength(1); // Only valid variant processed
+        expect(result.data[0].getVariantName()).toBe('valid-variant');
+      }
+
+      // Check that warning was called
+      expect(mockWarn).toHaveBeenCalledWith(expect.stringContaining('Some splice variants failed'));
+
+      // Restore console.warn
+      console.warn = originalWarn;
+    });
+
+    test('fails when all variants fail', () => {
+      // Create a valid gene first
+      const gene = new Gene(testSequence, testExons, 'TEST_GENE');
+      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+
+      // Mock profile with all invalid variants
+      const mockProfile = {
+        geneId: 'TEST_GENE',
+        defaultVariant: 'invalid1',
+        variants: [
+          { name: 'invalid1', includedExons: [0, 1], description: 'Invalid variant 1' },
+          { name: 'invalid2', includedExons: [0, 1], description: 'Invalid variant 2' },
+        ],
+      };
+
+      // Override gene to make all variants fail
+      const mockGene = {
+        ...gene,
+        getSplicingProfile: () => mockProfile,
+        getExons: () => testExons,
+        getVariantSequence: () => {
+          throw new Error('All variants fail');
+        },
+      } as any;
+
+      const mockPreMRNA = {
+        ...preMRNA,
+        getSourceGene: () => mockGene,
+      } as any;
+
+      const result = processAllSplicingVariants(mockPreMRNA);
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toContain('All splice variants failed');
       }
     });
   });
@@ -252,6 +380,125 @@ describe('Alternative Splicing Functions', () => {
       });
 
       expect(result.success).toBe(true); // 6bp is divisible by 3
+    });
+
+    test('fails reading frame validation with invalid sequence', () => {
+      // Create a mock gene that will throw an error when getVariantSequence is called
+      const mockGene = {
+        getExons: () => testExons,
+        getVariantSequence: () => {
+          throw new Error('Mock getVariantSequence error');
+        },
+      } as any;
+
+      const variant: SpliceVariant = {
+        name: 'error-variant',
+        includedExons: [0, 1],
+        description: 'Causes error',
+      };
+
+      const result = validateSpliceVariant(variant, mockGene, {
+        validateReadingFrames: true,
+        allowSkipLastExon: true,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toContain('Failed to validate reading frame');
+        expect(result.error).toContain('Mock getVariantSequence error');
+      }
+    });
+
+    test('fails codon validation with invalid sequence', () => {
+      // Create a mock gene that will throw an error when getVariantSequence is called
+      // but only when we're in the codon validation section, not reading frame
+      let callCount = 0;
+      const mockGene = {
+        getExons: () => testExons,
+        getVariantSequence: () => {
+          callCount++;
+          if (callCount === 1) {
+            // First call is for reading frame validation - return valid sequence
+            return 'ATGAAACCC'; // 9bp, divisible by 3
+          } else {
+            // Second call is for codon validation - throw error
+            throw new Error('Mock codon validation error');
+          }
+        },
+      } as any;
+
+      const variant: SpliceVariant = {
+        name: 'codon-error-variant',
+        includedExons: [0, 1],
+        description: 'Causes codon validation error',
+      };
+
+      const result = validateSpliceVariant(variant, mockGene, {
+        validateReadingFrames: true,
+        validateCodons: true,
+        allowSkipLastExon: true,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toContain('Failed to validate codons');
+        expect(result.error).toContain('Mock codon validation error');
+      }
+    });
+
+    test('validates start and stop codons correctly', () => {
+      const variant: SpliceVariant = {
+        name: 'valid-codons',
+        includedExons: [0, 1, 2, 3], // Full sequence: ATGAAACCCGGGGGGTTTAG
+        description: 'Valid start and stop codons',
+      };
+
+      const result = validateSpliceVariant(variant, gene, {
+        validateCodons: true,
+        allowSkipLastExon: false,
+      });
+
+      expect(result.success).toBe(true);
+    });
+
+    test('fails when variant does not start with start codon', () => {
+      // Create variant that starts from exon 1 (not containing start codon)
+      const variant: SpliceVariant = {
+        name: 'no-start-codon',
+        includedExons: [1, 2, 3], // Skip first exon with start codon
+        description: 'Missing start codon',
+      };
+
+      const result = validateSpliceVariant(variant, gene, {
+        validateCodons: true,
+        allowSkipFirstExon: true, // Allow skipping first exon for this test
+        allowSkipLastExon: false,
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toContain('does not start with start codon AUG');
+      }
+    });
+
+    test('fails when variant does not end with stop codon', () => {
+      // Use only first 3 exons, which won't have stop codon
+      const variant: SpliceVariant = {
+        name: 'no-stop-codon',
+        includedExons: [0, 1, 2], // Doesn't include last exon with stop codon
+        description: 'Missing stop codon',
+      };
+
+      const result = validateSpliceVariant(variant, gene, {
+        validateCodons: true,
+        allowSkipFirstExon: false,
+        allowSkipLastExon: true, // Allow skipping last exon for this test
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toContain('does not end with stop codon');
+      }
     });
   });
 

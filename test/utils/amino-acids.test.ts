@@ -2,6 +2,7 @@ import { RNA, AminoAcid, InvalidCodonError } from '../../src/model';
 import {
   getAminoAcidByCodon,
   getAminoAcidDataByCodon,
+  RNAtoAminoAcids,
   SLC_ALT_CODONS_MAP,
   SLC_AMINO_ACID_DATA_MAP,
 } from '../../src/utils/amino-acids';
@@ -12,7 +13,7 @@ import {
   STOP_CODONS,
 } from '../../src/utils/nucleic-acids';
 import { AminoAcidPolarity, AminoAcidCharge, AminoAcidSideChainType } from '../../src';
-import * as TestUtils from './test-utils';
+import { isCorrectAminoAcid, ALANINE_RNA_CODON_1, ALANINE_RNA_CODON_2 } from './test-utils';
 
 /*
     --- AminoAcid from RNA ---
@@ -20,10 +21,7 @@ import * as TestUtils from './test-utils';
 
 test('create AminoAcid (Alanine) from valid RNA codon', () => {
   expect(
-    TestUtils.isCorrectAminoAcid(
-      new AminoAcid(TestUtils.ALANINE_RNA_CODON_1),
-      SLC_AMINO_ACID_DATA_MAP['A'],
-    ),
+    isCorrectAminoAcid(new AminoAcid(ALANINE_RNA_CODON_1), SLC_AMINO_ACID_DATA_MAP['A']),
   ).toEqual(true);
 });
 
@@ -61,38 +59,30 @@ test('getAminoAcidDataByCodon returns undefined for all stop codons', () => {
 
 test('get all AminoAcid (Alanine) alternate codons', () => {
   const expectedCodons = SLC_ALT_CODONS_MAP['A'].map(codonStr => new RNA(codonStr));
-  expect(new AminoAcid(TestUtils.ALANINE_RNA_CODON_2).getAllAlternateCodons()).toEqual(
-    expectedCodons,
-  );
+  expect(new AminoAcid(ALANINE_RNA_CODON_2).getAllAlternateCodons()).toEqual(expectedCodons);
 });
 
 test('ensure alternate AminoAcids (Alanine) return the same alternate RNA codons', () => {
-  expect(new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).getAllAlternateCodons()).toEqual(
-    new AminoAcid(TestUtils.ALANINE_RNA_CODON_2).getAllAlternateCodons(),
+  expect(new AminoAcid(ALANINE_RNA_CODON_1).getAllAlternateCodons()).toEqual(
+    new AminoAcid(ALANINE_RNA_CODON_2).getAllAlternateCodons(),
   );
 });
 
 test('RNA AminoAcids (Alanine) is equal', () => {
-  expect(
-    new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).equals(
-      new AminoAcid(TestUtils.ALANINE_RNA_CODON_1),
-    ),
-  ).toEqual(true);
+  expect(new AminoAcid(ALANINE_RNA_CODON_1).equals(new AminoAcid(ALANINE_RNA_CODON_1))).toEqual(
+    true,
+  );
 });
 
 test('RNA AminoAcids (Alanine) is not equal', () => {
-  expect(
-    new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).equals(
-      new AminoAcid(TestUtils.ALANINE_RNA_CODON_2),
-    ),
-  ).toEqual(false);
+  expect(new AminoAcid(ALANINE_RNA_CODON_1).equals(new AminoAcid(ALANINE_RNA_CODON_2))).toEqual(
+    false,
+  );
 });
 
 test('RNA AminoAcids (Alanine) are alternates', () => {
   expect(
-    new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).isAlternateOf(
-      new AminoAcid(TestUtils.ALANINE_RNA_CODON_2),
-    ),
+    new AminoAcid(ALANINE_RNA_CODON_1).isAlternateOf(new AminoAcid(ALANINE_RNA_CODON_2)),
   ).toEqual(true);
 });
 
@@ -106,7 +96,7 @@ test('testing creation of all codon variations for each amino acid', () => {
     const aminoAcidData = SLC_AMINO_ACID_DATA_MAP[slc];
     for (const codonStr of SLC_ALT_CODONS_MAP[slc]) {
       const codon = new RNA(codonStr);
-      expect(TestUtils.isCorrectAminoAcid(new AminoAcid(codon), aminoAcidData)).toEqual(true);
+      expect(isCorrectAminoAcid(new AminoAcid(codon), aminoAcidData)).toEqual(true);
     }
   }
 });
@@ -119,7 +109,7 @@ test('testing AminoAcid retrieval via getAminoAcidByCodon() using all codon vari
       const codon = new RNA(codonStr);
       const aminoAcid = getAminoAcidByCodon(codon);
       if (aminoAcid) {
-        expect(TestUtils.isCorrectAminoAcid(aminoAcid, aminoAcidData)).toEqual(true);
+        expect(isCorrectAminoAcid(aminoAcid, aminoAcidData)).toEqual(true);
       } else {
         throw new Error(`Invalid codon sequence did not return an AminoAcid: ${codonStr}`);
       }
@@ -226,4 +216,111 @@ test('all amino acids have valid properties from data map', () => {
 
     expect(typeof data.hydrophobicity).toBe('number');
   }
+});
+
+test('getAminoAcidDataByCodon returns undefined for invalid codon length', () => {
+  // Test line 56: sequence.length !== CODON_LENGTH
+  const shortCodon = new RNA('AU'); // Too short
+  const longCodon = new RNA('AUGC'); // Too long
+
+  expect(getAminoAcidDataByCodon(shortCodon)).toBeUndefined();
+  expect(getAminoAcidDataByCodon(longCodon)).toBeUndefined();
+});
+
+test('getAminoAcidDataByCodon returns undefined for invalid codon sequence', () => {
+  // Test line 61: !slc check - need a 3-nucleotide sequence that's not in the codon map
+  // This is tricky because the codon map should cover all valid RNA codons
+  // Let's create a mock RNA that returns an invalid sequence
+  const mockRNA = {
+    getSequence: () => 'XXX', // Invalid nucleotides
+  } as any;
+
+  expect(getAminoAcidDataByCodon(mockRNA)).toBeUndefined();
+});
+
+// Tests for RNAtoAminoAcids function
+describe('RNAtoAminoAcids', () => {
+  test('converts valid RNA sequence to amino acids', () => {
+    // Test basic functionality - already covered indirectly but make explicit
+    const rna = new RNA('AUGAAACCC'); // Met-Lys-Pro
+    const aminoAcids = RNAtoAminoAcids(rna);
+
+    expect(aminoAcids).toHaveLength(3);
+    expect(aminoAcids[0].slc).toBe('M');
+    expect(aminoAcids[1].slc).toBe('K');
+    expect(aminoAcids[2].slc).toBe('P');
+  });
+
+  test('throws error for RNA sequence length not divisible by 3', () => {
+    // Test line 90-96: Invalid codon length
+    const rna = new RNA('AUGAA'); // 5 nucleotides - not divisible by 3
+
+    expect(() => RNAtoAminoAcids(rna)).toThrow('Invalid codon');
+    expect(() => RNAtoAminoAcids(rna)).toThrow('The RNA sequence length must be divisible by 3');
+  });
+
+  test('stops translation at stop codon', () => {
+    // Test line 103-105: Stop codon handling
+    const rna = new RNA('AUGAAAUAGCCC'); // Met-Lys-STOP-Pro
+    const aminoAcids = RNAtoAminoAcids(rna);
+
+    expect(aminoAcids).toHaveLength(2); // Only Met and Lys, stops at UAG
+    expect(aminoAcids[0].slc).toBe('M');
+    expect(aminoAcids[1].slc).toBe('K');
+  });
+
+  test('throws error for invalid codon encountered', async () => {
+    // Test line 109-111: Invalid codon error
+    // Since all valid RNA codons are mapped to amino acids or stop codons,
+    // we need to create a scenario where getAminoAcidByCodon returns null
+    // We'll mock the codon map lookup to return null for a specific codon
+    const originalGetAminoAcid = getAminoAcidByCodon;
+
+    // Create a spy that returns undefined for a specific codon
+    const getAminoAcidSpy = jest.fn((rna: RNA): AminoAcid | undefined => {
+      if (rna.getSequence() === 'CCC') {
+        return undefined; // Mock this codon as unmapped
+      }
+      return originalGetAminoAcid(rna);
+    });
+
+    // Spy on the function
+    const aminoAcidsModule = await import('../../src/utils/amino-acids.js');
+    const spy = jest
+      .spyOn(aminoAcidsModule, 'getAminoAcidByCodon')
+      .mockImplementation(getAminoAcidSpy);
+
+    const rna = new RNA('AUGAAACCC'); // Met-Lys-MockInvalid
+
+    expect(() => RNAtoAminoAcids(rna)).toThrow('Invalid codon encountered: CCC');
+
+    // Restore original function
+    spy.mockRestore();
+  });
+
+  test('handles empty sequence after stop codon removal', () => {
+    // Test edge case: sequence that starts with stop codon
+    const rna = new RNA('UAGAAACCC'); // STOP-Lys-Pro
+    const aminoAcids = RNAtoAminoAcids(rna);
+
+    expect(aminoAcids).toHaveLength(0); // No amino acids, immediate stop
+  });
+
+  test('handles all three stop codons correctly', () => {
+    // Test all stop codons terminate translation
+    const testCases = [
+      { seq: 'AUGAAAUAA', stopCodon: 'UAA' },
+      { seq: 'AUGAAAUAG', stopCodon: 'UAG' },
+      { seq: 'AUGAAAUGA', stopCodon: 'UGA' },
+    ];
+
+    testCases.forEach(({ seq, stopCodon }) => {
+      const rna = new RNA(seq);
+      const aminoAcids = RNAtoAminoAcids(rna);
+
+      expect(aminoAcids).toHaveLength(2); // Met-Lys, then stop
+      expect(aminoAcids[0].slc).toBe('M');
+      expect(aminoAcids[1].slc).toBe('K');
+    });
+  });
 });

@@ -1,6 +1,6 @@
 # ts-dna
 
-A comprehensive TypeScript library for molecular biology simulation, modeling the gene expression pathway from DNA transcription to polypeptide translation with biological accuracy.
+A comprehensive TypeScript library for molecular biology simulation, modeling DNA replication, gene expression, and polypeptide translation with biological accuracy.
 
 [![npm version](https://img.shields.io/npm/v/ts-dna)](https://www.npmjs.com/package/ts-dna)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -8,12 +8,13 @@ A comprehensive TypeScript library for molecular biology simulation, modeling th
 
 ## Features
 
-🧬 **Complete Gene Expression Pipeline**
-- Gene structure modeling with exons, introns, and promoters
-- Realistic transcription with promoter recognition
-- RNA processing including 5' capping, splicing, and polyadenylation
-- Alternative splicing with multiple variant support
-- Translation to amino acid sequences
+🧬 **DNA Replication & Gene Expression Pipeline**
+- **DNA Replication**: Biologically accurate enzyme simulation with leading/lagging strand synthesis
+- **Gene Expression**: Structure modeling with exons, introns, and promoters
+- **Transcription**: Realistic promoter recognition and RNA synthesis
+- **RNA Processing**: 5' capping, splicing, and polyadenylation
+- **Alternative Splicing**: Multiple variant support with functional impact analysis
+- **Translation**: Accurate amino acid sequence generation
 
 🛡️ **Type-Safe & Immutable**
 - Full TypeScript support with strict typing
@@ -22,11 +23,12 @@ A comprehensive TypeScript library for molecular biology simulation, modeling th
 - Zero runtime dependencies
 
 🔬 **Biologically Accurate**
-- IUPAC-compliant nucleotide patterns and symbols
-- Real splice site consensus sequences (GT-AG, GC-AG)
-- Accurate promoter elements (TATA, Inr, DPE, CAAT, GC boxes)
-- Proper polyadenylation signals and cleavage sites
-- Codon usage tables and amino acid properties
+- **DNA Replication**: Enzyme coordination, Okazaki fragments, primer synthesis/removal
+- **Organism Profiles**: E. coli and Human replication parameters (speed, fragment size)
+- **Splice Sites**: Real consensus sequences (GT-AG, GC-AG) with validation
+- **Promoters**: TATA, Initiator, DPE, CAAT, GC boxes with TSS identification
+- **Polyadenylation**: AAUAAA signals, cleavage sites, USE/DSE elements
+- **Genetic Code**: Complete codon tables and amino acid properties
 
 🚀 **Performance Optimized**
 - O(n log n) exon validation with interval trees
@@ -66,6 +68,37 @@ const rna = convertToRNA(dna);
 
 console.log(dna.getComplement()); // 'TACGCGCTGTTAAG'
 console.log(rna.getSequence());   // 'AUGUGCGACGAAUC'
+```
+
+### DNA Replication
+
+```typescript
+import { DNA, replicateDNA, replicateDNASimple, E_COLI, HUMAN } from 'ts-dna';
+
+// Simple DNA replication
+const originalDNA = new DNA('ATGTGCGACGAATTC');
+const result = replicateDNASimple(originalDNA);
+
+if (result.success) {
+  const [strand1, strand2] = result.data;
+  console.log('Original:', originalDNA.getSequence());
+  console.log('Strand 1:', strand1.getSequence());
+  console.log('Strand 2:', strand2.getSequence());
+}
+
+// Advanced replication with organism-specific parameters
+const replicationResult = replicateDNA(originalDNA, {
+  organism: E_COLI,  // 1000 bp/s, 1000-2000 nt Okazaki fragments
+  includeStatistics: true,
+  validateReplication: true
+});
+
+if (replicationResult.success) {
+  const { replicatedStrands, statistics } = replicationResult.data;
+  console.log(`Replication events: ${statistics.totalEvents}`);
+  console.log(`Okazaki fragments: ${statistics.okazakiFragments.length}`);
+  console.log(`Leading strand length: ${statistics.leadingStrandLength} bp`);
+}
 ```
 
 ### Gene Expression Pipeline
@@ -180,6 +213,38 @@ console.log(codonData.name);              // 'Phenylalanine'
 
 ## Advanced Features
 
+### DNA Replication Simulation
+
+```typescript
+import {
+  Replisome,
+  ReplicationFork,
+  EnzymeFactory,
+  E_COLI,
+  HUMAN,
+  isSuccess
+} from 'ts-dna';
+
+// Create replication machinery
+const dna = new DNA('ATGTGCGACGAATTCGGCATGGCC');
+const fork = new ReplicationFork(0, dna.length(), E_COLI);
+const replisome = new Replisome(fork, E_COLI);
+
+// Manual enzyme creation with validation
+const helicaseResult = EnzymeFactory.createHelicase(100);
+if (isSuccess(helicaseResult)) {
+  const helicase = helicaseResult.data;
+  console.log(`Helicase at position: ${helicase.position}`);
+  console.log(`Enzyme type: ${helicase.type}`);
+}
+
+// Access replication statistics
+const statistics = replisome.getStatistics();
+console.log(`Fork position: ${statistics.forkPosition}`);
+console.log(`Completion: ${statistics.completionPercentage}%`);
+console.log(`Active Okazaki fragments: ${statistics.activeOkazakiFragments}`);
+```
+
 ### Promoter Recognition
 
 ```typescript
@@ -280,7 +345,15 @@ import {
   MIN_EXON_SIZE,
   MAX_EXON_SIZE,
   MIN_INTRON_SIZE,
-  MAX_INTRON_SIZE
+  MAX_INTRON_SIZE,
+
+  // DNA Replication
+  E_COLI_POLYMERASE_SPEED,
+  HUMAN_POLYMERASE_SPEED,
+  MIN_RNA_PRIMER_LENGTH,
+  MAX_RNA_PRIMER_LENGTH,
+  PROKARYOTIC_FRAGMENT_SIZE_RANGE,
+  EUKARYOTIC_FRAGMENT_SIZE_RANGE
 } from 'ts-dna';
 ```
 
