@@ -6,7 +6,7 @@ import {
   DNALigase,
   Exonuclease,
   EnzymeFactory,
-} from '../../../src/model/replication/Enzyme.js';
+} from '../../../src/model/replication/enzyme/index.js';
 import { EnzymeType } from '../../../src/types/replication-types.js';
 import { E_COLI, HUMAN } from '../../../src/types/replication-types.js';
 import { isSuccess, isFailure } from '../../../src/types/validation-result.js';

@@ -13,7 +13,7 @@ import {
   DNALigase,
   Exonuclease,
   EnzymeFactory,
-} from './Enzyme.js';
+} from './enzyme/index.js';
 import { ReplicationFork } from './ReplicationFork.js';
 import { OkazakiFragment } from './OkazakiFragment.js';
 import { RNAPrimer } from './RNAPrimer.js';
