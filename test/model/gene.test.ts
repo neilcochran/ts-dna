@@ -394,4 +394,129 @@ describe('Gene', () => {
       expect(gene.getName()).toBe(geneName);
     });
   });
+
+  describe('error handling and edge cases', () => {
+
+    test('validates variant with invalid exon index in getVariantSequence', () => {
+      const gene = new Gene(SIMPLE_TWO_EXON_GENE.dnaSequence, SIMPLE_TWO_EXON_GENE.exons);
+      const invalidVariant = {
+        name: 'InvalidVariant',
+        includedExons: [0, 5], // Index 5 doesn't exist (only 0, 1 exist)
+        type: 'constitutive' as const,
+      };
+
+      expect(() => gene.getVariantSequence(invalidVariant)).toThrow(
+        "Variant 'InvalidVariant' references invalid exon index 5. Gene has 2 exons."
+      );
+    });
+
+    test('validates splicing profile with no variants', () => {
+      const sequence = SIMPLE_TWO_EXON_GENE.dnaSequence;
+      const exons = SIMPLE_TWO_EXON_GENE.exons;
+      const emptySplicingProfile = {
+        geneId: 'TestGene',
+        defaultVariant: 'default',
+        variants: [], // Empty variants array
+      };
+
+      const result = Gene.createGene(sequence, exons, 'TestGene', emptySplicingProfile);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBe('Splicing profile must contain at least one variant');
+      }
+    });
+
+    test('validates variant with no exons', () => {
+      const sequence = SIMPLE_TWO_EXON_GENE.dnaSequence;
+      const exons = SIMPLE_TWO_EXON_GENE.exons;
+      const splicingProfile = {
+        geneId: 'TestGene',
+        defaultVariant: 'empty',
+        variants: [
+          {
+            name: 'empty',
+            includedExons: [], // No exons included
+            type: 'constitutive' as const,
+          },
+        ],
+      };
+
+      const result = Gene.createGene(sequence, exons, 'TestGene', splicingProfile);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBe("Variant 'empty' must include at least one exon");
+      }
+    });
+
+    test('validates variant with invalid exon index', () => {
+      const sequence = SIMPLE_TWO_EXON_GENE.dnaSequence;
+      const exons = SIMPLE_TWO_EXON_GENE.exons;
+      const splicingProfile = {
+        geneId: 'TestGene',
+        defaultVariant: 'invalid',
+        variants: [
+          {
+            name: 'invalid',
+            includedExons: [0, 5], // Index 5 doesn't exist
+            type: 'constitutive' as const,
+          },
+        ],
+      };
+
+      const result = Gene.createGene(sequence, exons, 'TestGene', splicingProfile);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBe("Variant 'invalid' references invalid exon index 5. Gene has 2 exons.");
+      }
+    });
+
+    test('validates variant with duplicate exon indices', () => {
+      const sequence = SIMPLE_TWO_EXON_GENE.dnaSequence;
+      const exons = SIMPLE_TWO_EXON_GENE.exons;
+      const splicingProfile = {
+        geneId: 'TestGene',
+        defaultVariant: 'duplicate',
+        variants: [
+          {
+            name: 'duplicate',
+            includedExons: [0, 1, 0], // Duplicate index 0
+            type: 'constitutive' as const,
+          },
+        ],
+      };
+
+      const result = Gene.createGene(sequence, exons, 'TestGene', splicingProfile);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBe("Variant 'duplicate' contains duplicate exon indices");
+      }
+    });
+
+    test('validates splicing profile with duplicate variant names', () => {
+      const sequence = SIMPLE_TWO_EXON_GENE.dnaSequence;
+      const exons = SIMPLE_TWO_EXON_GENE.exons;
+      const splicingProfile = {
+        geneId: 'TestGene',
+        defaultVariant: 'variant1',
+        variants: [
+          {
+            name: 'variant1',
+            includedExons: [0, 1],
+            type: 'constitutive' as const,
+          },
+          {
+            name: 'variant1', // Duplicate name
+            includedExons: [0],
+            type: 'alternative' as const,
+          },
+        ],
+      };
+
+      const result = Gene.createGene(sequence, exons, 'TestGene', splicingProfile);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBe('Splicing profile contains duplicate variant names');
+      }
+    });
+  });
 });

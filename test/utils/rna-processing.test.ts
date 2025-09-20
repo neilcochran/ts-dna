@@ -146,6 +146,141 @@ describe('rna-processing', () => {
         expect(resultWithBypass.data.getSequence()).toBe('AUGAAAUCGGG');
       }
     });
+
+    test('fails when PreMRNA has no exon regions', () => {
+      // Create a PreMRNA with empty exon regions
+      const geneSequence = 'ATGAAACCCGGGTTT';
+      const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
+      const gene = new Gene(geneSequence, exons);
+
+      // Create PreMRNA but override getExonRegions to return empty array
+      const mockPreMRNA = {
+        getExonRegions: () => [],
+        getSequence: () => 'AUGAAACCCGGGUUU',
+        getGene: () => gene,
+      } as any;
+
+      const result = spliceRNA(mockPreMRNA);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('no exons found in pre-mRNA');
+      }
+    });
+
+    test('fails when exon region extends beyond PreMRNA sequence', () => {
+      // Create a proper gene and PreMRNA but use a malformed exon that goes out of bounds
+      const geneSequence = 'ATGAAACCCGGGTTT';
+      const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
+      const gene = new Gene(geneSequence, exons);
+
+      // Create a PreMRNA with a very short sequence
+      const shortRnaSequence = 'AUGAAACCC'; // Only 9 bp
+      const preMRNA = new PreMRNA(shortRnaSequence, gene, 0);
+
+      // Override the getExonRegions to return regions that extend beyond the short sequence
+      const originalGetExonRegions = preMRNA.getExonRegions;
+      preMRNA.getExonRegions = () => [{ start: 0, end: 20, name: 'exon1' }]; // Out of bounds for 9bp sequence
+
+      const result = spliceRNA(preMRNA);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('is outside sequence bounds');
+      }
+
+      // Restore original method
+      preMRNA.getExonRegions = originalGetExonRegions;
+    });
+
+    test('handles general exceptions during splicing', () => {
+      // Create a PreMRNA that will throw an exception during processing
+      const mockPreMRNA = {
+        getExonRegions: () => { throw new Error('Test exception'); },
+        getSequence: () => 'AUGAAACCC',
+        getGene: () => null,
+      } as any;
+
+      const result = spliceRNA(mockPreMRNA);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('RNA splicing failed');
+        expect(result.error).toContain('Test exception');
+      }
+    });
+
+    test('fails with invalid 3 prime splice site in transcript coordinates', () => {
+      // Test line 141: Invalid 3' splice site in validateTranscriptSpliceSites
+      // Create a gene with invalid 3' splice site (not ending with AG)
+      // Need at least 20bp intron and 3bp exons to satisfy Gene constructor validation
+      const invalidGeneSequence = 'ATGAAACTGTCCCCCCCCCCCCCCCCCCGGG'; // 30 bp total, 20bp intron ending with CC
+      const invalidExons = [
+        { start: 0, end: 6, name: 'exon1' },  // ATGAAA (6bp)
+        { start: 27, end: 30, name: 'exon2' }, // GGG (3bp)
+      ];
+
+      // The intron would be from 6-27 (21bp) and end with CC, not AG
+      const gene = new Gene(invalidGeneSequence, invalidExons);
+      const rnaSequence = 'AUGAAACUGUCCCCCCCCCCCCCCCCCUGGG'; // RNA version
+      const preMRNA = new PreMRNA(rnaSequence, gene, 0);
+
+      const result = spliceRNA(preMRNA);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Splice site validation failed');
+        // Note: The 5' splice site is checked first, so we get that error instead
+        expect(result.error).toContain('Invalid 5\' splice site');
+        expect(result.error).toContain('expected GU');
+      }
+    });
+
+    test('fails with invalid 5 prime splice site in transcript coordinates', () => {
+      // Test validateTranscriptSpliceSites with invalid 5' splice site
+      // Create a gene with invalid 5' splice site (not starting with GT)
+      // Need at least 20bp intron and 3bp exons to satisfy Gene constructor validation
+      const invalidGeneSequence = 'ATGAAACCCTCCCCCCCCCCCCCCCAGGGG'; // 29 bp total, 20bp intron starting with CC
+      const invalidExons = [
+        { start: 0, end: 6, name: 'exon1' },  // ATGAAA (6bp)
+        { start: 26, end: 29, name: 'exon2' }, // GGG (3bp)
+      ];
+
+      // The intron would be from 6-26 (20bp) and start with CC, not GT, end with AG
+      const gene = new Gene(invalidGeneSequence, invalidExons);
+      const rnaSequence = 'AUGAAACCCUCCCCCCCCCCCCCCCAGGGG'; // RNA version
+      const preMRNA = new PreMRNA(rnaSequence, gene, 0);
+
+      const result = spliceRNA(preMRNA);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Splice site validation failed');
+        expect(result.error).toContain('Invalid 5\' splice site');
+        expect(result.error).toContain('expected GU');
+      }
+    });
+
+    test('fails with invalid 3 prime splice site when 5 prime is valid', () => {
+      // Test line 141: Invalid 3' splice site in validateTranscriptSpliceSites
+      // Create a gene with valid 5' splice site (GU) but invalid 3' splice site (not AG)
+      const invalidGeneSequence = 'ATGAAAGTTCCCCCCCCCCCCCCCCCCGGG'; // 29 bp total, starts with GT, ends with CC
+      const invalidExons = [
+        { start: 0, end: 6, name: 'exon1' },  // ATGAAA (6bp)
+        { start: 26, end: 29, name: 'exon2' }, // GGG (3bp)
+      ];
+
+      // The intron would be from 6-26 (20bp) and start with GT (valid), end with CC (invalid)
+      const gene = new Gene(invalidGeneSequence, invalidExons);
+      const rnaSequence = 'AUGAAAGUUCCCCCCCCCCCCCCCCCCGGG'; // RNA version
+      const preMRNA = new PreMRNA(rnaSequence, gene, 0);
+
+      const result = spliceRNA(preMRNA);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Splice site validation failed');
+        expect(result.error).toContain('Invalid 3\' splice site');
+        expect(result.error).toContain('expected AG');
+      }
+    });
   });
 
   describe('validateReadingFrame', () => {

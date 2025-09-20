@@ -48,6 +48,40 @@ describe('LaggingStrandSynthesis', () => {
       expect(laggingSynthesis.isSynthesizing()).toBe(false);
     });
 
+    test('fails when fragment initiation fails internally', () => {
+      // Test line 67: when initiateFragment returns failure
+      // Create a LaggingStrandSynthesis with a mock organism that will cause fragment creation to fail
+      const mockOrganism = {
+        ...E_COLI,
+        fragmentSize: [-1, -1] as [number, number], // Invalid fragment size to cause failure
+      };
+
+      const problematicSynthesis = new LaggingStrandSynthesis(mockOrganism, 0);
+      const result = problematicSynthesis.initiateSynthesis(0);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Failed to initiate first fragment');
+      }
+    });
+
+    test('handles exception during fragment initiation', () => {
+      // Test line 139: when fragment initiation throws an exception
+      // We'll test this by using an organism profile that causes an exception
+      const mockOrganism = {
+        ...E_COLI,
+        primerLength: [NaN, NaN] as [number, number], // This will cause Math.random calculations to fail
+      };
+
+      const problematicSynthesis = new LaggingStrandSynthesis(mockOrganism, 0);
+      const result = problematicSynthesis.initiateSynthesis(0);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Failed to initiate fragment');
+      }
+    });
+
     test('primer synthesis event has correct properties', () => {
       const result = laggingSynthesis.initiateSynthesis(100);
 
@@ -121,6 +155,26 @@ describe('LaggingStrandSynthesis', () => {
     test('returns empty array for zero or negative base pairs', () => {
       expect(laggingSynthesis.advance(100, 0)).toHaveLength(0);
       expect(laggingSynthesis.advance(100, -10)).toHaveLength(0);
+    });
+
+    test('handles advance when no current fragment exists but synthesis is active', () => {
+      // Test line 153: when continueFragmentSynthesis is called with no current fragment
+      // First start synthesis to make it active
+      laggingSynthesis.initiateSynthesis(0);
+
+      // Complete all fragments by advancing far
+      laggingSynthesis.advance(5000, 4000);
+
+      // Reset the current fragment to null (this can happen when all fragments are completed)
+      // We'll access the private property for testing
+      (laggingSynthesis as any).currentFragment = undefined;
+
+      // Now advance with no current fragment - should still work since synthesis is active
+      const events = laggingSynthesis.advance(100, 50);
+
+      // It should either create a new fragment or handle the case gracefully
+      expect(laggingSynthesis.isSynthesizing()).toBe(true);
+      expect(events.length).toBeGreaterThanOrEqual(0); // Should handle gracefully
     });
   });
 

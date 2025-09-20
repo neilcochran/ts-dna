@@ -66,6 +66,7 @@ describe('Stop Codon Handling', () => {
 
       expect(aminoAcids).toHaveLength(0); // No amino acids, immediate stop
     });
+
   });
 
   describe('Polypeptide with stop codons', () => {

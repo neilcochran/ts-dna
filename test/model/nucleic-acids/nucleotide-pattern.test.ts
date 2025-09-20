@@ -308,6 +308,95 @@ describe('NucleotidePattern Core Functionality', () => {
     });
   });
 
+  describe('test method (with NucleicAcid)', () => {
+    test('test method returns true for matching nucleic acid', () => {
+      const pattern = new NucleotidePattern('ATGC');
+      const dna = new DNA('ATGCGTAC');
+      expect(pattern.test(dna)).toBe(true);
+    });
+
+    test('test method returns false for non-matching nucleic acid', () => {
+      const pattern = new NucleotidePattern('TTTT');
+      const dna = new DNA('ATGCGTAC');
+      expect(pattern.test(dna)).toBe(false);
+    });
+
+    test('test method works with RNA', () => {
+      const pattern = new NucleotidePattern('AUG');
+      const rna = new RNA('AUGCGUAC');
+      expect(pattern.test(rna)).toBe(true);
+    });
+  });
+
+  describe('replace methods', () => {
+    test('replace method modifies nucleic acid sequence', () => {
+      const pattern = new NucleotidePattern('ATG');
+      const dna = new DNA('ATGCCCATGTTT');
+      const result = pattern.replace(dna, 'XXX');
+      expect(result).toBe('XXXCCCATGTTT'); // Only first occurrence replaced
+    });
+
+    test('replaceString method modifies string sequence', () => {
+      const pattern = new NucleotidePattern('GGG');
+      const sequence = 'ATGGGCCCGGGAAA';
+      const result = pattern.replaceString(sequence, 'TTT');
+      expect(result).toBe('ATTTTCCCGGGAAA'); // Only first occurrence replaced
+    });
+
+    test('replace with IUPAC pattern', () => {
+      const pattern = new NucleotidePattern('RY'); // R=[GA], Y=[CT]
+      const dna = new DNA('ATCGATCG');
+      const result = pattern.replace(dna, 'XX');
+      // Only first match: AT (A=R, T=Y) -> XX
+      expect(result).toBe('XXCGATCG');
+    });
+
+    test('replace returns original when no match', () => {
+      const pattern = new NucleotidePattern('TTTT');
+      const dna = new DNA('ATGCCC');
+      const result = pattern.replace(dna, 'AAAA');
+      expect(result).toBe('ATGCCC');
+    });
+  });
+
+  describe('split methods', () => {
+    test('split method divides nucleic acid sequence', () => {
+      const pattern = new NucleotidePattern('GGG');
+      const dna = new DNA('ATGGGCCCGGGAAA');
+      const result = pattern.split(dna);
+      expect(result).toEqual(['AT', 'CCC', 'AAA']);
+    });
+
+    test('splitString method divides string sequence', () => {
+      const pattern = new NucleotidePattern('TTT');
+      const sequence = 'ATTTCCCTTTGGG';
+      const result = pattern.splitString(sequence);
+      expect(result).toEqual(['A', 'CCC', 'GGG']);
+    });
+
+    test('split with IUPAC pattern', () => {
+      const pattern = new NucleotidePattern('W'); // W=[AT]
+      const dna = new DNA('CGACGAC');
+      const result = pattern.split(dna);
+      // Split on 'A' -> ['CG', 'CG', 'C']
+      expect(result).toEqual(['CG', 'CG', 'C']);
+    });
+
+    test('split returns original array when no match', () => {
+      const pattern = new NucleotidePattern('TTTT');
+      const dna = new DNA('ATGCCC');
+      const result = pattern.split(dna);
+      expect(result).toEqual(['ATGCCC']);
+    });
+
+    test('split returns empty strings for consecutive delimiters', () => {
+      const pattern = new NucleotidePattern('G');
+      const dna = new DNA('AGGGATCGG');
+      const result = pattern.split(dna);
+      expect(result).toEqual(['A', '', '', 'ATC', '', '']);
+    });
+  });
+
   describe('error handling', () => {
     test('throws error for invalid characters', () => {
       expect(() => new NucleotidePattern('TATAXYZ')).toThrow(InvalidNucleotidePatternError);

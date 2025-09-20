@@ -73,6 +73,63 @@ describe('ForkCoordinator', () => {
       const result = customCoordinator.initializeReplication();
       expect(isSuccess(result)).toBe(true);
     });
+
+    test('fails when leading strand initialization fails', () => {
+      // Mock the leading strand to fail initialization
+      const mockCoordinator = new ForkCoordinator(dna, fork, E_COLI);
+      const originalInitiate = (mockCoordinator as any).leadingStrand.initiateSynthesis;
+      (mockCoordinator as any).leadingStrand.initiateSynthesis = () => {
+        return { success: false, error: 'Leading strand mock failure' };
+      };
+
+      const result = mockCoordinator.initializeReplication();
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Failed to initialize leading strand');
+        expect(result.error).toContain('Leading strand mock failure');
+      }
+
+      // Restore original method
+      (mockCoordinator as any).leadingStrand.initiateSynthesis = originalInitiate;
+    });
+
+    test('fails when lagging strand initialization fails', () => {
+      // Mock the lagging strand to fail initialization
+      const mockCoordinator = new ForkCoordinator(dna, fork, E_COLI);
+      const originalInitiate = (mockCoordinator as any).laggingStrand.initiateSynthesis;
+      (mockCoordinator as any).laggingStrand.initiateSynthesis = () => {
+        return { success: false, error: 'Lagging strand mock failure' };
+      };
+
+      const result = mockCoordinator.initializeReplication();
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Failed to initialize lagging strand');
+        expect(result.error).toContain('Lagging strand mock failure');
+      }
+
+      // Restore original method
+      (mockCoordinator as any).laggingStrand.initiateSynthesis = originalInitiate;
+    });
+
+    test('handles general exceptions during initialization', () => {
+      // Mock the leading strand to throw an exception
+      const mockCoordinator = new ForkCoordinator(dna, fork, E_COLI);
+      const originalInitiate = (mockCoordinator as any).leadingStrand.initiateSynthesis;
+      (mockCoordinator as any).leadingStrand.initiateSynthesis = () => {
+        throw new Error('Unexpected initialization error');
+      };
+
+      const result = mockCoordinator.initializeReplication();
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Replication initialization failed');
+        expect(result.error).toContain('Unexpected initialization error');
+      }
+
+      // Restore original method
+      (mockCoordinator as any).leadingStrand.initiateSynthesis = originalInitiate;
+    });
   });
 
   describe('advanceFork', () => {
@@ -154,6 +211,27 @@ describe('ForkCoordinator', () => {
 
       expect(secondEventCount).toBeGreaterThan(firstEventCount);
     });
+
+    test('handles general exceptions during fork advancement', () => {
+      // Mock the replisome to throw an exception
+      const mockCoordinator = new ForkCoordinator(dna, fork, E_COLI);
+      mockCoordinator.initializeReplication();
+
+      const originalAdvanceFork = (mockCoordinator as any).replisome.advanceFork;
+      (mockCoordinator as any).replisome.advanceFork = () => {
+        throw new Error('Replisome advancement error');
+      };
+
+      const result = mockCoordinator.advanceFork(100);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Fork advancement failed');
+        expect(result.error).toContain('Replisome advancement error');
+      }
+
+      // Restore original method
+      (mockCoordinator as any).replisome.advanceFork = originalAdvanceFork;
+    });
   });
 
   describe('completeReplication', () => {
@@ -172,12 +250,18 @@ describe('ForkCoordinator', () => {
     });
 
     test('prevents infinite loops with max steps', () => {
-      const result = coordinator.completeReplication(5); // Very low limit
+      // Use a very large DNA sequence to ensure we hit the max steps limit
+      const largeDnaSequence = 'ATGCCCGGGTTT'.repeat(10000); // 120,000 bp
+      const largeDna = new DNA(largeDnaSequence);
+      const largeFork = new ReplicationFork(0, largeDna.getSequence().length, E_COLI);
+      const largeCoordinator = new ForkCoordinator(largeDna, largeFork, E_COLI);
+      largeCoordinator.initializeReplication();
 
+      const result = largeCoordinator.completeReplication(5); // Very low limit for large sequence
+      expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
-        expect(result.error).toContain('did not complete within');
+        expect(result.error).toContain('did not complete within 5 steps');
       }
-      // If it succeeds with 5 steps, that's also valid for small sequences
     });
 
     test('generates comprehensive event history', () => {

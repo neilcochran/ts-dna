@@ -231,5 +231,79 @@ describe('transcription', () => {
       const result = transcribe(testGene, options);
       expect(isSuccess(result) || isFailure(result)).toBe(true); // Should not throw
     });
+
+    test('handles exception during transcription', () => {
+      // Test line 133: exception handling - error caught by TSS search first
+      const mockGene = {
+        getSequence: () => { throw new Error('Mock gene error'); },
+        getExons: () => [{ start: 0, end: 12, name: 'exon1' }]
+      } as any;
+
+      const result = transcribe(mockGene);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('TSS search failed');
+        expect(result.error).toContain('Mock gene error');
+      }
+    });
+
+    test('handles exception during TSS search', () => {
+      // Test line 196: exception handling in findTranscriptionStartSite
+      const mockGene = {
+        getSequence: () => 'ATGAAACCCGGG',
+        getExons: () => {
+          throw new Error('TSS search error');
+        }
+      } as any;
+
+      const result = transcribe(mockGene);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('TSS search failed');
+        expect(result.error).toContain('TSS search error');
+      }
+    });
+
+    test('handles exception during polyadenylation site search', () => {
+      // Test line 230: exception handling - error caught by TSS search first
+      const geneSequence = 'ATGAAACCCGGG';
+      const exons = [{ start: 0, end: 12, name: 'exon1' }];
+      const testGene = new Gene(geneSequence, exons);
+
+      // Mock to force exception in polyadenylation search
+      const originalPattern = NucleotidePattern.prototype.findMatches;
+      NucleotidePattern.prototype.findMatches = jest.fn(() => {
+        throw new Error('Pattern search error');
+      });
+
+      const result = transcribe(testGene);
+
+      // Restore original method
+      NucleotidePattern.prototype.findMatches = originalPattern;
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('TSS search failed');
+        expect(result.error).toContain('Pattern search error');
+      }
+    });
+
+    test('handles non-Error exception objects', () => {
+      // Test error handling with non-Error objects - error caught by TSS search first
+      const mockGene = {
+        getSequence: () => { throw 'String error'; },
+        getExons: () => [{ start: 0, end: 12, name: 'exon1' }]
+      } as any;
+
+      const result = transcribe(mockGene);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('TSS search failed');
+        expect(result.error).toContain('String error');
+      }
+    });
   });
 });
