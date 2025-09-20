@@ -78,4 +78,32 @@ export class RNA extends NucleicAcid {
   getSequence(): string {
     return this.sequence;
   }
+
+  /**
+   * Returns the RNA subtype
+   *
+   * @returns The RNA subtype, or undefined if not specified
+   */
+  getSubType(): RNASubType | undefined {
+    return this.rnaSubType;
+  }
+
+  /**
+   * Returns an RNA subsequence from the specified start position to the end position
+   *
+   * @param start - The starting position (inclusive, 0-based)
+   * @param end - The ending position (exclusive, 0-based). If not specified, goes to end of sequence
+   * @returns A new RNA instance containing the subsequence
+   *
+   * @example
+   * ```typescript
+   * const rna = new RNA('AUCGAUCG');
+   * const sub = rna.getSubsequence(2, 5); // Creates new RNA with 'CGA'
+   * console.log(sub.getSequence()); // 'CGA'
+   * ```
+   */
+  getSubsequence(start: number, end?: number): RNA {
+    const subsequence = this.sequence.substring(start, end);
+    return new RNA(subsequence, this.rnaSubType);
+  }
 }
