@@ -235,8 +235,10 @@ describe('transcription', () => {
     test('handles exception during transcription', () => {
       // Test line 133: exception handling - error caught by TSS search first
       const mockGene = {
-        getSequence: () => { throw new Error('Mock gene error'); },
-        getExons: () => [{ start: 0, end: 12, name: 'exon1' }]
+        getSequence: () => {
+          throw new Error('Mock gene error');
+        },
+        getExons: () => [{ start: 0, end: 12, name: 'exon1' }],
       } as any;
 
       const result = transcribe(mockGene);
@@ -254,7 +256,7 @@ describe('transcription', () => {
         getSequence: () => 'ATGAAACCCGGG',
         getExons: () => {
           throw new Error('TSS search error');
-        }
+        },
       } as any;
 
       const result = transcribe(mockGene);
@@ -293,8 +295,10 @@ describe('transcription', () => {
     test('handles non-Error exception objects', () => {
       // Test error handling with non-Error objects - error caught by TSS search first
       const mockGene = {
-        getSequence: () => { throw 'String error'; },
-        getExons: () => [{ start: 0, end: 12, name: 'exon1' }]
+        getSequence: () => {
+          throw 'String error';
+        },
+        getExons: () => [{ start: 0, end: 12, name: 'exon1' }],
       } as any;
 
       const result = transcribe(mockGene);

@@ -396,7 +396,6 @@ describe('Gene', () => {
   });
 
   describe('error handling and edge cases', () => {
-
     test('validates variant with invalid exon index in getVariantSequence', () => {
       const gene = new Gene(SIMPLE_TWO_EXON_GENE.dnaSequence, SIMPLE_TWO_EXON_GENE.exons);
       const invalidVariant = {
@@ -406,7 +405,7 @@ describe('Gene', () => {
       };
 
       expect(() => gene.getVariantSequence(invalidVariant)).toThrow(
-        "Variant 'InvalidVariant' references invalid exon index 5. Gene has 2 exons."
+        "Variant 'InvalidVariant' references invalid exon index 5. Gene has 2 exons.",
       );
     });
 
@@ -466,7 +465,9 @@ describe('Gene', () => {
       const result = Gene.createGene(sequence, exons, 'TestGene', splicingProfile);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error).toBe("Variant 'invalid' references invalid exon index 5. Gene has 2 exons.");
+        expect(result.error).toBe(
+          "Variant 'invalid' references invalid exon index 5. Gene has 2 exons.",
+        );
       }
     });
 

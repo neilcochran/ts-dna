@@ -159,7 +159,7 @@ describe('rna-modifications', () => {
       }
     });
 
-    test('preserves 5\' cap when adding poly-A tail to ProcessedRNA', () => {
+    test("preserves 5' cap when adding poly-A tail to ProcessedRNA", () => {
       // Test line 101: when rna instanceof ProcessedRNA
       const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
       const result = add3PrimePolyATail(processedRNA, 12, 5);

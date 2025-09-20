@@ -98,8 +98,11 @@ describe('EnzymeFactory', () => {
       // We'll use jest.spyOn to mock the constructors temporarily
 
       // Test helicase with string error
-      const helicaseSpy = jest.spyOn(require('../../../../src/model/replication/enzyme/Helicase'), 'Helicase')
-        .mockImplementationOnce(() => { throw 'string error'; });
+      const helicaseSpy = jest
+        .spyOn(require('../../../../src/model/replication/enzyme/Helicase'), 'Helicase')
+        .mockImplementationOnce(() => {
+          throw 'string error';
+        });
 
       const helicaseResult = EnzymeFactory.createHelicase(0);
       expect(isFailure(helicaseResult)).toBe(true);
@@ -110,8 +113,11 @@ describe('EnzymeFactory', () => {
       helicaseSpy.mockRestore();
 
       // Test primase with object error
-      const primaseSpy = jest.spyOn(require('../../../../src/model/replication/enzyme/Primase'), 'Primase')
-        .mockImplementationOnce(() => { throw { message: 'object error' }; });
+      const primaseSpy = jest
+        .spyOn(require('../../../../src/model/replication/enzyme/Primase'), 'Primase')
+        .mockImplementationOnce(() => {
+          throw { message: 'object error' };
+        });
 
       const primaseResult = EnzymeFactory.createPrimase(0);
       expect(isFailure(primaseResult)).toBe(true);
@@ -122,8 +128,11 @@ describe('EnzymeFactory', () => {
       primaseSpy.mockRestore();
 
       // Test polymerase with null error
-      const polymeraseSpy = jest.spyOn(require('../../../../src/model/replication/enzyme/DNAPolymerase'), 'DNAPolymerase')
-        .mockImplementationOnce(() => { throw null; });
+      const polymeraseSpy = jest
+        .spyOn(require('../../../../src/model/replication/enzyme/DNAPolymerase'), 'DNAPolymerase')
+        .mockImplementationOnce(() => {
+          throw null;
+        });
 
       const polymeraseResult = EnzymeFactory.createPolymerase(0);
       expect(isFailure(polymeraseResult)).toBe(true);
@@ -134,8 +143,11 @@ describe('EnzymeFactory', () => {
       polymeraseSpy.mockRestore();
 
       // Test ligase with undefined error
-      const ligaseSpy = jest.spyOn(require('../../../../src/model/replication/enzyme/DNALigase'), 'DNALigase')
-        .mockImplementationOnce(() => { throw undefined; });
+      const ligaseSpy = jest
+        .spyOn(require('../../../../src/model/replication/enzyme/DNALigase'), 'DNALigase')
+        .mockImplementationOnce(() => {
+          throw undefined;
+        });
 
       const ligaseResult = EnzymeFactory.createLigase(0);
       expect(isFailure(ligaseResult)).toBe(true);
@@ -146,8 +158,11 @@ describe('EnzymeFactory', () => {
       ligaseSpy.mockRestore();
 
       // Test exonuclease with number error
-      const exonucleaseSpy = jest.spyOn(require('../../../../src/model/replication/enzyme/Exonuclease'), 'Exonuclease')
-        .mockImplementationOnce(() => { throw 123; });
+      const exonucleaseSpy = jest
+        .spyOn(require('../../../../src/model/replication/enzyme/Exonuclease'), 'Exonuclease')
+        .mockImplementationOnce(() => {
+          throw 123;
+        });
 
       const exonucleaseResult = EnzymeFactory.createExonuclease(0);
       expect(isFailure(exonucleaseResult)).toBe(true);

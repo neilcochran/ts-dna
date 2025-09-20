@@ -145,13 +145,19 @@ describe('mrna-processing', () => {
       const preMRNA = new PreMRNA('AUGAAACCCGGGUAG', gene, 0);
 
       // Mock the polyadenylation functions to test the null case
-      jest.spyOn(require('../../src/utils/polyadenylation'), 'findPolyadenylationSites').mockReturnValue([{
-        position: 10,
-        signal: 'AAUAAA',
-        strength: 0.5,
-      }]);
+      jest
+        .spyOn(require('../../src/utils/polyadenylation'), 'findPolyadenylationSites')
+        .mockReturnValue([
+          {
+            position: 10,
+            signal: 'AAUAAA',
+            strength: 0.5,
+          },
+        ]);
 
-      jest.spyOn(require('../../src/utils/polyadenylation'), 'getStrongestPolyadenylationSite').mockReturnValue(null);
+      jest
+        .spyOn(require('../../src/utils/polyadenylation'), 'getStrongestPolyadenylationSite')
+        .mockReturnValue(null);
 
       const result = processRNA(preMRNA, {
         addPolyATail: true,
@@ -177,19 +183,25 @@ describe('mrna-processing', () => {
       const testPreMRNA = new PreMRNA('AUGAAACCCGGGUAG', gene, 0);
 
       // Mock to return a polyadenylation site that requires cleavage
-      jest.spyOn(require('../../src/utils/polyadenylation'), 'findPolyadenylationSites').mockReturnValue([{
-        position: 10,
-        signal: 'AAUAAA',
-        strength: 100,
-        cleavageSite: 12, // Cleave at position 12 (within sequence)
-      }]);
+      jest
+        .spyOn(require('../../src/utils/polyadenylation'), 'findPolyadenylationSites')
+        .mockReturnValue([
+          {
+            position: 10,
+            signal: 'AAUAAA',
+            strength: 100,
+            cleavageSite: 12, // Cleave at position 12 (within sequence)
+          },
+        ]);
 
-      jest.spyOn(require('../../src/utils/polyadenylation'), 'getStrongestPolyadenylationSite').mockReturnValue({
-        position: 10,
-        signal: 'AAUAAA',
-        strength: 100,
-        cleavageSite: 12,
-      });
+      jest
+        .spyOn(require('../../src/utils/polyadenylation'), 'getStrongestPolyadenylationSite')
+        .mockReturnValue({
+          position: 10,
+          signal: 'AAUAAA',
+          strength: 100,
+          cleavageSite: 12,
+        });
 
       const result = processRNA(testPreMRNA, {
         addPolyATail: true,
@@ -218,19 +230,25 @@ describe('mrna-processing', () => {
       const testPreMRNA = new PreMRNA('AUGAAACCCGGG', gene, 0);
 
       // Mock to return a polyadenylation site with cleavage beyond sequence
-      jest.spyOn(require('../../src/utils/polyadenylation'), 'findPolyadenylationSites').mockReturnValue([{
-        position: 8,
-        signal: 'AAUAAA',
-        strength: 100,
-        cleavageSite: 20, // Beyond 12 bp sequence length
-      }]);
+      jest
+        .spyOn(require('../../src/utils/polyadenylation'), 'findPolyadenylationSites')
+        .mockReturnValue([
+          {
+            position: 8,
+            signal: 'AAUAAA',
+            strength: 100,
+            cleavageSite: 20, // Beyond 12 bp sequence length
+          },
+        ]);
 
-      jest.spyOn(require('../../src/utils/polyadenylation'), 'getStrongestPolyadenylationSite').mockReturnValue({
-        position: 8,
-        signal: 'AAUAAA',
-        strength: 100,
-        cleavageSite: 20, // Beyond sequence
-      });
+      jest
+        .spyOn(require('../../src/utils/polyadenylation'), 'getStrongestPolyadenylationSite')
+        .mockReturnValue({
+          position: 8,
+          signal: 'AAUAAA',
+          strength: 100,
+          cleavageSite: 20, // Beyond sequence
+        });
 
       const result = processRNA(testPreMRNA, {
         addPolyATail: true,
@@ -254,10 +272,14 @@ describe('mrna-processing', () => {
       // Test line 119: exception handling catch block - this actually tests splicing failure
       const mockPreMRNA = {
         getSourceGene: () => ({
-          getExons: () => { throw new Error('Mock gene error'); }
+          getExons: () => {
+            throw new Error('Mock gene error');
+          },
         }),
         getSequence: () => 'AUGAAACCCGGG',
-        getExonRegions: () => { throw new Error('Mock gene error'); }
+        getExonRegions: () => {
+          throw new Error('Mock gene error');
+        },
       } as any;
 
       const result = processRNA(mockPreMRNA);
@@ -274,8 +296,10 @@ describe('mrna-processing', () => {
       const testGene = new Gene(SIMPLE_TWO_EXON_GENE.dnaSequence, SIMPLE_TWO_EXON_GENE.exons);
       const mockPreMRNA = {
         getSourceGene: () => testGene,
-        getSequence: () => { throw new Error('Direct mock error'); },
-        getExonRegions: () => [{ start: 0, end: 12, name: 'exon1' }]
+        getSequence: () => {
+          throw new Error('Direct mock error');
+        },
+        getExonRegions: () => [{ start: 0, end: 12, name: 'exon1' }],
       } as any;
 
       const result = processRNA(mockPreMRNA);
@@ -448,7 +472,7 @@ describe('mrna-processing', () => {
       // Test line 252: exception handling with non-Error object
       const processedRNA = {
         getSequence: () => {
-          throw 'String error';  // Non-Error object
+          throw 'String error'; // Non-Error object
         },
         polyATail: 'AAAA',
         hasFivePrimeCap: true,

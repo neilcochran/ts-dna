@@ -194,7 +194,9 @@ describe('rna-processing', () => {
     test('handles general exceptions during splicing', () => {
       // Create a PreMRNA that will throw an exception during processing
       const mockPreMRNA = {
-        getExonRegions: () => { throw new Error('Test exception'); },
+        getExonRegions: () => {
+          throw new Error('Test exception');
+        },
         getSequence: () => 'AUGAAACCC',
         getGene: () => null,
       } as any;
@@ -213,7 +215,7 @@ describe('rna-processing', () => {
       // Need at least 20bp intron and 3bp exons to satisfy Gene constructor validation
       const invalidGeneSequence = 'ATGAAACTGTCCCCCCCCCCCCCCCCCCGGG'; // 30 bp total, 20bp intron ending with CC
       const invalidExons = [
-        { start: 0, end: 6, name: 'exon1' },  // ATGAAA (6bp)
+        { start: 0, end: 6, name: 'exon1' }, // ATGAAA (6bp)
         { start: 27, end: 30, name: 'exon2' }, // GGG (3bp)
       ];
 
@@ -228,7 +230,7 @@ describe('rna-processing', () => {
       if (isFailure(result)) {
         expect(result.error).toContain('Splice site validation failed');
         // Note: The 5' splice site is checked first, so we get that error instead
-        expect(result.error).toContain('Invalid 5\' splice site');
+        expect(result.error).toContain("Invalid 5' splice site");
         expect(result.error).toContain('expected GU');
       }
     });
@@ -239,7 +241,7 @@ describe('rna-processing', () => {
       // Need at least 20bp intron and 3bp exons to satisfy Gene constructor validation
       const invalidGeneSequence = 'ATGAAACCCTCCCCCCCCCCCCCCCAGGGG'; // 29 bp total, 20bp intron starting with CC
       const invalidExons = [
-        { start: 0, end: 6, name: 'exon1' },  // ATGAAA (6bp)
+        { start: 0, end: 6, name: 'exon1' }, // ATGAAA (6bp)
         { start: 26, end: 29, name: 'exon2' }, // GGG (3bp)
       ];
 
@@ -253,7 +255,7 @@ describe('rna-processing', () => {
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
         expect(result.error).toContain('Splice site validation failed');
-        expect(result.error).toContain('Invalid 5\' splice site');
+        expect(result.error).toContain("Invalid 5' splice site");
         expect(result.error).toContain('expected GU');
       }
     });
@@ -263,7 +265,7 @@ describe('rna-processing', () => {
       // Create a gene with valid 5' splice site (GU) but invalid 3' splice site (not AG)
       const invalidGeneSequence = 'ATGAAAGTTCCCCCCCCCCCCCCCCCCGGG'; // 29 bp total, starts with GT, ends with CC
       const invalidExons = [
-        { start: 0, end: 6, name: 'exon1' },  // ATGAAA (6bp)
+        { start: 0, end: 6, name: 'exon1' }, // ATGAAA (6bp)
         { start: 26, end: 29, name: 'exon2' }, // GGG (3bp)
       ];
 
@@ -277,7 +279,7 @@ describe('rna-processing', () => {
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
         expect(result.error).toContain('Splice site validation failed');
-        expect(result.error).toContain('Invalid 3\' splice site');
+        expect(result.error).toContain("Invalid 3' splice site");
         expect(result.error).toContain('expected AG');
       }
     });

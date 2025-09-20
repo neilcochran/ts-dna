@@ -493,7 +493,7 @@ describe('ForkCoordinator', () => {
 
       // Replace advanceFork to fail after some progress
       let callCount = 0;
-      coordinator.advanceFork = jest.fn().mockImplementation((basePairs) => {
+      coordinator.advanceFork = jest.fn().mockImplementation(basePairs => {
         callCount++;
         if (callCount > 2) {
           // Fail after a couple of successful calls

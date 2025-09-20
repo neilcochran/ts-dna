@@ -528,12 +528,15 @@ describe('Replisome', () => {
 
     test('constructor handles enzyme creation failures', () => {
       // Mock EnzymeFactory to return failures for testing each enzyme type
-      const originalEnzymeFactory = require('../../../src/model/replication/enzyme/EnzymeFactory.js').EnzymeFactory;
+      const originalEnzymeFactory =
+        require('../../../src/model/replication/enzyme/EnzymeFactory.js').EnzymeFactory;
 
       // Test helicase creation failure
       const mockEnzymeFactory = {
         ...originalEnzymeFactory,
-        createHelicase: jest.fn().mockReturnValue({ success: false, error: 'Helicase creation failed' }),
+        createHelicase: jest
+          .fn()
+          .mockReturnValue({ success: false, error: 'Helicase creation failed' }),
         createPrimase: jest.fn().mockReturnValue({ success: true, data: {} }),
         createPolymerase: jest.fn().mockReturnValue({ success: true, data: {} }),
         createLigase: jest.fn().mockReturnValue({ success: true, data: {} }),
@@ -549,7 +552,10 @@ describe('Replisome', () => {
 
       // Test primase creation failure
       mockEnzymeFactory.createHelicase.mockReturnValue({ success: true, data: {} });
-      mockEnzymeFactory.createPrimase.mockReturnValue({ success: false, error: 'Primase creation failed' });
+      mockEnzymeFactory.createPrimase.mockReturnValue({
+        success: false,
+        error: 'Primase creation failed',
+      });
 
       expect(() => new Replisome(fork, E_COLI)).toThrow('Primase creation failed');
 
@@ -570,13 +576,19 @@ describe('Replisome', () => {
 
       // Test ligase creation failure
       mockEnzymeFactory.createPolymerase.mockReturnValue({ success: true, data: {} });
-      mockEnzymeFactory.createLigase.mockReturnValue({ success: false, error: 'Ligase creation failed' });
+      mockEnzymeFactory.createLigase.mockReturnValue({
+        success: false,
+        error: 'Ligase creation failed',
+      });
 
       expect(() => new Replisome(fork, E_COLI)).toThrow('Ligase creation failed');
 
       // Test exonuclease creation failure
       mockEnzymeFactory.createLigase.mockReturnValue({ success: true, data: {} });
-      mockEnzymeFactory.createExonuclease.mockReturnValue({ success: false, error: 'Exonuclease creation failed' });
+      mockEnzymeFactory.createExonuclease.mockReturnValue({
+        success: false,
+        error: 'Exonuclease creation failed',
+      });
 
       expect(() => new Replisome(fork, E_COLI)).toThrow('Exonuclease creation failed');
 
@@ -588,30 +600,40 @@ describe('Replisome', () => {
       const replisome = new Replisome(fork, E_COLI);
 
       // Mock RNAPrimer.generateRandom to fail
-      const originalGenerateRandom = require('../../../src/model/replication/RNAPrimer.js').RNAPrimer.generateRandom;
-      require('../../../src/model/replication/RNAPrimer.js').RNAPrimer.generateRandom = jest.fn()
+      const originalGenerateRandom = require('../../../src/model/replication/RNAPrimer.js')
+        .RNAPrimer.generateRandom;
+      require('../../../src/model/replication/RNAPrimer.js').RNAPrimer.generateRandom = jest
+        .fn()
         .mockReturnValue({ success: false, error: 'Primer generation failed' });
 
       // Try to advance the fork which should trigger fragment initiation
-      expect(() => replisome.advanceFork(1000)).toThrow('Failed to create primer: Primer generation failed');
+      expect(() => replisome.advanceFork(1000)).toThrow(
+        'Failed to create primer: Primer generation failed',
+      );
 
       // Restore original
-      require('../../../src/model/replication/RNAPrimer.js').RNAPrimer.generateRandom = originalGenerateRandom;
+      require('../../../src/model/replication/RNAPrimer.js').RNAPrimer.generateRandom =
+        originalGenerateRandom;
     });
 
     test('handles fragment creation failure during fragment initiation', () => {
       const replisome = new Replisome(fork, E_COLI);
 
       // Mock OkazakiFragment.create to fail
-      const originalCreate = require('../../../src/model/replication/OkazakiFragment.js').OkazakiFragment.create;
-      require('../../../src/model/replication/OkazakiFragment.js').OkazakiFragment.create = jest.fn()
+      const originalCreate = require('../../../src/model/replication/OkazakiFragment.js')
+        .OkazakiFragment.create;
+      require('../../../src/model/replication/OkazakiFragment.js').OkazakiFragment.create = jest
+        .fn()
         .mockReturnValue({ success: false, error: 'Fragment creation failed' });
 
       // Try to advance the fork which should trigger fragment initiation
-      expect(() => replisome.advanceFork(1000)).toThrow('Failed to create fragment: Fragment creation failed');
+      expect(() => replisome.advanceFork(1000)).toThrow(
+        'Failed to create fragment: Fragment creation failed',
+      );
 
       // Restore original
-      require('../../../src/model/replication/OkazakiFragment.js').OkazakiFragment.create = originalCreate;
+      require('../../../src/model/replication/OkazakiFragment.js').OkazakiFragment.create =
+        originalCreate;
     });
   });
 });

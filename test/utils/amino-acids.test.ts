@@ -288,7 +288,7 @@ describe('RNAtoAminoAcids', () => {
     const originalGetAminoAcid = getAminoAcidByCodon;
 
     // Create a spy that returns null for a specific codon
-    const getAminoAcidSpy = jest.fn((rna) => {
+    const getAminoAcidSpy = jest.fn(rna => {
       if (rna.getSequence() === 'CCC') {
         return null; // Mock this codon as unmapped
       }

@@ -237,9 +237,7 @@ describe('Alternative Splicing Functions', () => {
       }
 
       // Check that warning was called
-      expect(mockWarn).toHaveBeenCalledWith(
-        expect.stringContaining('Some splice variants failed')
-      );
+      expect(mockWarn).toHaveBeenCalledWith(expect.stringContaining('Some splice variants failed'));
 
       // Restore console.warn
       console.warn = originalWarn;
@@ -282,7 +280,6 @@ describe('Alternative Splicing Functions', () => {
         expect(result.error).toContain('All splice variants failed');
       }
     });
-
   });
 
   describe('validateSpliceVariant', () => {

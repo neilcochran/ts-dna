@@ -330,19 +330,24 @@ describe('polyadenylation', () => {
   describe('error handling and edge cases', () => {
     test('handles invalid pattern exceptions gracefully', () => {
       // Mock NucleotidePattern to throw an error for testing exception handling
-      const originalPattern = require('../../src/model/nucleic-acids/NucleotidePattern').NucleotidePattern;
+      const originalPattern =
+        require('../../src/model/nucleic-acids/NucleotidePattern').NucleotidePattern;
 
       // Create a spy that throws on a specific pattern
-      const mockFindMatches = jest.fn()
-        .mockImplementationOnce(() => { throw new Error('Invalid pattern'); })
-        .mockImplementation((sequence) => []);
+      const mockFindMatches = jest
+        .fn()
+        .mockImplementationOnce(() => {
+          throw new Error('Invalid pattern');
+        })
+        .mockImplementation(sequence => []);
 
       // Mock the NucleotidePattern constructor
       const mockPattern = {
-        findMatches: mockFindMatches
+        findMatches: mockFindMatches,
       };
 
-      const PatternSpy = jest.spyOn(require('../../src/model/nucleic-acids/NucleotidePattern'), 'NucleotidePattern')
+      const PatternSpy = jest
+        .spyOn(require('../../src/model/nucleic-acids/NucleotidePattern'), 'NucleotidePattern')
         .mockImplementation(() => mockPattern);
 
       const rna = new RNA('AUGAAACCCAAUAAAGGGCCCAAAUUUCCCGGG');
@@ -362,7 +367,7 @@ describe('polyadenylation', () => {
       const customOptions = {
         ...DEFAULT_CLEAVAGE_OPTIONS,
         minDistanceFromSignal: 100, // Very large minimum distance
-        maxDistanceFromSignal: 50   // Smaller maximum distance
+        maxDistanceFromSignal: 50, // Smaller maximum distance
       };
 
       const rna = new RNA('AAUAAA'); // Very short sequence with signal
@@ -411,8 +416,8 @@ describe('polyadenylation', () => {
       const edgeCaseOptions = {
         ...DEFAULT_CLEAVAGE_OPTIONS,
         minDistanceFromSignal: -10, // Negative distance
-        maxDistanceFromSignal: 0,   // Zero distance
-        minStrengthThreshold: 200   // Impossible threshold
+        maxDistanceFromSignal: 0, // Zero distance
+        minStrengthThreshold: 200, // Impossible threshold
       };
 
       const rna = new RNA('AUGAAACCCAAUAAAGGGCCCAAAUUUCCCGGG');

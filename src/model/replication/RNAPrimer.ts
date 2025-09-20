@@ -36,7 +36,7 @@ export class RNAPrimer {
    * @throws Error if sequence length is outside biological range
    */
   constructor(
-    sequence: string,
+    public readonly sequence: string,
     public readonly position: number,
     public isRemoved: boolean = false,
   ) {
