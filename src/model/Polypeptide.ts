@@ -19,13 +19,13 @@ export class Polypeptide {
    * Thrown if the mRNA coding sequence length is not divisible by 3 (invalid codons)
    *
    * @throws {@link InvalidCodonError}
-   * Thrown if any codon is invalid (doesn't code for an amino acid)
+   * Thrown if any codon is invalid (doesn't code for an amino acid and is not a stop codon)
    *
    * @example
    * ```typescript
-   * const mRNA = new MRNA('GAUGAAAGGGAAA', 'AUGAAAGGG', 1, 10);
-   * const polypeptide = new Polypeptide(mRNA); // 3 codons: Met-Lys-Gly
-   * console.log(polypeptide.aminoAcidSequence.length); // 3
+   * const mRNA = new MRNA('GAUGAAAGGGAAAUAG', 'AUGAAAGGGAAAUAG', 1, 16);
+   * const polypeptide = new Polypeptide(mRNA); // 4 codons: Met-Lys-Gly-Lys, stops at UAG
+   * console.log(polypeptide.aminoAcidSequence.length); // 4
    * ```
    */
   constructor(mRNA: MRNA) {

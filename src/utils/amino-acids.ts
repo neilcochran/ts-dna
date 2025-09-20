@@ -1,10 +1,12 @@
-import { AminoAcid, RNA } from '../model/index.js';
+import { AminoAcid } from '../model/AminoAcid.js';
+import { RNA } from '../model/nucleic-acids/RNA.js';
 import { InvalidCodonError } from '../model/errors/InvalidCodonError.js';
 import { InvalidSequenceError } from '../model/errors/InvalidSequenceError.js';
 import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
 import { AminoAcidData } from '../types/amino-acid-data.js';
 import { CODON_LENGTH } from '../constants/biological-constants.js';
 import { SLC_AMINO_ACID_DATA_MAP, CODON_TO_SLC_MAP } from '../data/codon-map.js';
+import { STOP_CODONS } from './nucleic-acids.js';
 
 export {
   SLC_AMINO_ACID_DATA_MAP,
@@ -63,22 +65,22 @@ export const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined =
 };
 
 /**
- * Parse RNA into a list of amino acids. The RNA must be made up of valid codons only.
+ * Parse RNA into a list of amino acids. Translation stops when a stop codon is encountered.
  *
  * @param rna - The RNA comprised of codons
  *
- * @returns A list of amino acids
+ * @returns A list of amino acids (translation stops at first stop codon)
  *
  * @throws {@link InvalidSequenceError}
  * Thrown if the sequence is undefined, or not evenly divisible by {@link CODON_LENGTH} (codons always have a length of {@link CODON_LENGTH})
  *
  * @throws {@link InvalidCodonError}
- * Thrown if an invalid codon is encountered (one that does not code for an amino acid)
+ * Thrown if an invalid codon is encountered (one that does not code for an amino acid and is not a stop codon)
  *
  * @example
  * ```typescript
- *  //passing RNA comprised of ${CODON_LENGTH} valid codons
- *  RNAtoAminoAcids(new RNA('GCAUGCGAC')); //returns a list of ${CODON_LENGTH} AminoAcid objects
+ *  //passing RNA with coding codons and stop codon
+ *  RNAtoAminoAcids(new RNA('AUGAAACCCUAG')); //returns 3 amino acids, stops at UAG
  * ```
  */
 export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
@@ -92,13 +94,23 @@ export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
       NucleicAcidType.RNA,
     );
   }
-  //parse sequence into groups of ${CODON_LENGTH} (codons)
-  sequence.match(new RegExp(`.{1,${CODON_LENGTH}}`, 'g'))?.forEach(codonSeq => {
+
+  // Parse sequence into groups of codons
+  const codons = sequence.match(new RegExp(`.{1,${CODON_LENGTH}}`, 'g')) ?? [];
+
+  for (const codonSeq of codons) {
+    // Check if this is a stop codon - if so, terminate translation
+    if (STOP_CODONS.includes(codonSeq)) {
+      break;
+    }
+
+    // Try to translate the codon to an amino acid
     const aminoAcid = getAminoAcidByCodon(new RNA(codonSeq));
     if (!aminoAcid) {
       throw new InvalidCodonError(`Invalid codon encountered: ${codonSeq}`, codonSeq);
     }
     aminoAcids.push(aminoAcid);
-  });
+  }
+
   return aminoAcids;
 };

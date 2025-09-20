@@ -1,4 +1,4 @@
-import { RNA, MRNA, Polypeptide, InvalidSequenceError, InvalidCodonError } from '../../src/model';
+import { RNA, MRNA, Polypeptide, InvalidSequenceError } from '../../src/model';
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import { STOP_CODONS } from '../../src/utils/nucleic-acids';
 import { CODON_LENGTH } from '../../src/constants/biological-constants';
@@ -58,33 +58,31 @@ test('RNAtoAminoAcids() from invalid (short) length RNA sequence', () => {
   }).toThrowError(InvalidSequenceError);
 });
 
-test('RNAtoAminoAcids() throws InvalidCodonError for stop codons', () => {
+test('RNAtoAminoAcids() returns empty array for stop codons only', () => {
   for (const stopCodon of STOP_CODONS) {
-    expect(() => {
-      RNAtoAminoAcids(new RNA(stopCodon));
-    }).toThrowError(InvalidCodonError);
+    const aminoAcids = RNAtoAminoAcids(new RNA(stopCodon));
+    expect(aminoAcids).toHaveLength(0); // Stop codon terminates immediately
   }
 });
 
-test('RNAtoAminoAcids() throws InvalidCodonError for RNA containing stop codon', () => {
+test('RNAtoAminoAcids() stops translation at stop codon', () => {
   // Valid codon followed by stop codon
-  expect(() => {
-    RNAtoAminoAcids(new RNA('AUGUAA')); // Met + Stop(UAA)
-  }).toThrowError(InvalidCodonError);
+  const aminoAcids = RNAtoAminoAcids(new RNA('AUGUAA')); // Met + Stop(UAA)
+  expect(aminoAcids).toHaveLength(1); // Only Met, stops at UAA
+  expect(aminoAcids[0].slc).toBe('M'); // Met
 });
 
-test('Polypeptide constructor throws InvalidCodonError for stop codons', () => {
+test('Polypeptide constructor creates empty polypeptide for stop codons only', () => {
   for (const stopCodon of STOP_CODONS) {
-    expect(() => {
-      new Polypeptide(new MRNA(stopCodon, stopCodon, 0, 3));
-    }).toThrowError(InvalidCodonError);
+    const polypeptide = new Polypeptide(new MRNA(stopCodon, stopCodon, 0, 3));
+    expect(polypeptide.aminoAcidSequence).toHaveLength(0); // No amino acids
   }
 });
 
-test('Polypeptide constructor throws InvalidCodonError for RNA containing stop codon', () => {
-  expect(() => {
-    new Polypeptide(new MRNA('AUGUAG', 'AUGUAG', 0, 6)); // Met + Stop(UAG)
-  }).toThrowError(InvalidCodonError);
+test('Polypeptide constructor stops translation at stop codon', () => {
+  const polypeptide = new Polypeptide(new MRNA('AUGUAG', 'AUGUAG', 0, 6)); // Met + Stop(UAG)
+  expect(polypeptide.aminoAcidSequence).toHaveLength(1); // Only Met
+  expect(polypeptide.aminoAcidSequence[0].slc).toBe('M'); // Met
 });
 
 test('RNAtoAminoAcids() from RNA_ALL_AMINO_ACIDS_1', () => {
