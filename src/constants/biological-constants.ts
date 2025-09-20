@@ -53,6 +53,9 @@ export const DNA_POL_III_SPEED_FACTOR = 1.0; // Full speed for main replication
 export const PRIMASE_SPEED_FACTOR = 0.1; // 10% of polymerase speed
 export const EXONUCLEASE_SPEED_FACTOR = 0.1; // Similar to primase
 
+// DNA synthesis quality control
+export const DNA_PROOFREADING_THRESHOLD = 500; // Base pairs before proofreading (every 100-1000 bp)
+
 // Splice site sequences
 export const DONOR_SPLICE_CONSENSUS = 'GT'; // 5' splice site (donor)
 export const ACCEPTOR_SPLICE_CONSENSUS = 'AG'; // 3' splice site (acceptor)

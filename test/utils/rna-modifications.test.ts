@@ -31,6 +31,17 @@ describe('rna-modifications', () => {
       expect(cappedRNA.rnaSubType).toBe(rna.rnaSubType);
     });
 
+    test('adds cap to ProcessedRNA that already exists', () => {
+      // Test line 62: when rna instanceof ProcessedRNA
+      const existingProcessedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, false, 'AAAAAAA');
+      const cappedRNA = add5PrimeCap(existingProcessedRNA);
+
+      expect(cappedRNA).toBeInstanceOf(ProcessedRNA);
+      expect(cappedRNA.getSequence()).toBe('AUGAAACCCGGG');
+      expect(cappedRNA.hasFivePrimeCap).toBe(true);
+      expect(cappedRNA.polyATail).toBe('AAAAAAA'); // Preserves existing poly-A tail
+    });
+
     test('adds cap to minimal sequence', () => {
       const rna = new RNA('A'); // Minimal valid RNA
       const cappedRNA = add5PrimeCap(rna);
@@ -128,6 +139,37 @@ describe('rna-modifications', () => {
         expect(result.error).toContain('Invalid poly-A tail length');
       }
     });
+
+    test('handles exception during poly-A tail addition', () => {
+      // Test line 105: exception handling catch block
+      // Create a mock RNA that throws an error when getSequence is called
+      const mockRNA = {
+        getSequence: () => {
+          throw new Error('Mock getSequence error');
+        },
+        rnaSubType: undefined,
+      } as any;
+
+      const result = add3PrimePolyATail(mockRNA, 5, 10);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Failed to add poly-A tail');
+        expect(result.error).toContain('Mock getSequence error');
+      }
+    });
+
+    test("preserves 5' cap when adding poly-A tail to ProcessedRNA", () => {
+      // Test line 101: when rna instanceof ProcessedRNA
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
+      const result = add3PrimePolyATail(processedRNA, 12, 5);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.hasFivePrimeCap).toBe(true); // Cap preserved
+        expect(result.data.getPolyATailLength()).toBe(5);
+      }
+    });
   });
 
   describe('add3PrimePolyATailAtSite', () => {
@@ -193,6 +235,39 @@ describe('rna-modifications', () => {
         expect(result.error).toContain("No 5' cap found");
       }
     });
+
+    test('fails when ProcessedRNA has no cap', () => {
+      // Test line 163: when ProcessedRNA doesn't have a cap
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, false, 'AAAA');
+      const result = remove5PrimeCap(processedRNA);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain("No 5' cap found to remove");
+      }
+    });
+
+    test('handles exception during cap removal', () => {
+      // Test line 171: exception handling catch block
+      // Need to create a ProcessedRNA-like object that throws during property access
+      const mockRNA = {
+        constructor: { name: 'ProcessedRNA' }, // Make it look like ProcessedRNA
+        get hasFivePrimeCap() {
+          throw new Error('Mock cap removal error');
+        },
+      } as any;
+
+      // Mock instanceof check
+      Object.setPrototypeOf(mockRNA, ProcessedRNA.prototype);
+
+      const result = remove5PrimeCap(mockRNA);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain("Failed to remove 5' cap");
+        expect(result.error).toContain('Mock cap removal error');
+      }
+    });
   });
 
   describe('remove3PrimePolyATail', () => {
@@ -213,6 +288,47 @@ describe('rna-modifications', () => {
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {
         expect(result.error).toContain('No poly-A tail found');
+      }
+    });
+
+    test('removes poly-A tail from ProcessedRNA', () => {
+      // Test lines 131-135: when rna instanceof ProcessedRNA with poly-A tail
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAA');
+      const result = remove3PrimePolyATail(processedRNA);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.getSequence()).toBe('AUGAAACCCGGG');
+        expect(result.data.hasFivePrimeCap).toBe(true); // Cap preserved
+        expect(result.data.polyATail).toBe(''); // Poly-A tail removed
+      }
+    });
+
+    test('fails when ProcessedRNA has no poly-A tail', () => {
+      // Test line 132: when ProcessedRNA has empty poly-A tail
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
+      const result = remove3PrimePolyATail(processedRNA);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('No poly-A tail found to remove');
+      }
+    });
+
+    test('handles exception during poly-A tail removal', () => {
+      // Test line 150: exception handling catch block
+      const mockRNA = {
+        getSequence: () => {
+          throw new Error('Mock removal error');
+        },
+      } as any;
+
+      const result = remove3PrimePolyATail(mockRNA);
+
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Failed to remove poly-A tail');
+        expect(result.error).toContain('Mock removal error');
       }
     });
   });
@@ -245,6 +361,18 @@ describe('rna-modifications', () => {
       expect(has3PrimePolyATail(rna, 5)).toBe(true);
       expect(has3PrimePolyATail(rna, 10)).toBe(false);
     });
+
+    test('detects poly-A tail in ProcessedRNA', () => {
+      // Test line 196: when rna instanceof ProcessedRNA
+      const processedRNAWithTail = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAAAAA');
+      const processedRNAWithoutTail = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
+      const processedRNAShortTail = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAA');
+
+      expect(has3PrimePolyATail(processedRNAWithTail)).toBe(true); // 10 A's >= default min
+      expect(has3PrimePolyATail(processedRNAWithoutTail)).toBe(false); // 0 A's < default min
+      expect(has3PrimePolyATail(processedRNAShortTail)).toBe(false); // 3 A's < default min
+      expect(has3PrimePolyATail(processedRNAShortTail, 2)).toBe(true); // 3 A's >= 2
+    });
   });
 
   describe('get3PrimePolyATailLength', () => {
@@ -264,6 +392,15 @@ describe('rna-modifications', () => {
 
       expect(get3PrimePolyATailLength(allARNA)).toBe(10);
       expect(get3PrimePolyATailLength(noARNA)).toBe(0);
+    });
+
+    test('returns poly-A tail length from ProcessedRNA', () => {
+      // Test line 208: when rna instanceof ProcessedRNA
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAA');
+      const processedRNANoTail = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
+
+      expect(get3PrimePolyATailLength(processedRNA)).toBe(7);
+      expect(get3PrimePolyATailLength(processedRNANoTail)).toBe(0);
     });
   });
 

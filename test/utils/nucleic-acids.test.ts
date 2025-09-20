@@ -23,15 +23,26 @@ import { NucleicAcidType } from '../../src/enums/nucleic-acid-type';
 import { RNASubType } from '../../src/enums/rna-sub-type';
 import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../../src/data/iupac-symbols';
 import { success, failure, isSuccess, isFailure, validateNucleicAcid } from '../../src';
-import * as TestUtils from './test-utils';
+import {
+  RNA_SEQ,
+  RNA_SEQ_COMP,
+  DNA_SEQ,
+  DNA_SEQ_COMP,
+  ALL_NUCLEOTIDE_SYMBOLS,
+  ALL_NUCLEOTIDE_SYMBOLS_COMP,
+  NUCLEOTIDE_PATTERN,
+  NUCLEOTIDE_PATTERN_COMP,
+  NUCLEOTIDE_PATTERN_REGEX,
+  NUCLEOTIDE_PATTERN_PASSING_SEQS,
+} from './test-utils';
 
 /*
     --- Nucleotide Symbols & Patterns --
 */
 
 test('create valid NucleotidePatternSymbols and check matching bases', () => {
-  for (let i = 0; i < TestUtils.ALL_NUCLEOTIDE_SYMBOLS.length; i++) {
-    const symbol = TestUtils.ALL_NUCLEOTIDE_SYMBOLS[i];
+  for (let i = 0; i < ALL_NUCLEOTIDE_SYMBOLS.length; i++) {
+    const symbol = ALL_NUCLEOTIDE_SYMBOLS[i];
     const currSymbol = new NucleotidePatternSymbol(symbol);
     //check that the matching bases are correct
     expect(currSymbol.matchingBases).toEqual(NUCLEOTIDE_PATTERN_SYMBOLS[symbol]);
@@ -41,30 +52,28 @@ test('create valid NucleotidePatternSymbols and check matching bases', () => {
 });
 
 test('create valid NucleotidePatternSymbols and check matching bases regex', () => {
-  for (let i = 0; i < TestUtils.ALL_NUCLEOTIDE_SYMBOLS.length; i++) {
-    const currSymbol = new NucleotidePatternSymbol(TestUtils.ALL_NUCLEOTIDE_SYMBOLS[i]);
+  for (let i = 0; i < ALL_NUCLEOTIDE_SYMBOLS.length; i++) {
+    const currSymbol = new NucleotidePatternSymbol(ALL_NUCLEOTIDE_SYMBOLS[i]);
     //check that the matching bases are all accepted by its regex
     expect(currSymbol.matchingRegex.test(currSymbol.matchingBases.join())).toEqual(true);
   }
 });
 
 test('create valid NucleotidePattern with heavy regex use', () => {
-  expect(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN).getRegex().source).toEqual(
-    TestUtils.NUCLEOTIDE_PATTERN_REGEX,
+  expect(new NucleotidePattern(NUCLEOTIDE_PATTERN).getRegex().source).toEqual(
+    NUCLEOTIDE_PATTERN_REGEX,
   );
 });
 
 test('test valid sequences against a NucleotidePattern with heavy regex use', () => {
-  const pattern = new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN);
-  for (const passingSeq of TestUtils.NUCLEOTIDE_PATTERN_PASSING_SEQS) {
+  const pattern = new NucleotidePattern(NUCLEOTIDE_PATTERN);
+  for (const passingSeq of NUCLEOTIDE_PATTERN_PASSING_SEQS) {
     expect(pattern.matches(new DNA(passingSeq))).toEqual(true);
   }
 });
 
 test('test invalid sequence against a NucleotidePattern with heavy regex use', () => {
-  expect(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN).matches(new DNA('AAATCGC'))).toEqual(
-    false,
-  );
+  expect(new NucleotidePattern(NUCLEOTIDE_PATTERN).matches(new DNA('AAATCGC'))).toEqual(false);
 });
 
 test('create invalid nucleotide pattern symbol', () => {
@@ -72,25 +81,23 @@ test('create invalid nucleotide pattern symbol', () => {
 });
 
 test('create valid NucleotidePattern', () => {
-  expect(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS)).toBeDefined();
+  expect(new NucleotidePattern(ALL_NUCLEOTIDE_SYMBOLS)).toBeDefined();
 });
 
 test("create valid NucleotidePattern and check it's patternString", () => {
-  expect(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS).pattern).toEqual(
-    TestUtils.ALL_NUCLEOTIDE_SYMBOLS,
-  );
+  expect(new NucleotidePattern(ALL_NUCLEOTIDE_SYMBOLS).pattern).toEqual(ALL_NUCLEOTIDE_SYMBOLS);
 });
 
 test('get complement NucleotidePattern (all symbols, no regex)', () => {
-  expect(
-    NucleotidePattern.createComplement(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS)),
-  ).toEqual(new NucleotidePattern(TestUtils.ALL_NUCLEOTIDE_SYMBOLS_COMP));
+  expect(NucleotidePattern.createComplement(new NucleotidePattern(ALL_NUCLEOTIDE_SYMBOLS))).toEqual(
+    new NucleotidePattern(ALL_NUCLEOTIDE_SYMBOLS_COMP),
+  );
 });
 
 test('get complement NucleotidePattern (regex)', () => {
-  expect(
-    NucleotidePattern.createComplement(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN)),
-  ).toEqual(new NucleotidePattern(TestUtils.NUCLEOTIDE_PATTERN_COMP));
+  expect(NucleotidePattern.createComplement(new NucleotidePattern(NUCLEOTIDE_PATTERN))).toEqual(
+    new NucleotidePattern(NUCLEOTIDE_PATTERN_COMP),
+  );
 });
 
 test("ensure each base for each symbol's getMatchingBases() matches", () => {
@@ -228,19 +235,19 @@ test('matchesEitherStrand works with IUPAC ambiguous patterns', () => {
 */
 
 test('check DNA -> isDNA type guard', () => {
-  expect(isDNA(new DNA(TestUtils.DNA_SEQ))).toEqual(true);
+  expect(isDNA(new DNA(DNA_SEQ))).toEqual(true);
 });
 
 test('check RNA -> isDNA type guard', () => {
-  expect(isDNA(new RNA(TestUtils.RNA_SEQ))).toEqual(false);
+  expect(isDNA(new RNA(RNA_SEQ))).toEqual(false);
 });
 
 test('check RNA -> isRNA type guard', () => {
-  expect(isRNA(new RNA(TestUtils.RNA_SEQ))).toEqual(true);
+  expect(isRNA(new RNA(RNA_SEQ))).toEqual(true);
 });
 
 test('check DNA -> isRNA type guard', () => {
-  expect(isRNA(new DNA(TestUtils.DNA_SEQ))).toEqual(false);
+  expect(isRNA(new DNA(DNA_SEQ))).toEqual(false);
 });
 
 /*
@@ -248,7 +255,7 @@ test('check DNA -> isRNA type guard', () => {
 */
 
 test('construct valid DNA sequence', () => {
-  expect(new DNA(TestUtils.DNA_SEQ).getSequence()).toEqual(TestUtils.DNA_SEQ);
+  expect(new DNA(DNA_SEQ).getSequence()).toEqual(DNA_SEQ);
 });
 
 test('construct DNA with lowercase sequence (normalized to uppercase)', () => {
@@ -256,7 +263,7 @@ test('construct DNA with lowercase sequence (normalized to uppercase)', () => {
 });
 
 test('construct invalid DNA sequence', () => {
-  expect(() => new DNA(TestUtils.RNA_SEQ)).toThrowError(InvalidSequenceError);
+  expect(() => new DNA(RNA_SEQ)).toThrowError(InvalidSequenceError);
 });
 
 test('construct invalid empty string DNA sequence', () => {
@@ -264,10 +271,10 @@ test('construct invalid empty string DNA sequence', () => {
 });
 
 test('DNA sequences are immutable after construction', () => {
-  const dna = new DNA(TestUtils.DNA_SEQ);
+  const dna = new DNA(DNA_SEQ);
   // Verify getSequence returns the same value consistently
-  expect(dna.getSequence()).toEqual(TestUtils.DNA_SEQ);
-  expect(dna.getSequence()).toEqual(TestUtils.DNA_SEQ);
+  expect(dna.getSequence()).toEqual(DNA_SEQ);
+  expect(dna.getSequence()).toEqual(DNA_SEQ);
 });
 
 test('construct DNA with invalid characters throws error', () => {
@@ -275,25 +282,25 @@ test('construct DNA with invalid characters throws error', () => {
 });
 
 test('get DNA complement sequence', () => {
-  const dna = new DNA(TestUtils.DNA_SEQ);
-  expect(dna.getComplementSequence()).toEqual(TestUtils.DNA_SEQ_COMP);
+  const dna = new DNA(DNA_SEQ);
+  expect(dna.getComplementSequence()).toEqual(DNA_SEQ_COMP);
 });
 
 test('check DNA equality', () => {
-  const dna = new DNA(TestUtils.DNA_SEQ);
-  const dna2 = new DNA(TestUtils.DNA_SEQ);
+  const dna = new DNA(DNA_SEQ);
+  const dna2 = new DNA(DNA_SEQ);
   expect(dna.equals(dna2)).toEqual(true);
 });
 
 test('check DNA inequality', () => {
-  const dna = new DNA(TestUtils.DNA_SEQ);
+  const dna = new DNA(DNA_SEQ);
   const dna2 = new DNA('GGGG');
   expect(dna.equals(dna2)).toEqual(false);
 });
 
 test('check DNA/RNA inequality', () => {
-  const dna = new DNA(TestUtils.DNA_SEQ);
-  const rna = new RNA(TestUtils.RNA_SEQ);
+  const dna = new DNA(DNA_SEQ);
+  const rna = new RNA(RNA_SEQ);
   expect(dna.equals(rna)).toEqual(false);
 });
 
@@ -302,7 +309,7 @@ test('check DNA/RNA inequality', () => {
 */
 
 test('construct valid RNA sequence', () => {
-  expect(new RNA(TestUtils.RNA_SEQ).getSequence()).toEqual(TestUtils.RNA_SEQ);
+  expect(new RNA(RNA_SEQ).getSequence()).toEqual(RNA_SEQ);
 });
 
 test('construct RNA with lowercase sequence (normalized to uppercase)', () => {
@@ -310,15 +317,15 @@ test('construct RNA with lowercase sequence (normalized to uppercase)', () => {
 });
 
 test('construct valid RNA with RNASubType PRE_M_RNA', () => {
-  expect(new RNA(TestUtils.RNA_SEQ, RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
+  expect(new RNA(RNA_SEQ, RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
 });
 
 test('construct valid RNA with RNASubType M_RNA', () => {
-  expect(new RNA(TestUtils.RNA_SEQ, RNASubType.M_RNA).rnaSubType).toEqual(RNASubType.M_RNA);
+  expect(new RNA(RNA_SEQ, RNASubType.M_RNA).rnaSubType).toEqual(RNASubType.M_RNA);
 });
 
 test('construct invalid RNA sequence', () => {
-  expect(() => new RNA(TestUtils.DNA_SEQ)).toThrowError(InvalidSequenceError);
+  expect(() => new RNA(DNA_SEQ)).toThrowError(InvalidSequenceError);
 });
 
 test('construct invalid empty string RNA', () => {
@@ -326,10 +333,10 @@ test('construct invalid empty string RNA', () => {
 });
 
 test('RNA sequences are immutable after construction', () => {
-  const rna = new RNA(TestUtils.RNA_SEQ);
+  const rna = new RNA(RNA_SEQ);
   // Verify getSequence returns the same value consistently
-  expect(rna.getSequence()).toEqual(TestUtils.RNA_SEQ);
-  expect(rna.getSequence()).toEqual(TestUtils.RNA_SEQ);
+  expect(rna.getSequence()).toEqual(RNA_SEQ);
+  expect(rna.getSequence()).toEqual(RNA_SEQ);
 });
 
 test('construct RNA with invalid characters throws error', () => {
@@ -337,25 +344,25 @@ test('construct RNA with invalid characters throws error', () => {
 });
 
 test('get RNA complement sequence', () => {
-  const rna = new RNA(TestUtils.RNA_SEQ);
-  expect(rna.getComplementSequence()).toEqual(TestUtils.RNA_SEQ_COMP);
+  const rna = new RNA(RNA_SEQ);
+  expect(rna.getComplementSequence()).toEqual(RNA_SEQ_COMP);
 });
 
 test('check RNA equality', () => {
-  const rna = new RNA(TestUtils.RNA_SEQ);
-  const rna2 = new RNA(TestUtils.RNA_SEQ);
+  const rna = new RNA(RNA_SEQ);
+  const rna2 = new RNA(RNA_SEQ);
   expect(rna.equals(rna2)).toEqual(true);
 });
 
 test('check RNA inequality', () => {
-  const rna = new RNA(TestUtils.RNA_SEQ);
+  const rna = new RNA(RNA_SEQ);
   const rna2 = new RNA('GGGG');
   expect(rna.equals(rna2)).toEqual(false);
 });
 
 test('check RNA/DNA inequality', () => {
-  const rna = new RNA(TestUtils.RNA_SEQ);
-  const dna = new DNA(TestUtils.DNA_SEQ);
+  const rna = new RNA(RNA_SEQ);
+  const dna = new DNA(DNA_SEQ);
   expect(rna.equals(dna)).toEqual(false);
 });
 
@@ -364,45 +371,43 @@ test('check RNA/DNA inequality', () => {
 */
 
 test('valid DNA sequence -> isValidNucleicAcid', () => {
-  expect(isValidNucleicAcid(TestUtils.DNA_SEQ, NucleicAcidType.DNA)).toEqual(true);
+  expect(isValidNucleicAcid(DNA_SEQ, NucleicAcidType.DNA)).toEqual(true);
 });
 
 test('invalid DNA sequence -> isValidNucleicAcid', () => {
-  expect(isValidNucleicAcid(TestUtils.RNA_SEQ, NucleicAcidType.DNA)).toEqual(false);
+  expect(isValidNucleicAcid(RNA_SEQ, NucleicAcidType.DNA)).toEqual(false);
 });
 
 test('valid RNA sequence -> isValidNucleicAcid', () => {
-  expect(isValidNucleicAcid(TestUtils.RNA_SEQ, NucleicAcidType.RNA)).toEqual(true);
+  expect(isValidNucleicAcid(RNA_SEQ, NucleicAcidType.RNA)).toEqual(true);
 });
 
 test('invalid RNA sequence -> isValidNucleicAcid', () => {
-  expect(isValidNucleicAcid(TestUtils.DNA_SEQ, NucleicAcidType.RNA)).toEqual(false);
+  expect(isValidNucleicAcid(DNA_SEQ, NucleicAcidType.RNA)).toEqual(false);
 });
 
 test('convert DNA -> RNA convertToRNA', () => {
-  expect(convertToRNA(new DNA(TestUtils.DNA_SEQ))).toEqual(new RNA(TestUtils.RNA_SEQ));
+  expect(convertToRNA(new DNA(DNA_SEQ))).toEqual(new RNA(RNA_SEQ));
 });
 
 test('convert DNA with subtype -> RNA convertToRNA', () => {
-  const result = convertToRNA(new DNA(TestUtils.DNA_SEQ), RNASubType.M_RNA);
-  expect(result.getSequence()).toEqual(TestUtils.RNA_SEQ);
+  const result = convertToRNA(new DNA(DNA_SEQ), RNASubType.M_RNA);
+  expect(result.getSequence()).toEqual(RNA_SEQ);
   expect(result.rnaSubType).toEqual(RNASubType.M_RNA);
 });
 
 test('convert DNA -> RNA with RNASubType PRE_M_RNA convertToRNA', () => {
-  expect(convertToRNA(new DNA(TestUtils.DNA_SEQ), RNASubType.PRE_M_RNA).rnaSubType).toEqual(
+  expect(convertToRNA(new DNA(DNA_SEQ), RNASubType.PRE_M_RNA).rnaSubType).toEqual(
     RNASubType.PRE_M_RNA,
   );
 });
 
 test('convert DNA -> RNA with RNASubType M_RNA convertToRNA', () => {
-  expect(convertToRNA(new DNA(TestUtils.DNA_SEQ), RNASubType.M_RNA).rnaSubType).toEqual(
-    RNASubType.M_RNA,
-  );
+  expect(convertToRNA(new DNA(DNA_SEQ), RNASubType.M_RNA).rnaSubType).toEqual(RNASubType.M_RNA);
 });
 
 test('convert RNA -> DNA convertToDNA', () => {
-  expect(convertToDNA(new RNA(TestUtils.RNA_SEQ))).toEqual(new DNA(TestUtils.DNA_SEQ));
+  expect(convertToDNA(new RNA(RNA_SEQ))).toEqual(new DNA(DNA_SEQ));
 });
 
 test('convert RNA with different sequence -> DNA convertToDNA', () => {
