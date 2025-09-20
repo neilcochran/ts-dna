@@ -1,3 +1,6 @@
+# Version 1.5.0
+- Added optional `options` parameter with skipSpliceSiteValidation boolean flag to support mutation modeling
+
 # Version 1.4.0
 
 - Fix polypeptide stop codon issue
