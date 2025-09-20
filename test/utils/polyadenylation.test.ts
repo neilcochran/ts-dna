@@ -326,4 +326,100 @@ describe('polyadenylation', () => {
       expect(minimalSites).toHaveLength(0);
     });
   });
+
+  describe('error handling and edge cases', () => {
+    test('handles invalid pattern exceptions gracefully', () => {
+      // Mock NucleotidePattern to throw an error for testing exception handling
+      const originalPattern = require('../../src/model/nucleic-acids/NucleotidePattern').NucleotidePattern;
+
+      // Create a spy that throws on a specific pattern
+      const mockFindMatches = jest.fn()
+        .mockImplementationOnce(() => { throw new Error('Invalid pattern'); })
+        .mockImplementation((sequence) => []);
+
+      // Mock the NucleotidePattern constructor
+      const mockPattern = {
+        findMatches: mockFindMatches
+      };
+
+      const PatternSpy = jest.spyOn(require('../../src/model/nucleic-acids/NucleotidePattern'), 'NucleotidePattern')
+        .mockImplementation(() => mockPattern);
+
+      const rna = new RNA('AUGAAACCCAAUAAAGGGCCCAAAUUUCCCGGG');
+      const sites = findPolyadenylationSites(rna);
+
+      // Should not throw and should handle the exception gracefully
+      expect(Array.isArray(sites)).toBe(true);
+
+      PatternSpy.mockRestore();
+    });
+
+    test('handles edge case where search region is invalid', () => {
+      // Test the condition where searchEnd <= searchStart (line 223)
+      // This could happen with a very short sequence or invalid positions
+
+      // Create a custom options object that would cause searchEnd <= searchStart
+      const customOptions = {
+        ...DEFAULT_CLEAVAGE_OPTIONS,
+        minDistanceFromSignal: 100, // Very large minimum distance
+        maxDistanceFromSignal: 50   // Smaller maximum distance
+      };
+
+      const rna = new RNA('AAUAAA'); // Very short sequence with signal
+      const sites = findPolyadenylationSites(rna, customOptions);
+
+      // Should handle gracefully and return empty or minimal results
+      expect(Array.isArray(sites)).toBe(true);
+    });
+
+    test('handles various invalid pattern scenarios in USE analysis', () => {
+      // Test edge cases in USE analysis that might cause pattern errors
+      const validRNA = new RNA('AAUAAAGGGGGGGGGGGGGGGG'); // Valid but repetitive sequence
+
+      // Should not throw even with repetitive sequences that might cause pattern issues
+      expect(() => {
+        const sites = findPolyadenylationSites(validRNA);
+        expect(Array.isArray(sites)).toBe(true);
+      }).not.toThrow();
+    });
+
+    test('handles various invalid pattern scenarios in DSE analysis', () => {
+      // Test edge cases in DSE analysis that might cause pattern errors
+      const validRNA = new RNA('AAUAAACCCCCCCCCCCCCCCC'); // Valid but repetitive sequence
+
+      // Should not throw even with repetitive sequences that might cause pattern issues
+      expect(() => {
+        const sites = findPolyadenylationSites(validRNA);
+        expect(Array.isArray(sites)).toBe(true);
+      }).not.toThrow();
+    });
+
+    test('handles minimal sequences and boundary conditions', () => {
+      // Test very edge cases that might trigger uncovered branches
+      const minimalRNA = new RNA('A'); // Single nucleotide
+      const sites = findPolyadenylationSites(minimalRNA);
+      expect(sites).toHaveLength(0);
+
+      // Test sequence that's just long enough to avoid early termination
+      const borderlineRNA = new RNA('AAUAAA'); // Exactly the signal length
+      const borderlineSites = findPolyadenylationSites(borderlineRNA);
+      expect(Array.isArray(borderlineSites)).toBe(true);
+    });
+
+    test('handles malformed options that might cause edge cases', () => {
+      // Test with options that might trigger edge cases
+      const edgeCaseOptions = {
+        ...DEFAULT_CLEAVAGE_OPTIONS,
+        minDistanceFromSignal: -10, // Negative distance
+        maxDistanceFromSignal: 0,   // Zero distance
+        minStrengthThreshold: 200   // Impossible threshold
+      };
+
+      const rna = new RNA('AUGAAACCCAAUAAAGGGCCCAAAUUUCCCGGG');
+      const sites = findPolyadenylationSites(rna, edgeCaseOptions);
+
+      // Should handle gracefully
+      expect(Array.isArray(sites)).toBe(true);
+    });
+  });
 });

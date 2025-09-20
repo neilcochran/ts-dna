@@ -479,5 +479,38 @@ describe('ForkCoordinator', () => {
         expect(finalResult.data.completionPercentage).toBe(100);
       }
     });
+
+    test('completeReplication handles advanceFork failure', () => {
+      // Initialize replication first
+      const initResult = coordinator.initializeReplication();
+      expect(isSuccess(initResult)).toBe(true);
+
+      // Mock the LeadingStrandSynthesis or LaggingStrandSynthesis to cause a failure during advancement
+      // We'll target a specific point in the replication where advanceFork might fail
+
+      // Mock the coordinator's internal leadingStrand to fail
+      const originalAdvanceFork = coordinator.advanceFork.bind(coordinator);
+
+      // Replace advanceFork to fail after some progress
+      let callCount = 0;
+      coordinator.advanceFork = jest.fn().mockImplementation((basePairs) => {
+        callCount++;
+        if (callCount > 2) {
+          // Fail after a couple of successful calls
+          return { success: false, error: 'Simulated advancement failure' };
+        }
+        return originalAdvanceFork(basePairs);
+      });
+
+      const result = coordinator.completeReplication();
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error).toContain('Replication failed at step');
+        expect(result.error).toContain('Simulated advancement failure');
+      }
+
+      // Restore original method
+      coordinator.advanceFork = originalAdvanceFork;
+    });
   });
 });
