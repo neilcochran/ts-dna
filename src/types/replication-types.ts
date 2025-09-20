@@ -6,6 +6,8 @@
  * Okazaki fragments, and organism-specific parameters.
  */
 
+import type { OkazakiFragment } from '../model/replication/OkazakiFragment.js';
+
 /**
  * Represents the current state of DNA replication at a replication fork.
  * This interface defines the data structure for replication state.
@@ -24,7 +26,7 @@ export interface ReplicationState {
   laggingStrandProgress: number;
 
   /** Currently active Okazaki fragments being synthesized */
-  activeFragments: import('../model/replication/OkazakiFragment.js').OkazakiFragment[];
+  activeFragments: OkazakiFragment[];
 
   /** Positions and states of all active enzymes */
   activeEnzymes: EnzymePosition[];
@@ -48,7 +50,7 @@ export interface ReplicationRuntimeState {
   laggingStrandProgress: number;
 
   /** Currently active Okazaki fragments (class instances) */
-  activeFragments: import('../model/replication/OkazakiFragment.js').OkazakiFragment[];
+  activeFragments: OkazakiFragment[];
 
   /** Positions and states of all active enzymes */
   activeEnzymes: EnzymePosition[];

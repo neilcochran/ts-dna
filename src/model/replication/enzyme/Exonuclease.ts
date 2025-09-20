@@ -7,6 +7,7 @@
 
 import { EnzymeType, OrganismProfile, ReplicationEvent } from '../../../types/replication-types.js';
 import { Enzyme } from './Enzyme.js';
+import { EXONUCLEASE_SPEED_FACTOR } from '../../../constants/biological-constants.js';
 
 /**
  * 5' to 3' Exonuclease - Removes RNA primers from Okazaki fragments.
@@ -18,7 +19,7 @@ export class Exonuclease extends Enzyme {
 
   getSpeed(organism: OrganismProfile): number {
     // Exonuclease activity is typically part of Pol I
-    return organism.polymeraseSpeed * 0.1; // Similar to primase
+    return organism.polymeraseSpeed * EXONUCLEASE_SPEED_FACTOR; // Similar to primase
   }
 
   canOperate(position: number): boolean {

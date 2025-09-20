@@ -222,12 +222,24 @@ export class Replisome {
     const exonucleaseResult = EnzymeFactory.createExonuclease(startPosition);
 
     // Check for enzyme creation failures
-    if (!helicaseResult.success) throw new Error(helicaseResult.error);
-    if (!primaseResult.success) throw new Error(primaseResult.error);
-    if (!leadingPolResult.success) throw new Error(leadingPolResult.error);
-    if (!laggingPolResult.success) throw new Error(laggingPolResult.error);
-    if (!ligaseResult.success) throw new Error(ligaseResult.error);
-    if (!exonucleaseResult.success) throw new Error(exonucleaseResult.error);
+    if (!helicaseResult.success) {
+      throw new Error(helicaseResult.error);
+    }
+    if (!primaseResult.success) {
+      throw new Error(primaseResult.error);
+    }
+    if (!leadingPolResult.success) {
+      throw new Error(leadingPolResult.error);
+    }
+    if (!laggingPolResult.success) {
+      throw new Error(laggingPolResult.error);
+    }
+    if (!ligaseResult.success) {
+      throw new Error(ligaseResult.error);
+    }
+    if (!exonucleaseResult.success) {
+      throw new Error(exonucleaseResult.error);
+    }
 
     this.helicase = helicaseResult.data;
     this.primase = primaseResult.data;
@@ -296,7 +308,9 @@ export class Replisome {
    */
   private shouldStartNewFragment(): boolean {
     // Start new fragment if no active fragments or if fork has progressed enough
-    if (this.activeFragments.size === 0) return true;
+    if (this.activeFragments.size === 0) {
+      return true;
+    }
 
     // Find the fragment with the highest end position (most recent)
     const fragments = Array.from(this.activeFragments.values());
@@ -434,7 +448,9 @@ export class Replisome {
    * Private: Get lagging strand progress.
    */
   private getlaggingStrandProgress(): number {
-    if (this.completedFragments.length === 0) return 0;
+    if (this.completedFragments.length === 0) {
+      return 0;
+    }
 
     const lastCompleted = this.completedFragments[this.completedFragments.length - 1];
     return lastCompleted.endPosition;

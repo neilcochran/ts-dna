@@ -7,6 +7,11 @@
 
 import { EnzymeType, OrganismProfile, ReplicationEvent } from '../../../types/replication-types.js';
 import { Enzyme } from './Enzyme.js';
+import {
+  PRIMASE_SPEED_FACTOR,
+  MIN_RNA_PRIMER_LENGTH,
+  MAX_RNA_PRIMER_LENGTH,
+} from '../../../constants/biological-constants.js';
 
 /**
  * DNA Primase - Synthesizes RNA primers for DNA polymerase initiation.
@@ -18,7 +23,7 @@ export class Primase extends Enzyme {
 
   getSpeed(organism: OrganismProfile): number {
     // Primase is typically slower than polymerase
-    return organism.polymeraseSpeed * 0.1; // 10% of polymerase speed
+    return organism.polymeraseSpeed * PRIMASE_SPEED_FACTOR; // 10% of polymerase speed
   }
 
   canOperate(position: number): boolean {
@@ -34,8 +39,10 @@ export class Primase extends Enzyme {
    * @returns Replication event for primer synthesis
    */
   synthesizePrimer(primerLength: number, strand: 'leading' | 'lagging'): ReplicationEvent {
-    if (primerLength < 3 || primerLength > 10) {
-      throw new Error(`Invalid primer length: ${primerLength}. Must be 3-10 nucleotides`);
+    if (primerLength < MIN_RNA_PRIMER_LENGTH || primerLength > MAX_RNA_PRIMER_LENGTH) {
+      throw new Error(
+        `Invalid primer length: ${primerLength}. Must be ${MIN_RNA_PRIMER_LENGTH}-${MAX_RNA_PRIMER_LENGTH} nucleotides`,
+      );
     }
 
     return {

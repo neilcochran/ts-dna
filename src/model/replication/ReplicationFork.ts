@@ -67,7 +67,9 @@ export class ReplicationFork {
    * Gets the completion percentage of replication (0-100).
    */
   getCompletionPercentage(): number {
-    if (this.dnaLength === 0) return 100;
+    if (this.dnaLength === 0) {
+      return 100;
+    }
     return Math.min(100, (this.position / this.dnaLength) * 100);
   }
 

@@ -7,6 +7,11 @@
 
 import { EnzymeType, OrganismProfile, ReplicationEvent } from '../../../types/replication-types.js';
 import { Enzyme } from './Enzyme.js';
+import {
+  DNA_POL_I_SPEED_FACTOR,
+  DNA_POL_II_SPEED_FACTOR,
+  DNA_POL_III_SPEED_FACTOR,
+} from '../../../constants/biological-constants.js';
 
 /**
  * DNA Polymerase - Synthesizes DNA by adding nucleotides to growing strand.
@@ -31,11 +36,11 @@ export class DNAPolymerase extends Enzyme {
     // Different polymerases have different speeds
     switch (this.variant) {
       case 'PolI':
-        return organism.polymeraseSpeed * 0.05; // 5% for primer removal/repair
+        return organism.polymeraseSpeed * DNA_POL_I_SPEED_FACTOR; // 5% for primer removal/repair
       case 'PolII':
-        return organism.polymeraseSpeed * 0.04; // 4% for repair
+        return organism.polymeraseSpeed * DNA_POL_II_SPEED_FACTOR; // 4% for repair
       case 'PolIII':
-        return organism.polymeraseSpeed; // Full speed for main replication
+        return organism.polymeraseSpeed * DNA_POL_III_SPEED_FACTOR; // Full speed for main replication
     }
   }
 

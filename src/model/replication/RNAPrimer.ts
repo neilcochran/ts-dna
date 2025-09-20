@@ -10,6 +10,10 @@ import { RNA } from '../nucleic-acids/RNA.js';
 import { validateNucleicAcid } from '../../utils/validation.js';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
 import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import {
+  MIN_RNA_PRIMER_LENGTH,
+  MAX_RNA_PRIMER_LENGTH,
+} from '../../constants/biological-constants.js';
 
 /**
  * RNA primer class for DNA replication initiation.
@@ -37,9 +41,9 @@ export class RNAPrimer {
     public isRemoved: boolean = false,
   ) {
     // Validate sequence length based on biological constraints
-    if (sequence.length < 3 || sequence.length > 10) {
+    if (sequence.length < MIN_RNA_PRIMER_LENGTH || sequence.length > MAX_RNA_PRIMER_LENGTH) {
       throw new Error(
-        `RNA primers must be 3-10 nucleotides long. Provided: ${sequence.length} nucleotides`,
+        `RNA primers must be ${MIN_RNA_PRIMER_LENGTH}-${MAX_RNA_PRIMER_LENGTH} nucleotides long. Provided: ${sequence.length} nucleotides`,
       );
     }
 
@@ -62,9 +66,9 @@ export class RNAPrimer {
   ): ValidationResult<RNAPrimer> {
     try {
       // Validate length
-      if (sequence.length < 3 || sequence.length > 10) {
+      if (sequence.length < MIN_RNA_PRIMER_LENGTH || sequence.length > MAX_RNA_PRIMER_LENGTH) {
         return failure(
-          `RNA primers must be 3-10 nucleotides long. Provided: ${sequence.length} nucleotides`,
+          `RNA primers must be ${MIN_RNA_PRIMER_LENGTH}-${MAX_RNA_PRIMER_LENGTH} nucleotides long. Provided: ${sequence.length} nucleotides`,
         );
       }
 
