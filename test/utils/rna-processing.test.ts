@@ -125,6 +125,27 @@ describe('rna-processing', () => {
         }
       }
     });
+
+    test('bypasses splice site validation when skipSpliceSiteValidation is true', () => {
+      // Use the same INVALID_SPLICE_GENE that fails in the previous test
+      const gene = new Gene(INVALID_SPLICE_GENE.dnaSequence, INVALID_SPLICE_GENE.exons);
+      const preMRNA = new PreMRNA(INVALID_SPLICE_GENE.rnaSequence, gene, 0);
+
+      // First verify it still fails with default validation
+      const resultWithValidation = spliceRNA(preMRNA);
+      expect(isFailure(resultWithValidation)).toBe(true);
+
+      // Now test that it succeeds when validation is bypassed
+      const resultWithBypass = spliceRNA(preMRNA, { skipSpliceSiteValidation: true });
+      expect(isSuccess(resultWithBypass)).toBe(true);
+
+      if (isSuccess(resultWithBypass)) {
+        // Should successfully splice despite invalid splice sites
+        // The spliced sequence should join exons regardless of splice site validity
+        // INVALID_SPLICE_GENE exons: 'AUGAAA' (0-6) + 'UCGGG' (26-31) = 'AUGAAAUCGGG'
+        expect(resultWithBypass.data.getSequence()).toBe('AUGAAAUCGGG');
+      }
+    });
   });
 
   describe('validateReadingFrame', () => {

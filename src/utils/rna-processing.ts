@@ -9,8 +9,16 @@ import { START_CODON } from './nucleic-acids.js';
  * Splices a pre-mRNA by removing introns and joining exons to produce mature mRNA.
  * This function performs the core splicing operation that removes introns
  * and joins exons while maintaining proper reading frame.
+ *
+ * @param preMRNA - The pre-mRNA to splice
+ * @param options - Splicing options. Set skipSpliceSiteValidation to true to skip
+ *   splice site validation. Useful for mutation analysis where splice sites may be
+ *   intentionally disrupted or mutations are far from splice boundaries.
  */
-export function spliceRNA(preMRNA: PreMRNA): ValidationResult<RNA> {
+export function spliceRNA(
+  preMRNA: PreMRNA,
+  options: { skipSpliceSiteValidation?: boolean } = {},
+): ValidationResult<RNA> {
   try {
     const exonRegions = preMRNA.getExonRegions();
     const sequence = preMRNA.getSequence();
@@ -20,10 +28,12 @@ export function spliceRNA(preMRNA: PreMRNA): ValidationResult<RNA> {
       return failure('Cannot splice RNA: no exons found in pre-mRNA');
     }
 
-    // Validate splice sites before proceeding using transcript coordinates
-    const spliceSiteValidation = validateTranscriptSpliceSites(preMRNA);
-    if (isFailure(spliceSiteValidation)) {
-      return failure(`Splice site validation failed: ${spliceSiteValidation.error}`);
+    // Validate splice sites before proceeding using transcript coordinates (unless skipped)
+    if (!options.skipSpliceSiteValidation) {
+      const spliceSiteValidation = validateTranscriptSpliceSites(preMRNA);
+      if (isFailure(spliceSiteValidation)) {
+        return failure(`Splice site validation failed: ${spliceSiteValidation.error}`);
+      }
     }
 
     // Extract and join exon sequences
