@@ -27,6 +27,21 @@ export abstract class NucleicAcid {
   }
 
   /**
+   * Returns the length of the nucleic acid sequence
+   *
+   * @returns The length of the sequence in nucleotides/base pairs
+   *
+   * @example
+   * ```typescript
+   * const dna = new DNA('ATCG');
+   * console.log(dna.length()); // 4
+   * ```
+   */
+  length(): number {
+    return this.getSequence().length;
+  }
+
+  /**
    * Checks if the given NucleicAcid is equal
    *
    * @param nucleicAcid - The NucleicAcid to compare
