@@ -1,4 +1,9 @@
+# Version 1.5.1
+
+- Add optional skipSpliceSiteValidation parameter to processRNA (which passes it through to spliceRNA)
+
 # Version 1.5.0
+
 - Added optional `options` parameter with skipSpliceSiteValidation boolean flag to support mutation modeling
 
 # Version 1.4.0

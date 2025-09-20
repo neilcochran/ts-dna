@@ -22,7 +22,8 @@ import {
  * 6. Return mature MRNA ready for translation
  *
  * @param preMRNA - The pre-mRNA to process
- * @param options - Optional processing configuration
+ * @param options - Optional processing configuration. Set skipSpliceSiteValidation to true
+ *   to bypass splice site validation during splicing. Useful for mutation modeling.
  * @returns ValidationResult containing mature MRNA or error message
  *
  * @example
@@ -44,7 +45,9 @@ export function processRNA(
 
   try {
     // Step 1 & 2: Splice out introns to create mature RNA sequence
-    const splicingResult = spliceRNA(preMRNA);
+    const splicingResult = spliceRNA(preMRNA, {
+      skipSpliceSiteValidation: opts.skipSpliceSiteValidation,
+    });
     if (!isSuccess(splicingResult)) {
       return failure(`Splicing failed: ${splicingResult.error}`);
     }
@@ -85,13 +88,21 @@ export function processRNA(
       finalSequence += polyATail;
     }
 
-    // Step 5: Identify coding sequence boundaries
-    const codingBoundaries = findCodingSequence(finalSequence, polyATail.length);
-    if (!isSuccess(codingBoundaries)) {
-      return failure(`Failed to identify coding sequence: ${codingBoundaries.error}`);
-    }
+    // Step 5: Identify coding sequence boundaries (if validation enabled)
+    let codingStart = 0;
+    let codingEnd = finalSequence.length - polyATail.length; // Exclude poly-A tail
+    let codingSequence = finalSequence.substring(0, finalSequence.length - polyATail.length);
 
-    const { codingStart, codingEnd, codingSequence } = codingBoundaries.data;
+    if (opts.validateCodons) {
+      const codingBoundaries = findCodingSequence(finalSequence, polyATail.length);
+      if (!isSuccess(codingBoundaries)) {
+        return failure(`Failed to identify coding sequence: ${codingBoundaries.error}`);
+      }
+      const boundaries = codingBoundaries.data;
+      codingStart = boundaries.codingStart;
+      codingEnd = boundaries.codingEnd;
+      codingSequence = boundaries.codingSequence;
+    }
 
     // Step 6: Create mature MRNA with all processing modifications
     const mRNA = new MRNA(
@@ -129,6 +140,9 @@ export interface RNAProcessingOptions {
 
   /** Minimum coding sequence length in nucleotides (default: 3) */
   readonly minimumCodingLength?: boolean;
+
+  /** Whether to skip splice site validation during splicing (default: false) */
+  readonly skipSpliceSiteValidation?: boolean;
 }
 
 /**
@@ -140,6 +154,7 @@ export const DEFAULT_RNA_PROCESSING_OPTIONS: Required<RNAProcessingOptions> = {
   polyATailLength: DEFAULT_POLY_A_TAIL_LENGTH,
   validateCodons: true,
   minimumCodingLength: true,
+  skipSpliceSiteValidation: false,
 };
 
 /**
