@@ -4,7 +4,6 @@ import { DNA } from '../../../src/model/nucleic-acids/DNA';
 import { RNA } from '../../../src/model/nucleic-acids/RNA';
 import { InvalidNucleotidePatternError } from '../../../src/model/errors/InvalidNucleotidePatternError';
 import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../../../src/data/iupac-symbols';
-import * as nucleicAcidsUtils from '../../../src/utils/nucleic-acids';
 
 describe('NucleotidePattern Core Functionality', () => {
   describe('simple literal patterns', () => {
@@ -276,12 +275,13 @@ describe('NucleotidePattern Core Functionality', () => {
       expect(pattern.matchesEitherStrand(problematicDNA)).toBe(false);
     });
 
-    test('handles reverse complement pattern creation errors', () => {
+    test('handles reverse complement pattern creation errors', async () => {
       // This test ensures error handling in the try/catch block
       const pattern = new NucleotidePattern('A');
       const dna = new DNA('T');
 
       // Mock getComplementSequence to return an invalid pattern that would cause getNucleotidePattern to throw
+      const nucleicAcidsUtils = await import('../../../src/utils/nucleic-acids.js');
       jest
         .spyOn(nucleicAcidsUtils, 'getComplementSequence')
         .mockReturnValueOnce('INVALID_CHARS_XYZ');

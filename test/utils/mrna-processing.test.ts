@@ -11,7 +11,6 @@ import { DEFAULT_POLY_A_TAIL_LENGTH } from '../../src/constants/biological-const
 import { GenomicRegion } from '../../src/types/genomic-region';
 import { isSuccess, isFailure } from '../../src/types/validation-result';
 import { SIMPLE_TWO_EXON_GENE, SINGLE_EXON_GENE, INVALID_SPLICE_GENE } from '../test-genes';
-import * as polyadenylationModule from '../../src/utils/polyadenylation';
 
 describe('mrna-processing', () => {
   describe('processRNA', () => {
@@ -174,7 +173,7 @@ describe('mrna-processing', () => {
       jest.restoreAllMocks();
     });
 
-    test('handles cleavage site within sequence bounds', () => {
+    test('handles cleavage site within sequence bounds', async () => {
       // Test line 84: when cleavageSite < processedSequence.length
       const geneSequence = 'ATGAAACCCGGGTAG';
       const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
@@ -183,6 +182,7 @@ describe('mrna-processing', () => {
       const testPreMRNA = new PreMRNA('AUGAAACCCGGGUAG', gene, 0);
 
       // Mock to return a polyadenylation site that requires cleavage
+      const polyadenylationModule = await import('../../src/utils/polyadenylation.js');
       jest.spyOn(polyadenylationModule, 'findPolyadenylationSites').mockReturnValue([
         {
           position: 10,
@@ -217,7 +217,7 @@ describe('mrna-processing', () => {
       jest.restoreAllMocks();
     });
 
-    test('handles cleavage site beyond sequence bounds', () => {
+    test('handles cleavage site beyond sequence bounds', async () => {
       // Test line 83: when cleavageSite >= processedSequence.length (no cleavage)
       const geneSequence = 'ATGAAACCCGGG'; // 12 bp
       const exons: GenomicRegion[] = [{ start: 0, end: 12, name: 'exon1' }];
@@ -226,6 +226,7 @@ describe('mrna-processing', () => {
       const testPreMRNA = new PreMRNA('AUGAAACCCGGG', gene, 0);
 
       // Mock to return a polyadenylation site with cleavage beyond sequence
+      const polyadenylationModule = await import('../../src/utils/polyadenylation.js');
       jest.spyOn(polyadenylationModule, 'findPolyadenylationSites').mockReturnValue([
         {
           position: 8,

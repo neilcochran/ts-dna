@@ -8,11 +8,6 @@ import {
 } from '../../../../src/model/replication/enzyme/index.js';
 import { EnzymeType } from '../../../../src/types/replication-types.js';
 import { isSuccess, isFailure } from '../../../../src/types/validation-result.js';
-import * as HelicaseModule from '../../../../src/model/replication/enzyme/Helicase.js';
-import * as PrimaseModule from '../../../../src/model/replication/enzyme/Primase.js';
-import * as DNAPolymeraseModule from '../../../../src/model/replication/enzyme/DNAPolymerase.js';
-import * as DNALigaseModule from '../../../../src/model/replication/enzyme/DNALigase.js';
-import * as ExonucleaseModule from '../../../../src/model/replication/enzyme/Exonuclease.js';
 
 describe('EnzymeFactory', () => {
   describe('enzyme creation with validation', () => {
@@ -98,78 +93,112 @@ describe('EnzymeFactory', () => {
       expect(isFailure(EnzymeFactory.createExonuclease(-1))).toBe(true);
     });
 
-    test('handles non-Error exceptions in enzyme creation', () => {
-      // Test the String(error) branches in catch blocks by mocking constructors
-      // We'll use jest.spyOn to mock the constructors temporarily
+    test('handles non-Error exceptions in enzyme creation', async () => {
+      // Test the String(error) branches in catch blocks by temporarily mocking modules
 
-      // Test helicase with string error
-      const helicaseSpy = jest.spyOn(HelicaseModule, 'Helicase').mockImplementationOnce(() => {
-        throw 'string error';
-      });
+      // Mock Helicase module to throw string error
+      jest.doMock('../../../../src/model/replication/enzyme/Helicase.js', () => ({
+        Helicase: jest.fn(() => {
+          throw 'string error';
+        }),
+      }));
 
-      const helicaseResult = EnzymeFactory.createHelicase(0);
+      // Clear module cache and re-import to get mocked version
+      jest.resetModules();
+      const { EnzymeFactory: MockedEnzymeFactory } = await import(
+        '../../../../src/model/replication/enzyme/EnzymeFactory.js'
+      );
+
+      const helicaseResult = MockedEnzymeFactory.createHelicase(0);
       expect(isFailure(helicaseResult)).toBe(true);
       if (isFailure(helicaseResult)) {
         expect(helicaseResult.error).toContain('Failed to create helicase');
         expect(helicaseResult.error).toContain('string error');
       }
-      helicaseSpy.mockRestore();
 
       // Test primase with object error
-      const primaseSpy = jest.spyOn(PrimaseModule, 'Primase').mockImplementationOnce(() => {
-        throw { message: 'object error' };
-      });
+      jest.doMock('../../../../src/model/replication/enzyme/Primase.js', () => ({
+        Primase: jest.fn(() => {
+          throw { message: 'object error' };
+        }),
+      }));
 
-      const primaseResult = EnzymeFactory.createPrimase(0);
+      jest.resetModules();
+      const { EnzymeFactory: MockedEnzymeFactory2 } = await import(
+        '../../../../src/model/replication/enzyme/EnzymeFactory.js'
+      );
+
+      const primaseResult = MockedEnzymeFactory2.createPrimase(0);
       expect(isFailure(primaseResult)).toBe(true);
       if (isFailure(primaseResult)) {
         expect(primaseResult.error).toContain('Failed to create primase');
         expect(primaseResult.error).toContain('[object Object]');
       }
-      primaseSpy.mockRestore();
 
       // Test polymerase with null error
-      const polymeraseSpy = jest
-        .spyOn(DNAPolymeraseModule, 'DNAPolymerase')
-        .mockImplementationOnce(() => {
+      jest.doMock('../../../../src/model/replication/enzyme/DNAPolymerase.js', () => ({
+        DNAPolymerase: jest.fn(() => {
           throw null;
-        });
+        }),
+      }));
 
-      const polymeraseResult = EnzymeFactory.createPolymerase(0);
+      jest.resetModules();
+      const { EnzymeFactory: MockedEnzymeFactory3 } = await import(
+        '../../../../src/model/replication/enzyme/EnzymeFactory.js'
+      );
+
+      const polymeraseResult = MockedEnzymeFactory3.createPolymerase(0);
       expect(isFailure(polymeraseResult)).toBe(true);
       if (isFailure(polymeraseResult)) {
         expect(polymeraseResult.error).toContain('Failed to create polymerase');
         expect(polymeraseResult.error).toContain('null');
       }
-      polymeraseSpy.mockRestore();
 
       // Test ligase with undefined error
-      const ligaseSpy = jest.spyOn(DNALigaseModule, 'DNALigase').mockImplementationOnce(() => {
-        throw undefined;
-      });
+      jest.doMock('../../../../src/model/replication/enzyme/DNALigase.js', () => ({
+        DNALigase: jest.fn(() => {
+          throw undefined;
+        }),
+      }));
 
-      const ligaseResult = EnzymeFactory.createLigase(0);
+      jest.resetModules();
+      const { EnzymeFactory: MockedEnzymeFactory4 } = await import(
+        '../../../../src/model/replication/enzyme/EnzymeFactory.js'
+      );
+
+      const ligaseResult = MockedEnzymeFactory4.createLigase(0);
       expect(isFailure(ligaseResult)).toBe(true);
       if (isFailure(ligaseResult)) {
         expect(ligaseResult.error).toContain('Failed to create ligase');
         expect(ligaseResult.error).toContain('undefined');
       }
-      ligaseSpy.mockRestore();
 
       // Test exonuclease with number error
-      const exonucleaseSpy = jest
-        .spyOn(ExonucleaseModule, 'Exonuclease')
-        .mockImplementationOnce(() => {
+      jest.doMock('../../../../src/model/replication/enzyme/Exonuclease.js', () => ({
+        Exonuclease: jest.fn(() => {
           throw 123;
-        });
+        }),
+      }));
 
-      const exonucleaseResult = EnzymeFactory.createExonuclease(0);
+      jest.resetModules();
+      const { EnzymeFactory: MockedEnzymeFactory5 } = await import(
+        '../../../../src/model/replication/enzyme/EnzymeFactory.js'
+      );
+
+      const exonucleaseResult = MockedEnzymeFactory5.createExonuclease(0);
       expect(isFailure(exonucleaseResult)).toBe(true);
       if (isFailure(exonucleaseResult)) {
         expect(exonucleaseResult.error).toContain('Failed to create exonuclease');
         expect(exonucleaseResult.error).toContain('123');
       }
-      exonucleaseSpy.mockRestore();
+
+      // Restore all mocks
+      jest.dontMock('../../../../src/model/replication/enzyme/Helicase.js');
+      jest.dontMock('../../../../src/model/replication/enzyme/Primase.js');
+      jest.dontMock('../../../../src/model/replication/enzyme/DNAPolymerase.js');
+      jest.dontMock('../../../../src/model/replication/enzyme/DNALigase.js');
+      jest.dontMock('../../../../src/model/replication/enzyme/Exonuclease.js');
+      jest.resetModules();
     });
   });
 });

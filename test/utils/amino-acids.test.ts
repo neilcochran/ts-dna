@@ -13,7 +13,7 @@ import {
   STOP_CODONS,
 } from '../../src/utils/nucleic-acids';
 import { AminoAcidPolarity, AminoAcidCharge, AminoAcidSideChainType } from '../../src';
-import * as TestUtils from './test-utils';
+import { isCorrectAminoAcid, ALANINE_RNA_CODON_1, ALANINE_RNA_CODON_2 } from './test-utils';
 
 /*
     --- AminoAcid from RNA ---
@@ -21,10 +21,7 @@ import * as TestUtils from './test-utils';
 
 test('create AminoAcid (Alanine) from valid RNA codon', () => {
   expect(
-    TestUtils.isCorrectAminoAcid(
-      new AminoAcid(TestUtils.ALANINE_RNA_CODON_1),
-      SLC_AMINO_ACID_DATA_MAP['A'],
-    ),
+    isCorrectAminoAcid(new AminoAcid(ALANINE_RNA_CODON_1), SLC_AMINO_ACID_DATA_MAP['A']),
   ).toEqual(true);
 });
 
@@ -62,38 +59,30 @@ test('getAminoAcidDataByCodon returns undefined for all stop codons', () => {
 
 test('get all AminoAcid (Alanine) alternate codons', () => {
   const expectedCodons = SLC_ALT_CODONS_MAP['A'].map(codonStr => new RNA(codonStr));
-  expect(new AminoAcid(TestUtils.ALANINE_RNA_CODON_2).getAllAlternateCodons()).toEqual(
-    expectedCodons,
-  );
+  expect(new AminoAcid(ALANINE_RNA_CODON_2).getAllAlternateCodons()).toEqual(expectedCodons);
 });
 
 test('ensure alternate AminoAcids (Alanine) return the same alternate RNA codons', () => {
-  expect(new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).getAllAlternateCodons()).toEqual(
-    new AminoAcid(TestUtils.ALANINE_RNA_CODON_2).getAllAlternateCodons(),
+  expect(new AminoAcid(ALANINE_RNA_CODON_1).getAllAlternateCodons()).toEqual(
+    new AminoAcid(ALANINE_RNA_CODON_2).getAllAlternateCodons(),
   );
 });
 
 test('RNA AminoAcids (Alanine) is equal', () => {
-  expect(
-    new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).equals(
-      new AminoAcid(TestUtils.ALANINE_RNA_CODON_1),
-    ),
-  ).toEqual(true);
+  expect(new AminoAcid(ALANINE_RNA_CODON_1).equals(new AminoAcid(ALANINE_RNA_CODON_1))).toEqual(
+    true,
+  );
 });
 
 test('RNA AminoAcids (Alanine) is not equal', () => {
-  expect(
-    new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).equals(
-      new AminoAcid(TestUtils.ALANINE_RNA_CODON_2),
-    ),
-  ).toEqual(false);
+  expect(new AminoAcid(ALANINE_RNA_CODON_1).equals(new AminoAcid(ALANINE_RNA_CODON_2))).toEqual(
+    false,
+  );
 });
 
 test('RNA AminoAcids (Alanine) are alternates', () => {
   expect(
-    new AminoAcid(TestUtils.ALANINE_RNA_CODON_1).isAlternateOf(
-      new AminoAcid(TestUtils.ALANINE_RNA_CODON_2),
-    ),
+    new AminoAcid(ALANINE_RNA_CODON_1).isAlternateOf(new AminoAcid(ALANINE_RNA_CODON_2)),
   ).toEqual(true);
 });
 
@@ -107,7 +96,7 @@ test('testing creation of all codon variations for each amino acid', () => {
     const aminoAcidData = SLC_AMINO_ACID_DATA_MAP[slc];
     for (const codonStr of SLC_ALT_CODONS_MAP[slc]) {
       const codon = new RNA(codonStr);
-      expect(TestUtils.isCorrectAminoAcid(new AminoAcid(codon), aminoAcidData)).toEqual(true);
+      expect(isCorrectAminoAcid(new AminoAcid(codon), aminoAcidData)).toEqual(true);
     }
   }
 });
@@ -120,7 +109,7 @@ test('testing AminoAcid retrieval via getAminoAcidByCodon() using all codon vari
       const codon = new RNA(codonStr);
       const aminoAcid = getAminoAcidByCodon(codon);
       if (aminoAcid) {
-        expect(TestUtils.isCorrectAminoAcid(aminoAcid, aminoAcidData)).toEqual(true);
+        expect(isCorrectAminoAcid(aminoAcid, aminoAcidData)).toEqual(true);
       } else {
         throw new Error(`Invalid codon sequence did not return an AminoAcid: ${codonStr}`);
       }

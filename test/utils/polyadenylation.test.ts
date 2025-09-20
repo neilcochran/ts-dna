@@ -6,7 +6,7 @@ import {
 } from '../../src/utils/polyadenylation';
 import { DEFAULT_CLEAVAGE_OPTIONS } from '../../src/types/polyadenylation-site';
 import { POLYA_SIGNAL_OFFSET } from '../../src/constants/biological-constants';
-import * as NucleotidePatternModule from '../../src/model/nucleic-acids/NucleotidePattern';
+import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
 
 describe('polyadenylation', () => {
   describe('findPolyadenylationSites', () => {
@@ -359,7 +359,7 @@ describe('polyadenylation', () => {
       } as any;
 
       const PatternSpy = jest
-        .spyOn(NucleotidePatternModule, 'NucleotidePattern')
+        .spyOn({ NucleotidePattern }, 'NucleotidePattern')
         .mockImplementation((_pattern: string) => mockPattern);
 
       const rna = new RNA('AUGAAACCCAAUAAAGGGCCCAAAUUUCCCGGG');

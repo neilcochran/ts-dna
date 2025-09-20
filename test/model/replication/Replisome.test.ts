@@ -2,9 +2,9 @@ import { Replisome } from '../../../src/model/replication/Replisome.js';
 import { ReplicationFork } from '../../../src/model/replication/ReplicationFork.js';
 import { E_COLI, HUMAN, EnzymeType } from '../../../src/types/replication-types.js';
 import { isSuccess } from '../../../src/types/validation-result.js';
-import * as EnzymeFactoryModule from '../../../src/model/replication/enzyme/EnzymeFactory.js';
-import * as RNAPrimerModule from '../../../src/model/replication/RNAPrimer.js';
-import * as OkazakiFragmentModule from '../../../src/model/replication/OkazakiFragment.js';
+import { EnzymeFactory } from '../../../src/model/replication/enzyme/EnzymeFactory.js';
+import { RNAPrimer } from '../../../src/model/replication/RNAPrimer.js';
+import { OkazakiFragment } from '../../../src/model/replication/OkazakiFragment.js';
 
 describe('Replisome', () => {
   let fork: ReplicationFork;
@@ -534,19 +534,19 @@ describe('Replisome', () => {
 
       // Test helicase creation failure
       const helicaseSpy = jest
-        .spyOn(EnzymeFactoryModule.EnzymeFactory, 'createHelicase')
+        .spyOn(EnzymeFactory, 'createHelicase')
         .mockReturnValue({ success: false, error: 'Helicase creation failed' });
       const primaseSpy = jest
-        .spyOn(EnzymeFactoryModule.EnzymeFactory, 'createPrimase')
+        .spyOn(EnzymeFactory, 'createPrimase')
         .mockReturnValue({ success: true, data: {} as any });
       const polymeraseSpy = jest
-        .spyOn(EnzymeFactoryModule.EnzymeFactory, 'createPolymerase')
+        .spyOn(EnzymeFactory, 'createPolymerase')
         .mockReturnValue({ success: true, data: {} as any });
       const ligaseSpy = jest
-        .spyOn(EnzymeFactoryModule.EnzymeFactory, 'createLigase')
+        .spyOn(EnzymeFactory, 'createLigase')
         .mockReturnValue({ success: true, data: {} as any });
       const exonucleaseSpy = jest
-        .spyOn(EnzymeFactoryModule.EnzymeFactory, 'createExonuclease')
+        .spyOn(EnzymeFactory, 'createExonuclease')
         .mockReturnValue({ success: true, data: {} as any });
 
       expect(() => new Replisome(fork, E_COLI)).toThrow('Helicase creation failed');
@@ -605,8 +605,8 @@ describe('Replisome', () => {
       const replisome = new Replisome(fork, E_COLI);
 
       // Mock RNAPrimer.generateRandom to fail
-      const originalGenerateRandom = RNAPrimerModule.RNAPrimer.generateRandom;
-      RNAPrimerModule.RNAPrimer.generateRandom = jest
+      const originalGenerateRandom = RNAPrimer.generateRandom;
+      RNAPrimer.generateRandom = jest
         .fn()
         .mockReturnValue({ success: false, error: 'Primer generation failed' });
 
@@ -616,15 +616,15 @@ describe('Replisome', () => {
       );
 
       // Restore original
-      RNAPrimerModule.RNAPrimer.generateRandom = originalGenerateRandom;
+      RNAPrimer.generateRandom = originalGenerateRandom;
     });
 
     test('handles fragment creation failure during fragment initiation', () => {
       const replisome = new Replisome(fork, E_COLI);
 
       // Mock OkazakiFragment.create to fail
-      const originalCreate = OkazakiFragmentModule.OkazakiFragment.create;
-      OkazakiFragmentModule.OkazakiFragment.create = jest
+      const originalCreate = OkazakiFragment.create;
+      OkazakiFragment.create = jest
         .fn()
         .mockReturnValue({ success: false, error: 'Fragment creation failed' });
 
@@ -634,7 +634,7 @@ describe('Replisome', () => {
       );
 
       // Restore original
-      OkazakiFragmentModule.OkazakiFragment.create = originalCreate;
+      OkazakiFragment.create = originalCreate;
     });
   });
 });
