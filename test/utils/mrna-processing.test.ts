@@ -11,6 +11,7 @@ import { DEFAULT_POLY_A_TAIL_LENGTH } from '../../src/constants/biological-const
 import { GenomicRegion } from '../../src/types/genomic-region';
 import { isSuccess, isFailure } from '../../src/types/validation-result';
 import { SIMPLE_TWO_EXON_GENE, SINGLE_EXON_GENE, INVALID_SPLICE_GENE } from '../test-genes';
+import * as polyadenylationModule from '../../src/utils/polyadenylation';
 
 describe('mrna-processing', () => {
   describe('processRNA', () => {
@@ -135,7 +136,7 @@ describe('mrna-processing', () => {
       }
     });
 
-    test('handles when strongest polyadenylation site is null', () => {
+    test('handles when strongest polyadenylation site is null', async () => {
       // Test line 66: when getStrongestPolyadenylationSite returns null
       // This can happen when sites are found but none meet quality criteria
       const geneSequence = 'ATGAAACCCGGGTAG';
@@ -145,19 +146,18 @@ describe('mrna-processing', () => {
       const preMRNA = new PreMRNA('AUGAAACCCGGGUAG', gene, 0);
 
       // Mock the polyadenylation functions to test the null case
-      jest
-        .spyOn(require('../../src/utils/polyadenylation'), 'findPolyadenylationSites')
-        .mockReturnValue([
-          {
-            position: 10,
-            signal: 'AAUAAA',
-            strength: 0.5,
-          },
-        ]);
+      const polyadenylationModule = await import('../../src/utils/polyadenylation.js');
+      jest.spyOn(polyadenylationModule, 'findPolyadenylationSites').mockReturnValue([
+        {
+          position: 10,
+          signal: 'AAUAAA',
+          strength: 0.5,
+        },
+      ]);
 
       jest
-        .spyOn(require('../../src/utils/polyadenylation'), 'getStrongestPolyadenylationSite')
-        .mockReturnValue(null);
+        .spyOn(polyadenylationModule, 'getStrongestPolyadenylationSite')
+        .mockReturnValue(undefined);
 
       const result = processRNA(preMRNA, {
         addPolyATail: true,
@@ -183,25 +183,21 @@ describe('mrna-processing', () => {
       const testPreMRNA = new PreMRNA('AUGAAACCCGGGUAG', gene, 0);
 
       // Mock to return a polyadenylation site that requires cleavage
-      jest
-        .spyOn(require('../../src/utils/polyadenylation'), 'findPolyadenylationSites')
-        .mockReturnValue([
-          {
-            position: 10,
-            signal: 'AAUAAA',
-            strength: 100,
-            cleavageSite: 12, // Cleave at position 12 (within sequence)
-          },
-        ]);
-
-      jest
-        .spyOn(require('../../src/utils/polyadenylation'), 'getStrongestPolyadenylationSite')
-        .mockReturnValue({
+      jest.spyOn(polyadenylationModule, 'findPolyadenylationSites').mockReturnValue([
+        {
           position: 10,
           signal: 'AAUAAA',
           strength: 100,
-          cleavageSite: 12,
-        });
+          cleavageSite: 12, // Cleave at position 12 (within sequence)
+        },
+      ]);
+
+      jest.spyOn(polyadenylationModule, 'getStrongestPolyadenylationSite').mockReturnValue({
+        position: 10,
+        signal: 'AAUAAA',
+        strength: 100,
+        cleavageSite: 12,
+      });
 
       const result = processRNA(testPreMRNA, {
         addPolyATail: true,
@@ -230,25 +226,21 @@ describe('mrna-processing', () => {
       const testPreMRNA = new PreMRNA('AUGAAACCCGGG', gene, 0);
 
       // Mock to return a polyadenylation site with cleavage beyond sequence
-      jest
-        .spyOn(require('../../src/utils/polyadenylation'), 'findPolyadenylationSites')
-        .mockReturnValue([
-          {
-            position: 8,
-            signal: 'AAUAAA',
-            strength: 100,
-            cleavageSite: 20, // Beyond 12 bp sequence length
-          },
-        ]);
-
-      jest
-        .spyOn(require('../../src/utils/polyadenylation'), 'getStrongestPolyadenylationSite')
-        .mockReturnValue({
+      jest.spyOn(polyadenylationModule, 'findPolyadenylationSites').mockReturnValue([
+        {
           position: 8,
           signal: 'AAUAAA',
           strength: 100,
-          cleavageSite: 20, // Beyond sequence
-        });
+          cleavageSite: 20, // Beyond 12 bp sequence length
+        },
+      ]);
+
+      jest.spyOn(polyadenylationModule, 'getStrongestPolyadenylationSite').mockReturnValue({
+        position: 8,
+        signal: 'AAUAAA',
+        strength: 100,
+        cleavageSite: 20, // Beyond sequence
+      });
 
       const result = processRNA(testPreMRNA, {
         addPolyATail: true,

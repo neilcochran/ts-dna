@@ -6,6 +6,7 @@ import {
 } from '../../src/utils/polyadenylation';
 import { DEFAULT_CLEAVAGE_OPTIONS } from '../../src/types/polyadenylation-site';
 import { POLYA_SIGNAL_OFFSET } from '../../src/constants/biological-constants';
+import * as NucleotidePatternModule from '../../src/model/nucleic-acids/NucleotidePattern';
 
 describe('polyadenylation', () => {
   describe('findPolyadenylationSites', () => {
@@ -329,9 +330,7 @@ describe('polyadenylation', () => {
 
   describe('error handling and edge cases', () => {
     test('handles invalid pattern exceptions gracefully', () => {
-      // Mock NucleotidePattern to throw an error for testing exception handling
-      const originalPattern =
-        require('../../src/model/nucleic-acids/NucleotidePattern').NucleotidePattern;
+      // Test exception handling gracefully with minimal mocking
 
       // Create a spy that throws on a specific pattern
       const mockFindMatches = jest
@@ -343,12 +342,25 @@ describe('polyadenylation', () => {
 
       // Mock the NucleotidePattern constructor
       const mockPattern = {
+        pattern: 'AAUAAA',
+        patternRegex: /AAUAAA/,
         findMatches: mockFindMatches,
-      };
+        matches: jest.fn(),
+        findFirst: jest.fn(),
+        findLast: jest.fn(),
+        getComplementPattern: jest.fn(),
+        getPatternLength: jest.fn(),
+        toString: jest.fn(),
+        getSequence: jest.fn(),
+        getType: jest.fn(),
+        getComplement: jest.fn(),
+        length: jest.fn(),
+        equals: jest.fn(),
+      } as any;
 
       const PatternSpy = jest
-        .spyOn(require('../../src/model/nucleic-acids/NucleotidePattern'), 'NucleotidePattern')
-        .mockImplementation(() => mockPattern);
+        .spyOn(NucleotidePatternModule, 'NucleotidePattern')
+        .mockImplementation((_pattern: string) => mockPattern);
 
       const rna = new RNA('AUGAAACCCAAUAAAGGGCCCAAAUUUCCCGGG');
       const sites = findPolyadenylationSites(rna);

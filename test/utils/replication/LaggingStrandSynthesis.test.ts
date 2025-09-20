@@ -135,9 +135,6 @@ describe('LaggingStrandSynthesis', () => {
     });
 
     test('completes fragments when fork passes their end', () => {
-      // Start with a fragment
-      const _initialActive = laggingSynthesis.getActiveFragments().length;
-
       // Advance fork far enough to complete fragments
       laggingSynthesis.advance(3000, 2000);
 

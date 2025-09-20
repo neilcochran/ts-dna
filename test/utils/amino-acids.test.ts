@@ -280,31 +280,33 @@ describe('RNAtoAminoAcids', () => {
     expect(aminoAcids[1].slc).toBe('K');
   });
 
-  test('throws error for invalid codon encountered', () => {
+  test('throws error for invalid codon encountered', async () => {
     // Test line 109-111: Invalid codon error
     // Since all valid RNA codons are mapped to amino acids or stop codons,
     // we need to create a scenario where getAminoAcidByCodon returns null
     // We'll mock the codon map lookup to return null for a specific codon
     const originalGetAminoAcid = getAminoAcidByCodon;
 
-    // Create a spy that returns null for a specific codon
-    const getAminoAcidSpy = jest.fn(rna => {
+    // Create a spy that returns undefined for a specific codon
+    const getAminoAcidSpy = jest.fn((rna: RNA): AminoAcid | undefined => {
       if (rna.getSequence() === 'CCC') {
-        return null; // Mock this codon as unmapped
+        return undefined; // Mock this codon as unmapped
       }
       return originalGetAminoAcid(rna);
     });
 
-    // Replace the function temporarily
-    const aminoAcidsModule = require('../../src/utils/amino-acids');
-    aminoAcidsModule.getAminoAcidByCodon = getAminoAcidSpy;
+    // Spy on the function
+    const aminoAcidsModule = await import('../../src/utils/amino-acids.js');
+    const spy = jest
+      .spyOn(aminoAcidsModule, 'getAminoAcidByCodon')
+      .mockImplementation(getAminoAcidSpy);
 
     const rna = new RNA('AUGAAACCC'); // Met-Lys-MockInvalid
 
     expect(() => RNAtoAminoAcids(rna)).toThrow('Invalid codon encountered: CCC');
 
     // Restore original function
-    aminoAcidsModule.getAminoAcidByCodon = originalGetAminoAcid;
+    spy.mockRestore();
   });
 
   test('handles empty sequence after stop codon removal', () => {

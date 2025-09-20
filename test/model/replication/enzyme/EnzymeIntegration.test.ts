@@ -18,7 +18,7 @@ describe('Enzyme Integration', () => {
 
       // Simulate coordinated enzyme activity
       helicase.moveTo(100);
-      const _unwindEvent = helicase.unwind(50);
+      helicase.unwind(50);
       expect(helicase.position).toBe(150);
 
       primase.moveTo(100);
@@ -26,7 +26,7 @@ describe('Enzyme Integration', () => {
       expect(primerEvent.basePairsAdded).toBe(5);
 
       polymerase.moveTo(100);
-      const _synthesisEvent = polymerase.synthesize(40, 'lagging');
+      polymerase.synthesize(40, 'lagging');
       expect(polymerase.position).toBe(140);
 
       exonuclease.moveTo(100);

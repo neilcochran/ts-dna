@@ -66,8 +66,7 @@ export class LeadingStrandSynthesis {
     }
 
     const events: ReplicationEvent[] = [];
-    const _actualSpeed = this.polymerase.getSpeed(this.organism);
-    const _initialPosition = this.polymerase.position;
+    // Speed and position tracking not needed for current implementation
 
     // Perform continuous synthesis
     const synthesisEvent = this.polymerase.synthesize(basePairs, 'leading');
