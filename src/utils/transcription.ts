@@ -105,6 +105,12 @@ export function transcribe(
       return failure(`Transcription start site ${transcriptionStartSite} is outside gene bounds`);
     }
 
+    // Step 2.5: Validate TSS is compatible with gene exon structure
+    const exonCompatibilityResult = validateTSSExonCompatibility(gene, transcriptionStartSite);
+    if (isFailure(exonCompatibilityResult)) {
+      return failure(exonCompatibilityResult.error);
+    }
+
     // Step 3: Find polyadenylation site
     const polyAResult = findPolyadenylationSite(gene, transcriptionStartSite);
     const polyadenylationSite = isSuccess(polyAResult) ? polyAResult.data : undefined;
@@ -231,4 +237,47 @@ function findPolyadenylationSite(gene: Gene, tss: number): ValidationResult<numb
       `Polyadenylation site search failed: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
+}
+
+/**
+ * Validates that the detected TSS is compatible with the gene's exon structure.
+ *
+ * This prevents the common issue where promoter-detected TSS places exons at
+ * negative coordinates after coordinate transformation.
+ *
+ * @param gene - The gene with exon definitions
+ * @param tss - The detected transcription start site
+ * @returns ValidationResult indicating compatibility
+ */
+function validateTSSExonCompatibility(gene: Gene, tss: number): ValidationResult<void> {
+  const exons = gene.getExons();
+
+  if (exons.length === 0) {
+    return success(undefined);
+  }
+
+  // Check if any exons would have negative coordinates after TSS transformation
+  const invalidExons = exons.filter(exon => exon.start < tss);
+
+  if (invalidExons.length > 0) {
+    const exonDetails = invalidExons
+      .map(exon => `exon "${exon.name ?? 'unnamed'}" (${exon.start}-${exon.end})`)
+      .join(', ');
+
+    return failure(
+      `TSS at position ${tss} conflicts with gene exon structure. ` +
+        `The following exons would have negative coordinates: ${exonDetails}. ` +
+        `Consider using forceTranscriptionStartSite option to manually set TSS, ` +
+        `or adjust exon coordinates to start after position ${tss}.`,
+    );
+  }
+
+  // Warn if TSS is very close to first exon (might indicate design issue)
+  const firstExon = exons[0];
+  if (firstExon && firstExon.start - tss < 3) {
+    // Don't fail, but this might indicate a potential issue
+    // We could add logging here in the future
+  }
+
+  return success(undefined);
 }
