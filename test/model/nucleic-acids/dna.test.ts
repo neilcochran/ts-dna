@@ -361,5 +361,172 @@ describe('DNA Class', () => {
         expect(sub.getSequence()).toBe('G');
       });
     });
+
+    describe('Object-based complement methods', () => {
+      describe('getComplement()', () => {
+        test('returns new DNA instance with complement sequence', () => {
+          const complement = testDNA.getComplement();
+
+          expect(complement).toBeInstanceOf(DNA);
+          expect(complement.getSequence()).toBe('TAGCTAGC');
+          expect(complement).not.toBe(testDNA); // Different instance
+        });
+
+        test('maintains consistency with string API', () => {
+          expect(testDNA.getComplement().getSequence()).toBe(testDNA.getComplementSequence());
+        });
+
+        test('handles single nucleotides', () => {
+          expect(new DNA('A').getComplement().getSequence()).toBe('T');
+          expect(new DNA('T').getComplement().getSequence()).toBe('A');
+          expect(new DNA('C').getComplement().getSequence()).toBe('G');
+          expect(new DNA('G').getComplement().getSequence()).toBe('C');
+        });
+
+        test('double complement returns equivalent sequence', () => {
+          const doubleComplement = testDNA.getComplement().getComplement();
+          expect(doubleComplement.getSequence()).toBe(testDNA.getSequence());
+          expect(doubleComplement.equals(testDNA)).toBe(true);
+        });
+      });
+
+      describe('getReverseComplement()', () => {
+        test('returns new DNA instance with reverse complement sequence', () => {
+          const reverseComplement = testDNA.getReverseComplement();
+
+          expect(reverseComplement).toBeInstanceOf(DNA);
+          expect(reverseComplement.getSequence()).toBe('CGATCGAT');
+          expect(reverseComplement).not.toBe(testDNA); // Different instance
+        });
+
+        test('maintains consistency with string API', () => {
+          expect(testDNA.getReverseComplement().getSequence()).toBe(
+            testDNA.getReverseComplementSequence(),
+          );
+        });
+
+        test('handles palindromic sequences correctly', () => {
+          const palindromic = new DNA('GAATTC'); // EcoRI site
+          const reverseComplement = palindromic.getReverseComplement();
+
+          expect(reverseComplement.getSequence()).toBe('GAATTC');
+          expect(palindromic.equals(reverseComplement)).toBe(true);
+        });
+
+        test('double reverse complement returns original sequence', () => {
+          const doubleReverseComplement = testDNA.getReverseComplement().getReverseComplement();
+          expect(doubleReverseComplement.getSequence()).toBe(testDNA.getSequence());
+          expect(doubleReverseComplement.equals(testDNA)).toBe(true);
+        });
+      });
+
+      describe('Chainability and fluent API', () => {
+        test('methods are chainable', () => {
+          const result1 = testDNA.getComplement().getReverseComplement();
+          expect(result1).toBeInstanceOf(DNA);
+          expect(result1.getSequence()).toBe('GCTAGCTA');
+
+          const result2 = testDNA.getReverseComplement().getComplement();
+          expect(result2).toBeInstanceOf(DNA);
+          expect(result2.getSequence()).toBe('GCTAGCTA');
+        });
+
+        test('can chain with other DNA methods', () => {
+          const result = testDNA
+            .getSubsequence(0, 4) // 'ATCG'
+            .getComplement() // 'TAGC'
+            .getReverseComplement(); // 'GCTA'
+
+          expect(result.getSequence()).toBe('GCTA');
+        });
+
+        test('complex chaining maintains type safety', () => {
+          const complex = testDNA
+            .getComplement()
+            .getSubsequence(2, 6)
+            .getReverseComplement()
+            .getComplement();
+
+          expect(complex).toBeInstanceOf(DNA);
+          expect(typeof complex.getSequence).toBe('function');
+        });
+      });
+
+      describe('Biological applications', () => {
+        test('primer design workflow', () => {
+          const template = new DNA('ATGAAAGCGTTTGCGAAATTTAGCG');
+
+          // Forward primer (first 20 bp)
+          const forwardPrimer = template.getSubsequence(0, 20);
+          expect(forwardPrimer.getSequence()).toBe('ATGAAAGCGTTTGCGAAATT');
+
+          // Reverse primer (reverse complement of last 20 bp)
+          const reversePrimerRegion = template.getSubsequence(5);
+          const reversePrimer = reversePrimerRegion.getReverseComplement();
+
+          expect(reversePrimer).toBeInstanceOf(DNA);
+          expect(reversePrimer.getSequence().length).toBe(20);
+        });
+
+        test('double-stranded DNA representation', () => {
+          const strand1 = new DNA('ATGCGCTA');
+          const strand2 = strand1.getReverseComplement();
+
+          // Verify they represent complementary strands
+          expect(strand1.getSequence()).toBe('ATGCGCTA');
+          expect(strand2.getSequence()).toBe('TAGCGCAT');
+
+          // Verify reverse complement relationship
+          expect(strand2.getReverseComplement().equals(strand1)).toBe(true);
+        });
+
+        test('restriction enzyme recognition sites', () => {
+          const restrictionSites = [
+            'GAATTC', // EcoRI
+            'GGATCC', // BamHI
+            'AAGCTT', // HindIII
+          ];
+
+          for (const site of restrictionSites) {
+            const dna = new DNA(site);
+            const reverseComplement = dna.getReverseComplement();
+
+            // Palindromic sites should equal their reverse complement
+            expect(reverseComplement.getSequence()).toBe(site);
+            expect(dna.equals(reverseComplement)).toBe(true);
+          }
+        });
+      });
+
+      describe('Performance and immutability', () => {
+        test('maintains immutability', () => {
+          const original = new DNA('ATCG');
+          const complement = original.getComplement();
+          const reverseComplement = original.getReverseComplement();
+
+          // Original should be unchanged
+          expect(original.getSequence()).toBe('ATCG');
+
+          // Each operation creates new instances
+          expect(complement).not.toBe(original);
+          expect(reverseComplement).not.toBe(original);
+          expect(complement).not.toBe(reverseComplement);
+        });
+
+        test('handles large sequences efficiently', () => {
+          const largeSequence = 'ATCGATCG'.repeat(1000); // 8,000 bp
+          const largeDNA = new DNA(largeSequence);
+
+          const start = performance.now();
+          const complement = largeDNA.getComplement();
+          const reverseComplement = largeDNA.getReverseComplement();
+          const end = performance.now();
+
+          expect(complement.getSequence().length).toBe(largeSequence.length);
+          expect(reverseComplement.getSequence().length).toBe(largeSequence.length);
+          expect(end - start).toBeLessThan(100); // Should complete quickly
+        });
+      });
+    });
   });
 });

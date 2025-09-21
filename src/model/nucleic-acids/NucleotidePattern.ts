@@ -1,5 +1,5 @@
 import {
-  getComplementSequence,
+  getReverseComplementSequence,
   getNucleotidePatternSymbolComplement,
 } from '../../utils/nucleic-acids.js';
 import { InvalidNucleotidePatternError } from '../errors/InvalidNucleotidePatternError.js';
@@ -164,10 +164,9 @@ export class NucleotidePattern {
     const originalSequence = nucleicAcid.getSequence();
     const patternSequence = this.pattern;
 
-    // Get reverse complement of the pattern
-    const reversedPattern = patternSequence.split('').reverse().join('');
-    const reverseComplementPattern = getComplementSequence(
-      reversedPattern,
+    // Get reverse complement of the pattern using optimized function
+    const reverseComplementPattern = getReverseComplementSequence(
+      patternSequence,
       nucleicAcid.nucleicAcidType,
     );
 

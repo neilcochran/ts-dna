@@ -102,7 +102,12 @@ export const isRNA = (nucleicAcid: NucleicAcid): nucleicAcid is RNA => {
 export { isValidNucleicAcid } from './validation.js';
 
 // Re-export complement functions from dedicated module
-export { getComplementSequence, getDNABaseComplement, getRNABaseComplement } from './complement.js';
+export {
+  getComplementSequence,
+  getReverseComplementSequence,
+  getDNABaseComplement,
+  getRNABaseComplement,
+} from './complement.js';
 
 /**
  * Convert the given DNA into RNA

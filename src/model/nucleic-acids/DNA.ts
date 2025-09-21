@@ -91,4 +91,43 @@ export class DNA extends NucleicAcid {
     const subsequence = this.sequence.substring(start, end);
     return new DNA(subsequence);
   }
+
+  /**
+   * Returns the complement as a new DNA instance
+   * This is the object-oriented API for getting DNA complements
+   *
+   * @returns A new DNA instance containing the complement sequence
+   *
+   * @example
+   * ```typescript
+   * const dna = new DNA('ATCG');
+   * const complement = dna.getComplement(); // Returns new DNA('TAGC')
+   * console.log(complement.getSequence()); // 'TAGC'
+   * ```
+   */
+  getComplement(): DNA {
+    const complementSequence = this.getComplementSequence();
+    return new DNA(complementSequence);
+  }
+
+  /**
+   * Returns the reverse complement as a new DNA instance
+   * This represents the opposite strand of double-stranded DNA
+   *
+   * @returns A new DNA instance containing the reverse complement sequence
+   *
+   * @example
+   * ```typescript
+   * const dna = new DNA('ATCG');
+   * const reverseComplement = dna.getReverseComplement(); // Returns new DNA('CGAT')
+   *
+   * // Chainable operations
+   * const original = dna.getReverseComplement().getReverseComplement(); // Returns new DNA('ATCG')
+   * const doubleComplement = dna.getComplement().getComplement(); // Returns new DNA('ATCG')
+   * ```
+   */
+  getReverseComplement(): DNA {
+    const reverseComplementSequence = this.getReverseComplementSequence();
+    return new DNA(reverseComplementSequence);
+  }
 }

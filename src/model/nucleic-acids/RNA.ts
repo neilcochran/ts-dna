@@ -91,4 +91,43 @@ export class RNA extends NucleicAcid {
     const subsequence = this.sequence.substring(start, end);
     return new RNA(subsequence);
   }
+
+  /**
+   * Returns the complement as a new RNA instance
+   * This is the object-oriented API for getting RNA complements
+   *
+   * @returns A new RNA instance containing the complement sequence
+   *
+   * @example
+   * ```typescript
+   * const rna = new RNA('AUCG');
+   * const complement = rna.getComplement(); // Returns new RNA('UAGC')
+   * console.log(complement.getSequence()); // 'UAGC'
+   * ```
+   */
+  getComplement(): RNA {
+    const complementSequence = this.getComplementSequence();
+    return new RNA(complementSequence);
+  }
+
+  /**
+   * Returns the reverse complement as a new RNA instance
+   * This represents the opposite strand orientation for RNA binding
+   *
+   * @returns A new RNA instance containing the reverse complement sequence
+   *
+   * @example
+   * ```typescript
+   * const rna = new RNA('AUCG');
+   * const reverseComplement = rna.getReverseComplement(); // Returns new RNA('CGAU')
+   *
+   * // Chainable operations
+   * const original = rna.getReverseComplement().getReverseComplement(); // Returns new RNA('AUCG')
+   * const doubleComplement = rna.getComplement().getComplement(); // Returns new RNA('AUCG')
+   * ```
+   */
+  getReverseComplement(): RNA {
+    const reverseComplementSequence = this.getReverseComplementSequence();
+    return new RNA(reverseComplementSequence);
+  }
 }

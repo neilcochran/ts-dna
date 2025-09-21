@@ -275,4 +275,222 @@ describe('RNA Class', () => {
       expect(rna.getSequence()).not.toContain('T');
     });
   });
+
+  describe('Object-based complement methods', () => {
+    describe('getComplement()', () => {
+      test('returns new RNA instance with complement sequence', () => {
+        const rna = new RNA('AUCG');
+        const complement = rna.getComplement();
+
+        expect(complement).toBeInstanceOf(RNA);
+        expect(complement.getSequence()).toBe('UAGC');
+        expect(complement).not.toBe(rna); // Different instance
+      });
+
+      test('maintains consistency with string API', () => {
+        const rna = new RNA('AUCGAUCG');
+        expect(rna.getComplement().getSequence()).toBe(rna.getComplementSequence());
+      });
+
+      test('handles single nucleotides', () => {
+        expect(new RNA('A').getComplement().getSequence()).toBe('U');
+        expect(new RNA('U').getComplement().getSequence()).toBe('A');
+        expect(new RNA('C').getComplement().getSequence()).toBe('G');
+        expect(new RNA('G').getComplement().getSequence()).toBe('C');
+      });
+
+      test('double complement returns equivalent sequence', () => {
+        const rna = new RNA('AUCGAUCG');
+        const doubleComplement = rna.getComplement().getComplement();
+        expect(doubleComplement.getSequence()).toBe(rna.getSequence());
+        expect(doubleComplement.equals(rna)).toBe(true);
+      });
+    });
+
+    describe('getReverseComplement()', () => {
+      test('returns new RNA instance with reverse complement sequence', () => {
+        const rna = new RNA('AUCG');
+        const reverseComplement = rna.getReverseComplement();
+
+        expect(reverseComplement).toBeInstanceOf(RNA);
+        expect(reverseComplement.getSequence()).toBe('CGAU');
+        expect(reverseComplement).not.toBe(rna); // Different instance
+      });
+
+      test('maintains consistency with string API', () => {
+        const rna = new RNA('AUCGAUCG');
+        expect(rna.getReverseComplement().getSequence()).toBe(rna.getReverseComplementSequence());
+      });
+
+      test('handles palindromic RNA sequences', () => {
+        const palindromic = new RNA('GAAUCUCC');
+        const reverseComplement = palindromic.getReverseComplement();
+
+        expect(reverseComplement.getSequence()).toBe('GGAGAUUC');
+        // This specific sequence is not palindromic
+        expect(palindromic.equals(reverseComplement)).toBe(false);
+      });
+
+      test('double reverse complement returns original sequence', () => {
+        const rna = new RNA('AUCGAUCG');
+        const doubleReverseComplement = rna.getReverseComplement().getReverseComplement();
+        expect(doubleReverseComplement.getSequence()).toBe(rna.getSequence());
+        expect(doubleReverseComplement.equals(rna)).toBe(true);
+      });
+    });
+
+    describe('Chainability and fluent API', () => {
+      test('methods are chainable', () => {
+        const rna = new RNA('AUCG');
+
+        const result1 = rna.getComplement().getReverseComplement();
+        expect(result1).toBeInstanceOf(RNA);
+        expect(result1.getSequence()).toBe('GCUA');
+
+        const result2 = rna.getReverseComplement().getComplement();
+        expect(result2).toBeInstanceOf(RNA);
+        expect(result2.getSequence()).toBe('GCUA');
+      });
+
+      test('can chain with other RNA methods', () => {
+        const rna = new RNA('AUCGAUCG');
+        const result = rna
+          .getSubsequence(0, 4) // 'AUCG'
+          .getComplement() // 'UAGC'
+          .getReverseComplement(); // 'GCUA'
+
+        expect(result.getSequence()).toBe('GCUA');
+      });
+
+      test('complex chaining maintains type safety', () => {
+        const rna = new RNA('AUCGAUCG');
+        const complex = rna
+          .getComplement()
+          .getSubsequence(2, 6)
+          .getReverseComplement()
+          .getComplement();
+
+        expect(complex).toBeInstanceOf(RNA);
+        expect(typeof complex.getSequence).toBe('function');
+      });
+    });
+
+    describe('Biological applications', () => {
+      test('RNA secondary structure analysis', () => {
+        // RNA that could form hairpin (self-complementary regions)
+        const rna = new RNA('GGCCUUUUGGCC');
+        const reverseComplement = rna.getReverseComplement();
+
+        expect(reverseComplement.getSequence()).toBe('GGCCAAAAGGCC');
+
+        // Check for potential base pairing
+        const fivePrime = rna.getSequence().substring(0, 4);
+        const threePrime = rna.getSequence().substring(8);
+
+        expect(fivePrime).toBe('GGCC');
+        expect(threePrime).toBe('GGCC');
+      });
+
+      test('antisense RNA design', () => {
+        // Target mRNA sequence
+        const targetRNA = new RNA('AUGUGGCACCUGACUCC');
+
+        // Antisense RNA would be the reverse complement
+        const antisenseRNA = targetRNA.getReverseComplement();
+
+        expect(antisenseRNA).toBeInstanceOf(RNA);
+        expect(antisenseRNA.getSequence()).toBe('GGAGUCAGGUGCCACAU');
+
+        // Verify they can potentially bind (complementary)
+        const targetComplement = targetRNA.getComplement();
+        expect(targetComplement.getSequence()).toBe(
+          antisenseRNA.getSequence().split('').reverse().join(''),
+        );
+      });
+
+      test('primer binding site analysis', () => {
+        const rnaTemplate = new RNA('AUGUGGCACCUGACUCCUGAGGAG');
+
+        // Simulate primer design for reverse transcription
+        const primerRegion = rnaTemplate.getSubsequence(16); // Last 8 bases
+        const primerSequence = primerRegion.getReverseComplement();
+
+        expect(primerSequence).toBeInstanceOf(RNA);
+        expect(primerSequence.getSequence().length).toBe(8);
+      });
+
+      test('miRNA target site prediction', () => {
+        // Simplified miRNA and target interaction
+        const miRNA = new RNA('UGUGCCAAU');
+        const targetSite = new RNA('AUUGGCACA'); // Complementary to miRNA
+
+        // Check if miRNA reverse complement matches target
+        const miRNABinding = miRNA.getReverseComplement();
+        expect(miRNABinding.getSequence()).toBe('AUUGGCACA');
+        expect(miRNABinding.equals(targetSite)).toBe(true);
+      });
+    });
+
+    describe('Performance and immutability', () => {
+      test('maintains immutability', () => {
+        const original = new RNA('AUCG');
+        const complement = original.getComplement();
+        const reverseComplement = original.getReverseComplement();
+
+        // Original should be unchanged
+        expect(original.getSequence()).toBe('AUCG');
+
+        // Each operation creates new instances
+        expect(complement).not.toBe(original);
+        expect(reverseComplement).not.toBe(original);
+        expect(complement).not.toBe(reverseComplement);
+      });
+
+      test('handles large RNA sequences efficiently', () => {
+        const largeSequence = 'AUCGAUCG'.repeat(1000); // 8,000 bp
+        const largeRNA = new RNA(largeSequence);
+
+        const start = performance.now();
+        const complement = largeRNA.getComplement();
+        const reverseComplement = largeRNA.getReverseComplement();
+        const end = performance.now();
+
+        expect(complement.getSequence().length).toBe(largeSequence.length);
+        expect(reverseComplement.getSequence().length).toBe(largeSequence.length);
+        expect(end - start).toBeLessThan(100); // Should complete quickly
+      });
+    });
+
+    describe('RNA-specific complement behavior', () => {
+      test('uses U instead of T in complements', () => {
+        const rna = new RNA('AAAA');
+        const complement = rna.getComplement();
+
+        expect(complement.getSequence()).toBe('UUUU');
+        expect(complement.getSequence()).not.toContain('T');
+      });
+
+      test('reverse complements maintain RNA nucleotides', () => {
+        const rna = new RNA('AAAA');
+        const reverseComplement = rna.getReverseComplement();
+
+        expect(reverseComplement.getSequence()).toBe('UUUU');
+        expect(reverseComplement.getSequence()).not.toContain('T');
+      });
+
+      test('handles mixed RNA sequences correctly', () => {
+        const mixedRNA = new RNA('AUCGAUCGAU');
+        const complement = mixedRNA.getComplement();
+        const reverseComplement = mixedRNA.getReverseComplement();
+
+        // Should contain only valid RNA nucleotides
+        expect(complement.getSequence()).toMatch(/^[AUCG]+$/);
+        expect(reverseComplement.getSequence()).toMatch(/^[AUCG]+$/);
+
+        // Should not contain T
+        expect(complement.getSequence()).not.toContain('T');
+        expect(reverseComplement.getSequence()).not.toContain('T');
+      });
+    });
+  });
 });

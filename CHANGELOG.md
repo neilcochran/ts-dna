@@ -1,5 +1,5 @@
 # Version 2.2.0
-
+- Add functions to nucleic acids for getComplementSequence, and getReverseComplementSequence that return strings and getComplement and getReverseComplement that return the relevant nucleic acid class
 - Replace amino acid 'slc' abbreviation with 'singleLetterCode'
 
 # Version 2.1.0

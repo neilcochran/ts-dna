@@ -2,6 +2,7 @@ import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
 
 /**
  * Given a string sequence and a nucleic acid type, get the complement sequence
+ * Optimized using string replacement for better performance
  *
  * @param sequence - The sequence to get a complement of
  * @param nucleicAcidType - The type of nucleic acid of the given sequence
@@ -21,17 +22,58 @@ export const getComplementSequence = (
   sequence: string | undefined,
   nucleicAcidType: NucleicAcidType,
 ): string | undefined => {
-  let complement: string | undefined;
-  if (sequence) {
-    complement = '';
-    for (const base of sequence) {
-      complement +=
-        NucleicAcidType.DNA === nucleicAcidType
-          ? (getDNABaseComplement(base) ?? '')
-          : (getRNABaseComplement(base) ?? '');
-    }
+  if (!sequence) {
+    return undefined;
   }
-  return complement;
+
+  // Use character mapping for safety and performance
+  const dnaComplementMap: Record<string, string> = {
+    A: 'T',
+    T: 'A',
+    C: 'G',
+    G: 'C',
+  };
+
+  const rnaComplementMap: Record<string, string> = {
+    A: 'U',
+    U: 'A',
+    C: 'G',
+    G: 'C',
+  };
+
+  const complementMap =
+    nucleicAcidType === NucleicAcidType.DNA ? dnaComplementMap : rnaComplementMap;
+
+  return sequence
+    .split('')
+    .map(base => complementMap[base] ?? '')
+    .join('');
+};
+
+/**
+ * Given a string sequence and a nucleic acid type, get the reverse complement sequence
+ * This represents the opposite strand of double-stranded nucleic acids
+ *
+ * @param sequence - The sequence to get the reverse complement of
+ * @param nucleicAcidType - The type of nucleic acid of the given sequence
+ *
+ * @returns The reverse complement sequence, or undefined if the input sequence was undefined
+ *
+ * @example
+ * ```typescript
+ *  //Get DNA reverse complement
+ *  getReverseComplementSequence('ATCG', NucleicAcidType.DNA); //returns 'CGAT'
+ *
+ *  //Get RNA reverse complement
+ *  getReverseComplementSequence('AUCG', NucleicAcidType.RNA); //returns 'CGAU'
+ * ```
+ */
+export const getReverseComplementSequence = (
+  sequence: string | undefined,
+  nucleicAcidType: NucleicAcidType,
+): string | undefined => {
+  const complement = getComplementSequence(sequence, nucleicAcidType);
+  return complement ? complement.split('').reverse().join('') : undefined;
 };
 
 /**

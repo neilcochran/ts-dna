@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'util';
-import { getComplementSequence } from '../../utils/complement.js';
+import { getComplementSequence, getReverseComplementSequence } from '../../utils/complement.js';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
 
 /**
@@ -25,6 +25,62 @@ export abstract class NucleicAcid {
   getComplementSequence(): string {
     return getComplementSequence(this.getSequence(), this.nucleicAcidType) ?? '';
   }
+
+  /**
+   * Returns the reverse complement of the sequence
+   * This represents the opposite strand of double-stranded nucleic acids
+   *
+   * @returns String representing the reverse complement of the sequence
+   *
+   * @example
+   * ```typescript
+   * const dna = new DNA('ATCG');
+   * console.log(dna.getReverseComplementSequence()); // 'CGAT'
+   *
+   * const rna = new RNA('AUCG');
+   * console.log(rna.getReverseComplementSequence()); // 'CGAU'
+   * ```
+   */
+  getReverseComplementSequence(): string {
+    return getReverseComplementSequence(this.getSequence(), this.nucleicAcidType) ?? '';
+  }
+
+  /**
+   * Returns the complement as a new nucleic acid instance of the same type
+   * This is the object-oriented API for getting complements
+   *
+   * @returns A new nucleic acid instance containing the complement sequence
+   *
+   * @example
+   * ```typescript
+   * const dna = new DNA('ATCG');
+   * const complement = dna.getComplement(); // Returns new DNA('TAGC')
+   *
+   * const rna = new RNA('AUCG');
+   * const complement = rna.getComplement(); // Returns new RNA('UAGC')
+   * ```
+   */
+  abstract getComplement(): NucleicAcid;
+
+  /**
+   * Returns the reverse complement as a new nucleic acid instance of the same type
+   * This represents the opposite strand of double-stranded nucleic acids
+   *
+   * @returns A new nucleic acid instance containing the reverse complement sequence
+   *
+   * @example
+   * ```typescript
+   * const dna = new DNA('ATCG');
+   * const reverseComplement = dna.getReverseComplement(); // Returns new DNA('CGAT')
+   *
+   * // Chainable operations
+   * const result = dna.getReverseComplement().getComplement(); // Returns new DNA('ATCG')
+   *
+   * const rna = new RNA('AUCG');
+   * const reverseComplement = rna.getReverseComplement(); // Returns new RNA('CGAU')
+   * ```
+   */
+  abstract getReverseComplement(): NucleicAcid;
 
   /**
    * Returns the length of the nucleic acid sequence

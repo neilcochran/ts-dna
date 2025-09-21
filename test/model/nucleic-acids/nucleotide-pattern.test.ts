@@ -280,10 +280,10 @@ describe('NucleotidePattern Core Functionality', () => {
       const pattern = new NucleotidePattern('A');
       const dna = new DNA('T');
 
-      // Mock getComplementSequence to return an invalid pattern that would cause getNucleotidePattern to throw
+      // Mock getReverseComplementSequence to return an invalid pattern that would cause getNucleotidePattern to throw
       const nucleicAcidsUtils = await import('../../../src/utils/nucleic-acids.js');
       jest
-        .spyOn(nucleicAcidsUtils, 'getComplementSequence')
+        .spyOn(nucleicAcidsUtils, 'getReverseComplementSequence')
         .mockReturnValueOnce('INVALID_CHARS_XYZ');
 
       expect(pattern.matchesEitherStrand(dna)).toBe(false);
