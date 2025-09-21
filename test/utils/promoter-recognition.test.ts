@@ -14,7 +14,7 @@ describe('promoter-recognition', () => {
 
       const promoters = findPromoters(dna);
 
-      expect(promoters.length).toBeGreaterThan(0);
+      expect(promoters.length).toBe(1); // Should find exactly one TATA-containing promoter
       const tataPromoter = promoters.find(p => p.hasElement('TATA'));
       expect(tataPromoter).toBeDefined();
     });
@@ -26,7 +26,7 @@ describe('promoter-recognition', () => {
 
       const promoters = findPromoters(dna);
 
-      expect(promoters.length).toBeGreaterThan(0);
+      expect(promoters.length).toBe(1); // Should find exactly one Inr-containing promoter
       const inrPromoter = promoters.find(p => p.hasElement('Inr'));
       expect(inrPromoter).toBeDefined();
     });

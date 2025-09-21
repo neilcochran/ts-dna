@@ -1,5 +1,7 @@
 import { NucleotidePatternSymbol } from '../model/nucleic-acids/NucleotidePatternSymbol.js';
-import { NucleicAcid, DNA, RNA } from '../model/index.js';
+import { NucleicAcid } from '../model/nucleic-acids/NucleicAcid.js';
+import { DNA } from '../model/nucleic-acids/DNA.js';
+import { RNA } from '../model/nucleic-acids/RNA.js';
 import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
 
 /**

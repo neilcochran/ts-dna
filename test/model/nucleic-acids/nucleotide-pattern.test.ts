@@ -128,7 +128,7 @@ describe('NucleotidePattern Core Functionality', () => {
       const dna = new DNA('ATGAGCGATC');
       const matches = pattern.findMatches(dna);
 
-      expect(matches.length).toBeGreaterThan(0);
+      expect(matches.length).toBe(3); // AT at 0, GC at 4, AT at 6
       // First match should be 'AT' at position 0 (A matches R, T matches Y)
       expect(matches[0].start).toBe(0);
       expect(matches[0].match).toBe('AT');

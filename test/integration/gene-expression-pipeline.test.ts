@@ -42,10 +42,6 @@ describe('Gene Expression Pipeline Integration', () => {
 
       // Step 2: Transcription
       const transcriptionResult = transcribe(gene);
-
-      if (isFailure(transcriptionResult)) {
-        console.log('Transcription failed:', transcriptionResult.error);
-      }
       expect(isSuccess(transcriptionResult)).toBe(true);
 
       if (isSuccess(transcriptionResult)) {
@@ -55,10 +51,6 @@ describe('Gene Expression Pipeline Integration', () => {
 
         // Step 3: RNA Processing
         const processingResult = processRNA(preMRNA);
-
-        if (isFailure(processingResult)) {
-          console.log('RNA processing failed:', processingResult.error);
-        }
         expect(isSuccess(processingResult)).toBe(true);
 
         if (isSuccess(processingResult)) {

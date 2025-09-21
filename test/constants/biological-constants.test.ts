@@ -159,7 +159,6 @@ describe('Biological Constants Validation', () => {
     test('DEFAULT_POLYA_SIGNAL_STRENGTH should be reasonable for unknown signals', () => {
       // Unknown signals should have low but non-zero strength
       expect(DEFAULT_POLYA_SIGNAL_STRENGTH).toBe(8);
-      expect(DEFAULT_POLYA_SIGNAL_STRENGTH).toBeGreaterThan(0);
       expect(DEFAULT_POLYA_SIGNAL_STRENGTH).toBeLessThan(Math.min(...Object.values(POLYA_SIGNALS)));
     });
 
@@ -217,8 +216,6 @@ describe('Biological Constants Validation', () => {
   describe('Quality Scoring Constants', () => {
     test('scoring thresholds should be between 0 and 1', () => {
       // Quality scores are normalized between 0 and 1
-      expect(BASE_POLYA_SCORE).toBeGreaterThan(0);
-      expect(BASE_POLYA_SCORE).toBeLessThan(1);
       expect(BASE_POLYA_SCORE).toBe(0.3);
 
       expect(HIGH_U_CONTENT_THRESHOLD).toBeGreaterThan(0.5);
@@ -234,8 +231,6 @@ describe('Biological Constants Validation', () => {
       expect(DSE_ELEMENT_MAX_BOOST).toBe(20);
 
       expect(USE_ELEMENT_MAX_BOOST).toBeGreaterThan(DSE_ELEMENT_MAX_BOOST);
-      expect(USE_ELEMENT_MAX_BOOST).toBeGreaterThan(0);
-      expect(DSE_ELEMENT_MAX_BOOST).toBeGreaterThan(0);
     });
   });
 

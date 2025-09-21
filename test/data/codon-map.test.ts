@@ -372,7 +372,7 @@ describe('Codon Map Data', () => {
       // At runtime, JavaScript arrays can still be mutated, but TypeScript prevents it
       const alanineCodens = SINGLE_LETTER_CODE_ALT_CODONS_MAP.A;
       expect(Array.isArray(alanineCodens)).toBe(true);
-      expect(alanineCodens.length).toBeGreaterThan(0);
+      expect(alanineCodens.length).toBe(4); // Alanine has exactly 4 codons
     });
   });
 

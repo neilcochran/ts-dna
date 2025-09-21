@@ -25,7 +25,7 @@ describe('AminoAcid Class', () => {
       const codon = new RNA('AUG'); // Methionine
       const aminoAcid = new AminoAcid(codon);
 
-      expect(aminoAcid.molecularWeight).toBeGreaterThan(0);
+      expect(aminoAcid.molecularWeight).toBe(149.208); // Methionine molecular weight
       expect(aminoAcid.polarity).toBeDefined();
       expect(aminoAcid.charge).toBeDefined();
       expect(aminoAcid.hydrophobicity).toBeDefined();

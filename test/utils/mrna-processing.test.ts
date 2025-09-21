@@ -20,9 +20,6 @@ describe('mrna-processing', () => {
 
       const result = processRNA(preMRNA);
 
-      if (isFailure(result)) {
-        console.log('processRNA failed with error:', result.error);
-      }
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
         const mRNA = result.data;
