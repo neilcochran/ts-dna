@@ -5,13 +5,16 @@ import { InvalidSequenceError } from '../model/errors/InvalidSequenceError.js';
 import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
 import { AminoAcidData } from '../types/amino-acid-data.js';
 import { CODON_LENGTH } from '../constants/biological-constants.js';
-import { SLC_AMINO_ACID_DATA_MAP, CODON_TO_SLC_MAP } from '../data/codon-map.js';
+import {
+  SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP,
+  CODON_TO_SINGLE_LETTER_CODE_MAP,
+} from '../data/codon-map.js';
 import { STOP_CODONS } from './nucleic-acids.js';
 
 export {
-  SLC_AMINO_ACID_DATA_MAP,
-  SLC_ALT_CODONS_MAP,
-  CODON_TO_SLC_MAP,
+  SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP,
+  SINGLE_LETTER_CODE_ALT_CODONS_MAP,
+  CODON_TO_SINGLE_LETTER_CODE_MAP,
 } from '../data/codon-map.js';
 
 /**
@@ -56,12 +59,12 @@ export const getAminoAcidDataByCodon = (codon: RNA): AminoAcidData | undefined =
     return undefined;
   }
 
-  const slc = CODON_TO_SLC_MAP[sequence];
-  if (!slc) {
+  const singleLetterCode = CODON_TO_SINGLE_LETTER_CODE_MAP[sequence];
+  if (!singleLetterCode) {
     return undefined;
   }
 
-  return SLC_AMINO_ACID_DATA_MAP[slc];
+  return SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP[singleLetterCode];
 };
 
 /**

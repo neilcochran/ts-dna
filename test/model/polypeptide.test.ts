@@ -6,7 +6,7 @@ import {
   isCorrectAminoAcidSequence,
   MRNA_ALL_AMINO_ACIDS_1,
   MRNA_ALL_AMINO_ACIDS_2,
-  ALL_AMINO_ACIDS_SLC_SEQ,
+  ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ,
   RNA_ALL_AMINO_ACIDS_1,
   RNA_ALL_AMINO_ACIDS_2,
 } from '../utils/test-utils';
@@ -33,7 +33,7 @@ test('create valid polypeptide from MRNA_ALL_AMINO_ACIDS_1', () => {
   expect(
     isCorrectAminoAcidSequence(
       new Polypeptide(MRNA_ALL_AMINO_ACIDS_1).aminoAcidSequence,
-      ALL_AMINO_ACIDS_SLC_SEQ,
+      ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ,
     ),
   ).toEqual(true);
 });
@@ -42,7 +42,7 @@ test('create valid polypeptide from MRNA_ALL_AMINO_ACIDS_2', () => {
   expect(
     isCorrectAminoAcidSequence(
       new Polypeptide(MRNA_ALL_AMINO_ACIDS_2).aminoAcidSequence,
-      ALL_AMINO_ACIDS_SLC_SEQ,
+      ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ,
     ),
   ).toEqual(true);
 });
@@ -76,7 +76,7 @@ test('RNAtoAminoAcids() stops translation at stop codon', () => {
   // Valid codon followed by stop codon
   const aminoAcids = RNAtoAminoAcids(new RNA('AUGUAA')); // Met + Stop(UAA)
   expect(aminoAcids).toHaveLength(1); // Only Met, stops at UAA
-  expect(aminoAcids[0].slc).toBe('M'); // Met
+  expect(aminoAcids[0].singleLetterCode).toBe('M'); // Met
 });
 
 test('Polypeptide constructor creates empty polypeptide for stop codons only', () => {
@@ -89,18 +89,24 @@ test('Polypeptide constructor creates empty polypeptide for stop codons only', (
 test('Polypeptide constructor stops translation at stop codon', () => {
   const polypeptide = new Polypeptide(new MRNA('AUGUAG', 'AUGUAG', 0, 6)); // Met + Stop(UAG)
   expect(polypeptide.aminoAcidSequence).toHaveLength(1); // Only Met
-  expect(polypeptide.aminoAcidSequence[0].slc).toBe('M'); // Met
+  expect(polypeptide.aminoAcidSequence[0].singleLetterCode).toBe('M'); // Met
 });
 
 test('RNAtoAminoAcids() from RNA_ALL_AMINO_ACIDS_1', () => {
   expect(
-    isCorrectAminoAcidSequence(RNAtoAminoAcids(RNA_ALL_AMINO_ACIDS_1), ALL_AMINO_ACIDS_SLC_SEQ),
+    isCorrectAminoAcidSequence(
+      RNAtoAminoAcids(RNA_ALL_AMINO_ACIDS_1),
+      ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ,
+    ),
   ).toEqual(true);
 });
 
 test('RNAtoAminoAcids() from RNA_ALL_AMINO_ACIDS_2', () => {
   expect(
-    isCorrectAminoAcidSequence(RNAtoAminoAcids(RNA_ALL_AMINO_ACIDS_2), ALL_AMINO_ACIDS_SLC_SEQ),
+    isCorrectAminoAcidSequence(
+      RNAtoAminoAcids(RNA_ALL_AMINO_ACIDS_2),
+      ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ,
+    ),
   ).toEqual(true);
 });
 
@@ -125,7 +131,7 @@ test('polypeptide from single codon creates single amino acid', () => {
   const mRNA = new MRNA('AUG', 'AUG', 0, 3); // Methionine
   const polypeptide = new Polypeptide(mRNA);
   expect(polypeptide.aminoAcidSequence.length).toEqual(1);
-  expect(polypeptide.aminoAcidSequence[0].slc).toEqual('M');
+  expect(polypeptide.aminoAcidSequence[0].singleLetterCode).toEqual('M');
   expect(polypeptide.aminoAcidSequence[0].name).toEqual('Methionine');
 });
 
@@ -147,8 +153,8 @@ test('create polypeptide with start and stop codons', () => {
   const mRNA = new MRNA('AUGUUU', 'AUGUUU', 0, 6); // Met-Phe (6 nucleotides = 2 codons)
   const polypeptide = new Polypeptide(mRNA);
   expect(polypeptide.aminoAcidSequence.length).toEqual(2);
-  expect(polypeptide.aminoAcidSequence[0].slc).toEqual('M'); // Methionine
-  expect(polypeptide.aminoAcidSequence[1].slc).toEqual('F'); // Phenylalanine
+  expect(polypeptide.aminoAcidSequence[0].singleLetterCode).toEqual('M'); // Methionine
+  expect(polypeptide.aminoAcidSequence[1].singleLetterCode).toEqual('F'); // Phenylalanine
 });
 
 test('RNAtoAminoAcids returns empty array for empty string (if it could exist)', () => {
@@ -157,7 +163,7 @@ test('RNAtoAminoAcids returns empty array for empty string (if it could exist)',
   const rna = new RNA('AUG'); // Single codon
   const aminoAcids = RNAtoAminoAcids(rna);
   expect(aminoAcids.length).toEqual(1);
-  expect(aminoAcids[0].slc).toEqual('M');
+  expect(aminoAcids[0].singleLetterCode).toEqual('M');
 });
 
 test('polypeptide immutability - mRNA changes do not affect polypeptide', () => {
@@ -166,11 +172,11 @@ test('polypeptide immutability - mRNA changes do not affect polypeptide', () => 
 
   // Store original values
   const originalAminoAcidCount = polypeptide.aminoAcidSequence.length;
-  const originalFirstAminoAcid = polypeptide.aminoAcidSequence[0].slc;
+  const originalFirstAminoAcid = polypeptide.aminoAcidSequence[0].singleLetterCode;
 
   // Verify polypeptide maintains its state
   expect(polypeptide.aminoAcidSequence.length).toEqual(originalAminoAcidCount);
-  expect(polypeptide.aminoAcidSequence[0].slc).toEqual(originalFirstAminoAcid);
+  expect(polypeptide.aminoAcidSequence[0].singleLetterCode).toEqual(originalFirstAminoAcid);
   expect(polypeptide.mRNA.getSequence()).toEqual(originalMRNA.getSequence());
 });
 
@@ -210,7 +216,7 @@ describe('Polypeptide string-like methods', () => {
     test('returns expected amino acid sequence', () => {
       // The test mRNA should produce the expected amino acid sequence
       const sequence = polypeptide.getSequence();
-      expect(sequence).toBe(ALL_AMINO_ACIDS_SLC_SEQ);
+      expect(sequence).toBe(ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ);
       expect(sequence.length).toBe(20);
     });
 

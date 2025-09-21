@@ -63,7 +63,7 @@ export class Polypeptide {
    * ```
    */
   getSequence(): string {
-    return this.aminoAcidSequence.map(aa => aa.slc).join('');
+    return this.aminoAcidSequence.map(aa => aa.singleLetterCode).join('');
   }
 
   /**

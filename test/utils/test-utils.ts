@@ -40,8 +40,8 @@ export const DNA_ALL_AMINO_ACIDS_2 = new DNA(
   'GCCTGTGATGAGTTTGGCCATATCAAGTTGATGAATCCCCAGAGGAGTACCGTCTGGTAT',
 );
 
-//the sequence of amino acid SLCs produced by the above codons (all amino acids in alphabetic order by SLC)
-export const ALL_AMINO_ACIDS_SLC_SEQ = 'ACDEFGHIKLMNPQRSTVWY';
+//the sequence of amino acid SINGLE_LETTER_CODEs produced by the above codons (all amino acids in alphabetic order by SINGLE_LETTER_CODE)
+export const ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ = 'ACDEFGHIKLMNPQRSTVWY';
 
 //Nucleotide pattern symbols and complement symbols strings
 export const ALL_NUCLEOTIDE_SYMBOLS = 'ATCGURYKMSWBVDHN';
@@ -68,12 +68,12 @@ export const NUCLEOTIDE_PATTERN_PASSING_SEQS = [
 
 export const isCorrectAminoAcid = (
   aminoAcid: AminoAcid,
-  correctAminoAcidData: { name: string; abbrv: string; slc: string },
+  correctAminoAcidData: { name: string; abbrv: string; singleLetterCode: string },
 ): boolean => {
-  const keysToCheck: (keyof { name: string; abbrv: string; slc: string })[] = [
+  const keysToCheck: (keyof { name: string; abbrv: string; singleLetterCode: string })[] = [
     'name',
     'abbrv',
-    'slc',
+    'singleLetterCode',
   ];
   for (const k of keysToCheck) {
     if (aminoAcid[k as keyof AminoAcid] !== correctAminoAcidData[k]) {
@@ -85,13 +85,13 @@ export const isCorrectAminoAcid = (
 
 export const isCorrectAminoAcidSequence = (
   aminoAcidSequence: AminoAcid[],
-  correctSLCSequence: string,
+  correctSingleLetterCodeSequence: string,
 ): boolean => {
-  if (aminoAcidSequence.length !== correctSLCSequence.length) {
+  if (aminoAcidSequence.length !== correctSingleLetterCodeSequence.length) {
     return false;
   }
-  for (let i = 0; i < correctSLCSequence.length; i++) {
-    if (aminoAcidSequence[i].slc !== correctSLCSequence[i]) {
+  for (let i = 0; i < correctSingleLetterCodeSequence.length; i++) {
+    if (aminoAcidSequence[i].singleLetterCode !== correctSingleLetterCodeSequence[i]) {
       return false;
     }
   }

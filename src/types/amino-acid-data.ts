@@ -9,7 +9,7 @@ import { AminoAcidSideChainType } from '../enums/amino-acid-side-chain-type.js';
 export interface AminoAcidData {
   readonly name: string;
   readonly abbrv: string;
-  readonly slc: string;
+  readonly singleLetterCode: string;
   readonly molecularWeight: number;
   readonly polarity: AminoAcidPolarity;
   readonly charge: AminoAcidCharge;

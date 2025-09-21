@@ -1,3 +1,7 @@
+# Version 2.2.0
+
+- Replace amino acid 'slc' abbreviation with 'singleLetterCode'
+
 # Version 2.1.0
 
 - Remove RNASubType enum now that we have proper classes for all RNA types.

@@ -6,7 +6,7 @@ import { AminoAcidCharge } from '../../src/enums/amino-acid-charge';
 import { AminoAcidSideChainType } from '../../src/enums/amino-acid-side-chain-type';
 import { NucleicAcidType } from '../../src/enums/nucleic-acid-type';
 import { AminoAcidData } from '../../src/types/amino-acid-data';
-import { SLC_AMINO_ACID_DATA_MAP } from '../../src/data/codon-map';
+import { SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP } from '../../src/data/codon-map';
 
 describe('AminoAcid Class', () => {
   describe('constructor', () => {
@@ -15,7 +15,7 @@ describe('AminoAcid Class', () => {
       const aminoAcid = new AminoAcid(codon);
 
       expect(aminoAcid.name).toBe('Methionine');
-      expect(aminoAcid.slc).toBe('M');
+      expect(aminoAcid.singleLetterCode).toBe('M');
       expect(aminoAcid.abbrv).toBe('Met');
       expect(aminoAcid.codon).toBe(codon);
       expect(aminoAcid.acidType).toBe(NucleicAcidType.RNA);
@@ -39,13 +39,13 @@ describe('AminoAcid Class', () => {
       const lys = new AminoAcid(new RNA('AAA')); // Lysine
 
       expect(met.name).toBe('Methionine');
-      expect(met.slc).toBe('M');
+      expect(met.singleLetterCode).toBe('M');
 
       expect(phe.name).toBe('Phenylalanine');
-      expect(phe.slc).toBe('F');
+      expect(phe.singleLetterCode).toBe('F');
 
       expect(lys.name).toBe('Lysine');
-      expect(lys.slc).toBe('K');
+      expect(lys.singleLetterCode).toBe('K');
     });
 
     test('throws error for invalid codon length', () => {
@@ -214,7 +214,7 @@ describe('AminoAcid Class', () => {
       const met = new AminoAcid(new RNA('AUG'));
 
       expect(met.name).toBe('Methionine');
-      expect(met.slc).toBe('M');
+      expect(met.singleLetterCode).toBe('M');
       expect(met.abbrv).toBe('Met');
       expect(met.sideChainType).toBe(AminoAcidSideChainType.SULFUR_CONTAINING);
     });
@@ -278,7 +278,7 @@ describe('AminoAcid Class', () => {
 
       // These should be readonly (TypeScript compile-time check)
       expect(amino.name).toBe('Methionine');
-      expect(amino.slc).toBe('M');
+      expect(amino.singleLetterCode).toBe('M');
       expect(amino.codon.getSequence()).toBe('AUG');
     });
 
@@ -298,7 +298,7 @@ describe('AminoAcid Class', () => {
       const aminoAsData: AminoAcidData = amino;
       expect(aminoAsData.name).toBe('Methionine');
       expect(aminoAsData.abbrv).toBe('Met');
-      expect(aminoAsData.slc).toBe('M');
+      expect(aminoAsData.singleLetterCode).toBe('M');
       expect(aminoAsData.molecularWeight).toBe(149.208);
       expect(aminoAsData.polarity).toBe(AminoAcidPolarity.NONPOLAR);
       expect(aminoAsData.charge).toBe(AminoAcidCharge.NEUTRAL);
@@ -308,20 +308,20 @@ describe('AminoAcid Class', () => {
 
     test('amino acid properties match data map exactly', () => {
       const testCases = [
-        { codon: 'AUG', slc: 'M' }, // Methionine
-        { codon: 'UUU', slc: 'F' }, // Phenylalanine
-        { codon: 'AAA', slc: 'K' }, // Lysine
-        { codon: 'GAU', slc: 'D' }, // Aspartic acid
-        { codon: 'GCA', slc: 'A' }, // Alanine
+        { codon: 'AUG', singleLetterCode: 'M' }, // Methionine
+        { codon: 'UUU', singleLetterCode: 'F' }, // Phenylalanine
+        { codon: 'AAA', singleLetterCode: 'K' }, // Lysine
+        { codon: 'GAU', singleLetterCode: 'D' }, // Aspartic acid
+        { codon: 'GCA', singleLetterCode: 'A' }, // Alanine
       ];
 
-      testCases.forEach(({ codon, slc }) => {
+      testCases.forEach(({ codon, singleLetterCode }) => {
         const amino = new AminoAcid(new RNA(codon));
-        const dataMapEntry = SLC_AMINO_ACID_DATA_MAP[slc];
+        const dataMapEntry = SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP[singleLetterCode];
 
         expect(amino.name).toBe(dataMapEntry.name);
         expect(amino.abbrv).toBe(dataMapEntry.abbrv);
-        expect(amino.slc).toBe(dataMapEntry.slc);
+        expect(amino.singleLetterCode).toBe(dataMapEntry.singleLetterCode);
         expect(amino.molecularWeight).toBe(dataMapEntry.molecularWeight);
         expect(amino.polarity).toBe(dataMapEntry.polarity);
         expect(amino.charge).toBe(dataMapEntry.charge);
@@ -362,8 +362,8 @@ describe('AminoAcid Class', () => {
         expect(amino.name).not.toBe('');
         expect(amino.abbrv).toBeDefined();
         expect(amino.abbrv).not.toBe('');
-        expect(amino.slc).toBeDefined();
-        expect(amino.slc).not.toBe('');
+        expect(amino.singleLetterCode).toBeDefined();
+        expect(amino.singleLetterCode).not.toBe('');
         expect(amino.molecularWeight).toBeGreaterThan(0);
         expect(amino.polarity).toBeDefined();
         expect(amino.charge).toBeDefined();
@@ -383,7 +383,7 @@ describe('AminoAcid Class', () => {
       for (let i = 1; i < alanines.length; i++) {
         expect(alanines[i].name).toBe(alanines[0].name);
         expect(alanines[i].abbrv).toBe(alanines[0].abbrv);
-        expect(alanines[i].slc).toBe(alanines[0].slc);
+        expect(alanines[i].singleLetterCode).toBe(alanines[0].singleLetterCode);
         expect(alanines[i].molecularWeight).toBe(alanines[0].molecularWeight);
         expect(alanines[i].polarity).toBe(alanines[0].polarity);
         expect(alanines[i].charge).toBe(alanines[0].charge);
@@ -403,7 +403,7 @@ describe('AminoAcid Class', () => {
       // All should be leucine with same properties
       leucines.forEach(leu => {
         expect(leu.name).toBe('Leucine');
-        expect(leu.slc).toBe('L');
+        expect(leu.singleLetterCode).toBe('L');
         expect(leu.abbrv).toBe('Leu');
         expect(leu.sideChainType).toBe(AminoAcidSideChainType.ALIPHATIC);
       });
@@ -411,7 +411,7 @@ describe('AminoAcid Class', () => {
 
     test('properties come from single source of truth', () => {
       const amino = new AminoAcid(new RNA('UUU')); // Phenylalanine
-      const dataMapEntry = SLC_AMINO_ACID_DATA_MAP['F'];
+      const dataMapEntry = SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP['F'];
 
       // Verify the instance gets its data from the map
       expect(amino.name).toBe(dataMapEntry.name);
@@ -543,7 +543,7 @@ describe('AminoAcid Class', () => {
         expect(() => {
           const amino = new AminoAcid(new RNA(codonSeq));
           expect(amino.name).toBeDefined();
-          expect(amino.slc).toBeDefined();
+          expect(amino.singleLetterCode).toBeDefined();
         }).not.toThrow();
       });
     });

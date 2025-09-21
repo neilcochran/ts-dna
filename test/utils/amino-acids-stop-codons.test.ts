@@ -15,9 +15,9 @@ describe('Stop Codon Handling', () => {
       const aminoAcids = RNAtoAminoAcids(rna);
 
       expect(aminoAcids).toHaveLength(3); // Only 3 amino acids, stops at UAG
-      expect(aminoAcids[0].slc).toBe('M'); // Met
-      expect(aminoAcids[1].slc).toBe('K'); // Lys
-      expect(aminoAcids[2].slc).toBe('P'); // Pro
+      expect(aminoAcids[0].singleLetterCode).toBe('M'); // Met
+      expect(aminoAcids[1].singleLetterCode).toBe('K'); // Lys
+      expect(aminoAcids[2].singleLetterCode).toBe('P'); // Pro
     });
 
     test('should stop translation at UAA stop codon', () => {
@@ -25,9 +25,9 @@ describe('Stop Codon Handling', () => {
       const aminoAcids = RNAtoAminoAcids(rna);
 
       expect(aminoAcids).toHaveLength(3); // Only 3 amino acids, stops at UAA
-      expect(aminoAcids[0].slc).toBe('M'); // Met
-      expect(aminoAcids[1].slc).toBe('K'); // Lys
-      expect(aminoAcids[2].slc).toBe('P'); // Pro
+      expect(aminoAcids[0].singleLetterCode).toBe('M'); // Met
+      expect(aminoAcids[1].singleLetterCode).toBe('K'); // Lys
+      expect(aminoAcids[2].singleLetterCode).toBe('P'); // Pro
     });
 
     test('should stop translation at UGA stop codon', () => {
@@ -35,9 +35,9 @@ describe('Stop Codon Handling', () => {
       const aminoAcids = RNAtoAminoAcids(rna);
 
       expect(aminoAcids).toHaveLength(3); // Only 3 amino acids, stops at UGA
-      expect(aminoAcids[0].slc).toBe('M'); // Met
-      expect(aminoAcids[1].slc).toBe('K'); // Lys
-      expect(aminoAcids[2].slc).toBe('P'); // Pro
+      expect(aminoAcids[0].singleLetterCode).toBe('M'); // Met
+      expect(aminoAcids[1].singleLetterCode).toBe('K'); // Lys
+      expect(aminoAcids[2].singleLetterCode).toBe('P'); // Pro
     });
 
     test('should stop at first stop codon encountered', () => {
@@ -45,8 +45,8 @@ describe('Stop Codon Handling', () => {
       const aminoAcids = RNAtoAminoAcids(rna);
 
       expect(aminoAcids).toHaveLength(2); // Only 2 amino acids, stops at first UAG
-      expect(aminoAcids[0].slc).toBe('M'); // Met
-      expect(aminoAcids[1].slc).toBe('K'); // Lys
+      expect(aminoAcids[0].singleLetterCode).toBe('M'); // Met
+      expect(aminoAcids[1].singleLetterCode).toBe('K'); // Lys
     });
 
     test('should translate full sequence if no stop codon present', () => {
@@ -54,10 +54,10 @@ describe('Stop Codon Handling', () => {
       const aminoAcids = RNAtoAminoAcids(rna);
 
       expect(aminoAcids).toHaveLength(4); // All 4 amino acids
-      expect(aminoAcids[0].slc).toBe('M'); // Met
-      expect(aminoAcids[1].slc).toBe('K'); // Lys
-      expect(aminoAcids[2].slc).toBe('P'); // Pro
-      expect(aminoAcids[3].slc).toBe('G'); // Gly
+      expect(aminoAcids[0].singleLetterCode).toBe('M'); // Met
+      expect(aminoAcids[1].singleLetterCode).toBe('K'); // Lys
+      expect(aminoAcids[2].singleLetterCode).toBe('P'); // Pro
+      expect(aminoAcids[3].singleLetterCode).toBe('G'); // Gly
     });
 
     test('should return empty array if first codon is stop codon', () => {
@@ -77,10 +77,10 @@ describe('Stop Codon Handling', () => {
       const polypeptide = new Polypeptide(mRNA);
 
       expect(polypeptide.aminoAcidSequence).toHaveLength(4); // Met-Lys-Pro-Gly, stops at UAG
-      expect(polypeptide.aminoAcidSequence[0].slc).toBe('M'); // Met
-      expect(polypeptide.aminoAcidSequence[1].slc).toBe('K'); // Lys
-      expect(polypeptide.aminoAcidSequence[2].slc).toBe('P'); // Pro
-      expect(polypeptide.aminoAcidSequence[3].slc).toBe('G'); // Gly
+      expect(polypeptide.aminoAcidSequence[0].singleLetterCode).toBe('M'); // Met
+      expect(polypeptide.aminoAcidSequence[1].singleLetterCode).toBe('K'); // Lys
+      expect(polypeptide.aminoAcidSequence[2].singleLetterCode).toBe('P'); // Pro
+      expect(polypeptide.aminoAcidSequence[3].singleLetterCode).toBe('G'); // Gly
     });
 
     test('should handle mRNA with stop codon and poly-A tail', () => {
@@ -92,9 +92,9 @@ describe('Stop Codon Handling', () => {
       const polypeptide = new Polypeptide(mRNA);
 
       expect(polypeptide.aminoAcidSequence).toHaveLength(3); // Met-Lys-Pro, stops at UAG
-      expect(polypeptide.aminoAcidSequence[0].slc).toBe('M'); // Met
-      expect(polypeptide.aminoAcidSequence[1].slc).toBe('K'); // Lys
-      expect(polypeptide.aminoAcidSequence[2].slc).toBe('P'); // Pro
+      expect(polypeptide.aminoAcidSequence[0].singleLetterCode).toBe('M'); // Met
+      expect(polypeptide.aminoAcidSequence[1].singleLetterCode).toBe('K'); // Lys
+      expect(polypeptide.aminoAcidSequence[2].singleLetterCode).toBe('P'); // Pro
     });
   });
 

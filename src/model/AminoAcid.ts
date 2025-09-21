@@ -1,6 +1,9 @@
 import { RNA } from './nucleic-acids/index.js';
 import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
-import { getAminoAcidDataByCodon, SLC_ALT_CODONS_MAP } from '../utils/amino-acids.js';
+import {
+  getAminoAcidDataByCodon,
+  SINGLE_LETTER_CODE_ALT_CODONS_MAP,
+} from '../utils/amino-acids.js';
 import { AminoAcidData } from '../types/amino-acid-data.js';
 import { AminoAcidPolarity } from '../enums/amino-acid-polarity.js';
 import { AminoAcidCharge } from '../enums/amino-acid-charge.js';
@@ -19,7 +22,7 @@ export class AminoAcid implements AminoAcidData {
   public readonly acidType: NucleicAcidType;
   public readonly name!: string;
   public readonly abbrv!: string;
-  public readonly slc!: string;
+  public readonly singleLetterCode!: string;
   public readonly molecularWeight!: number;
   public readonly polarity!: AminoAcidPolarity;
   public readonly charge!: AminoAcidCharge;
@@ -68,7 +71,9 @@ export class AminoAcid implements AminoAcidData {
    * @returns All codons that code for this amino acid
    */
   getAllAlternateCodons(): RNA[] {
-    return SLC_ALT_CODONS_MAP[this.slc].map(codonStr => new RNA(codonStr));
+    return SINGLE_LETTER_CODE_ALT_CODONS_MAP[this.singleLetterCode].map(
+      codonStr => new RNA(codonStr),
+    );
   }
 
   /**

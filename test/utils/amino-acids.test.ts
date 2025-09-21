@@ -3,8 +3,8 @@ import {
   getAminoAcidByCodon,
   getAminoAcidDataByCodon,
   RNAtoAminoAcids,
-  SLC_ALT_CODONS_MAP,
-  SLC_AMINO_ACID_DATA_MAP,
+  SINGLE_LETTER_CODE_ALT_CODONS_MAP,
+  SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP,
 } from '../../src/utils/amino-acids';
 import {
   STOP_CODON_UAA,
@@ -21,7 +21,10 @@ import { isCorrectAminoAcid, ALANINE_RNA_CODON_1, ALANINE_RNA_CODON_2 } from './
 
 test('create AminoAcid (Alanine) from valid RNA codon', () => {
   expect(
-    isCorrectAminoAcid(new AminoAcid(ALANINE_RNA_CODON_1), SLC_AMINO_ACID_DATA_MAP['A']),
+    isCorrectAminoAcid(
+      new AminoAcid(ALANINE_RNA_CODON_1),
+      SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP['A'],
+    ),
   ).toEqual(true);
 });
 
@@ -58,7 +61,7 @@ test('getAminoAcidDataByCodon returns undefined for all stop codons', () => {
 });
 
 test('get all AminoAcid (Alanine) alternate codons', () => {
-  const expectedCodons = SLC_ALT_CODONS_MAP['A'].map(codonStr => new RNA(codonStr));
+  const expectedCodons = SINGLE_LETTER_CODE_ALT_CODONS_MAP['A'].map(codonStr => new RNA(codonStr));
   expect(new AminoAcid(ALANINE_RNA_CODON_2).getAllAlternateCodons()).toEqual(expectedCodons);
 });
 
@@ -91,10 +94,10 @@ test('RNA AminoAcids (Alanine) are alternates', () => {
 */
 
 test('testing creation of all codon variations for each amino acid', () => {
-  let slc: keyof typeof SLC_AMINO_ACID_DATA_MAP;
-  for (slc in SLC_AMINO_ACID_DATA_MAP) {
-    const aminoAcidData = SLC_AMINO_ACID_DATA_MAP[slc];
-    for (const codonStr of SLC_ALT_CODONS_MAP[slc]) {
+  let singleLetterCode: keyof typeof SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP;
+  for (singleLetterCode in SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP) {
+    const aminoAcidData = SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP[singleLetterCode];
+    for (const codonStr of SINGLE_LETTER_CODE_ALT_CODONS_MAP[singleLetterCode]) {
       const codon = new RNA(codonStr);
       expect(isCorrectAminoAcid(new AminoAcid(codon), aminoAcidData)).toEqual(true);
     }
@@ -102,10 +105,10 @@ test('testing creation of all codon variations for each amino acid', () => {
 });
 
 test('testing AminoAcid retrieval via getAminoAcidByCodon() using all codon variations for each amino acid', () => {
-  let slc: keyof typeof SLC_AMINO_ACID_DATA_MAP;
-  for (slc in SLC_AMINO_ACID_DATA_MAP) {
-    const aminoAcidData = SLC_AMINO_ACID_DATA_MAP[slc];
-    for (const codonStr of SLC_ALT_CODONS_MAP[slc]) {
+  let singleLetterCode: keyof typeof SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP;
+  for (singleLetterCode in SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP) {
+    const aminoAcidData = SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP[singleLetterCode];
+    for (const codonStr of SINGLE_LETTER_CODE_ALT_CODONS_MAP[singleLetterCode]) {
       const codon = new RNA(codonStr);
       const aminoAcid = getAminoAcidByCodon(codon);
       if (aminoAcid) {
@@ -203,9 +206,9 @@ test('AminoAcid properties consistent across alternate codons - Leucine', () => 
 });
 
 test('all amino acids have valid properties from data map', () => {
-  let slc: keyof typeof SLC_AMINO_ACID_DATA_MAP;
-  for (slc in SLC_AMINO_ACID_DATA_MAP) {
-    const data = SLC_AMINO_ACID_DATA_MAP[slc];
+  let singleLetterCode: keyof typeof SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP;
+  for (singleLetterCode in SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP) {
+    const data = SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP[singleLetterCode];
 
     expect(typeof data.molecularWeight).toBe('number');
     expect(data.molecularWeight).toBeGreaterThan(0);
@@ -246,9 +249,9 @@ describe('RNAtoAminoAcids', () => {
     const aminoAcids = RNAtoAminoAcids(rna);
 
     expect(aminoAcids).toHaveLength(3);
-    expect(aminoAcids[0].slc).toBe('M');
-    expect(aminoAcids[1].slc).toBe('K');
-    expect(aminoAcids[2].slc).toBe('P');
+    expect(aminoAcids[0].singleLetterCode).toBe('M');
+    expect(aminoAcids[1].singleLetterCode).toBe('K');
+    expect(aminoAcids[2].singleLetterCode).toBe('P');
   });
 
   test('throws error for RNA sequence length not divisible by 3', () => {
@@ -265,8 +268,8 @@ describe('RNAtoAminoAcids', () => {
     const aminoAcids = RNAtoAminoAcids(rna);
 
     expect(aminoAcids).toHaveLength(2); // Only Met and Lys, stops at UAG
-    expect(aminoAcids[0].slc).toBe('M');
-    expect(aminoAcids[1].slc).toBe('K');
+    expect(aminoAcids[0].singleLetterCode).toBe('M');
+    expect(aminoAcids[1].singleLetterCode).toBe('K');
   });
 
   test('throws error for invalid codon encountered', async () => {
@@ -319,8 +322,8 @@ describe('RNAtoAminoAcids', () => {
       const aminoAcids = RNAtoAminoAcids(rna);
 
       expect(aminoAcids).toHaveLength(2); // Met-Lys, then stop
-      expect(aminoAcids[0].slc).toBe('M');
-      expect(aminoAcids[1].slc).toBe('K');
+      expect(aminoAcids[0].singleLetterCode).toBe('M');
+      expect(aminoAcids[1].singleLetterCode).toBe('K');
     });
   });
 });

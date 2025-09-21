@@ -10,11 +10,11 @@ import { AminoAcidData } from '../types/amino-acid-data.js';
 /**
  * Complete amino acid data mapping with biochemical characteristics
  */
-export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
+export const SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   A: {
     name: 'Alanine',
     abbrv: 'Ala',
-    slc: 'A',
+    singleLetterCode: 'A',
     molecularWeight: 89.094,
     polarity: AminoAcidPolarity.NONPOLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -24,7 +24,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   C: {
     name: 'Cysteine',
     abbrv: 'Cys',
-    slc: 'C',
+    singleLetterCode: 'C',
     molecularWeight: 121.154,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -34,7 +34,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   D: {
     name: 'Aspartic acid',
     abbrv: 'Asp',
-    slc: 'D',
+    singleLetterCode: 'D',
     molecularWeight: 133.104,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.NEGATIVE,
@@ -44,7 +44,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   E: {
     name: 'Glutamic acid',
     abbrv: 'Glu',
-    slc: 'E',
+    singleLetterCode: 'E',
     molecularWeight: 147.131,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.NEGATIVE,
@@ -54,7 +54,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   F: {
     name: 'Phenylalanine',
     abbrv: 'Phe',
-    slc: 'F',
+    singleLetterCode: 'F',
     molecularWeight: 165.192,
     polarity: AminoAcidPolarity.NONPOLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -64,7 +64,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   G: {
     name: 'Glycine',
     abbrv: 'Gly',
-    slc: 'G',
+    singleLetterCode: 'G',
     molecularWeight: 75.067,
     polarity: AminoAcidPolarity.NONPOLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -74,7 +74,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   H: {
     name: 'Histidine',
     abbrv: 'His',
-    slc: 'H',
+    singleLetterCode: 'H',
     molecularWeight: 155.156,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.POSITIVE,
@@ -84,7 +84,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   I: {
     name: 'Isoleucine',
     abbrv: 'Ile',
-    slc: 'I',
+    singleLetterCode: 'I',
     molecularWeight: 131.175,
     polarity: AminoAcidPolarity.NONPOLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -94,7 +94,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   K: {
     name: 'Lysine',
     abbrv: 'Lys',
-    slc: 'K',
+    singleLetterCode: 'K',
     molecularWeight: 146.189,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.POSITIVE,
@@ -104,7 +104,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   L: {
     name: 'Leucine',
     abbrv: 'Leu',
-    slc: 'L',
+    singleLetterCode: 'L',
     molecularWeight: 131.175,
     polarity: AminoAcidPolarity.NONPOLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -114,7 +114,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   M: {
     name: 'Methionine',
     abbrv: 'Met',
-    slc: 'M',
+    singleLetterCode: 'M',
     molecularWeight: 149.208,
     polarity: AminoAcidPolarity.NONPOLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -124,7 +124,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   N: {
     name: 'Asparagine',
     abbrv: 'Asn',
-    slc: 'N',
+    singleLetterCode: 'N',
     molecularWeight: 132.119,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -134,7 +134,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   P: {
     name: 'Proline',
     abbrv: 'Pro',
-    slc: 'P',
+    singleLetterCode: 'P',
     molecularWeight: 115.132,
     polarity: AminoAcidPolarity.NONPOLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -144,7 +144,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   Q: {
     name: 'Glutamine',
     abbrv: 'Gln',
-    slc: 'Q',
+    singleLetterCode: 'Q',
     molecularWeight: 146.146,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -154,7 +154,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   R: {
     name: 'Arginine',
     abbrv: 'Arg',
-    slc: 'R',
+    singleLetterCode: 'R',
     molecularWeight: 174.203,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.POSITIVE,
@@ -164,7 +164,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   S: {
     name: 'Serine',
     abbrv: 'Ser',
-    slc: 'S',
+    singleLetterCode: 'S',
     molecularWeight: 105.093,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -174,7 +174,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   T: {
     name: 'Threonine',
     abbrv: 'Thr',
-    slc: 'T',
+    singleLetterCode: 'T',
     molecularWeight: 119.119,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -184,7 +184,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   V: {
     name: 'Valine',
     abbrv: 'Val',
-    slc: 'V',
+    singleLetterCode: 'V',
     molecularWeight: 131.175,
     polarity: AminoAcidPolarity.NONPOLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -194,7 +194,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   W: {
     name: 'Tryptophan',
     abbrv: 'Trp',
-    slc: 'W',
+    singleLetterCode: 'W',
     molecularWeight: 204.228,
     polarity: AminoAcidPolarity.NONPOLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -204,7 +204,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
   Y: {
     name: 'Tyrosine',
     abbrv: 'Tyr',
-    slc: 'Y',
+    singleLetterCode: 'Y',
     molecularWeight: 181.191,
     polarity: AminoAcidPolarity.POLAR,
     charge: AminoAcidCharge.NEUTRAL,
@@ -217,7 +217,7 @@ export const SLC_AMINO_ACID_DATA_MAP: Record<string, AminoAcidData> = {
  * Direct codon-to-single-letter-code mapping for lookups.
  * This is much more efficient than creating RNA objects and iterating through arrays.
  */
-export const CODON_TO_SLC_MAP: Record<string, string> = {
+export const CODON_TO_SINGLE_LETTER_CODE_MAP: Record<string, string> = {
   // Alanine (A)
   GCA: 'A',
   GCC: 'A',
@@ -305,7 +305,7 @@ export const CODON_TO_SLC_MAP: Record<string, string> = {
  * Static mapping of single letter codes to their corresponding codon arrays.
  * Uses string arrays instead of RNA objects for better performance.
  */
-export const SLC_ALT_CODONS_MAP: Record<string, readonly string[]> = {
+export const SINGLE_LETTER_CODE_ALT_CODONS_MAP: Record<string, readonly string[]> = {
   A: ['GCA', 'GCC', 'GCG', 'GCU'],
   C: ['UGC', 'UGU'],
   D: ['GAC', 'GAU'],
