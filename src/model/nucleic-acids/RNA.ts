@@ -1,6 +1,5 @@
 import { validateNucleicAcid, unwrap } from '../../utils/validation.js';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
-import { RNASubType } from '../../enums/rna-sub-type.js';
 import { ValidationResult } from '../../types/validation-result.js';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError.js';
 import { NucleicAcid } from './NucleicAcid.js';
@@ -12,11 +11,9 @@ import { NucleicAcid } from './NucleicAcid.js';
  */
 export class RNA extends NucleicAcid {
   private readonly sequence: string;
-  public readonly rnaSubType?: RNASubType;
 
   /**
    * @param sequence - String representing the RNA sequence (required)
-   * @param rnaSubType - Optional RNASubType representing the type of RNA
    *
    * @throws {@link InvalidSequenceError}
    * Thrown if the sequence is invalid
@@ -25,12 +22,11 @@ export class RNA extends NucleicAcid {
    * ```typescript
    * const rna = new RNA('AUCG'); // Valid
    * const rna = new RNA('aucg'); // Valid - normalized to uppercase
-   * const rna = new RNA('AUCG', RNASubType.M_RNA); // Valid with subtype
    * const rna = new RNA(''); // Throws InvalidSequenceError
    * const rna = new RNA('ATCG'); // Throws InvalidSequenceError - contains T instead of U
    * ```
    */
-  constructor(sequence: string, rnaSubType?: RNASubType) {
+  constructor(sequence: string) {
     super(NucleicAcidType.RNA);
     const validationResult = validateNucleicAcid(sequence, NucleicAcidType.RNA);
 
@@ -39,14 +35,12 @@ export class RNA extends NucleicAcid {
     }
 
     this.sequence = validationResult.data;
-    this.rnaSubType = rnaSubType;
   }
 
   /**
    * Creates an RNA instance from a sequence, returning a ValidationResult instead of throwing
    *
    * @param sequence - String representing the RNA sequence
-   * @param rnaSubType - Optional RNASubType representing the type of RNA
    * @returns ValidationResult containing RNA instance or error message
    *
    * @example
@@ -59,7 +53,7 @@ export class RNA extends NucleicAcid {
    * }
    * ```
    */
-  static create(sequence: string, rnaSubType?: RNASubType): ValidationResult<RNA> {
+  static create(sequence: string): ValidationResult<RNA> {
     const validationResult = validateNucleicAcid(sequence, NucleicAcidType.RNA);
 
     if (!validationResult.success) {
@@ -67,7 +61,7 @@ export class RNA extends NucleicAcid {
     }
 
     // Use unwrap since we know validation succeeded
-    return { success: true as const, data: new RNA(unwrap(validationResult), rnaSubType) };
+    return { success: true as const, data: new RNA(unwrap(validationResult)) };
   }
 
   /**
@@ -77,15 +71,6 @@ export class RNA extends NucleicAcid {
    */
   getSequence(): string {
     return this.sequence;
-  }
-
-  /**
-   * Returns the RNA subtype
-   *
-   * @returns The RNA subtype, or undefined if not specified
-   */
-  getSubType(): RNASubType | undefined {
-    return this.rnaSubType;
   }
 
   /**
@@ -104,6 +89,6 @@ export class RNA extends NucleicAcid {
    */
   getSubsequence(start: number, end?: number): RNA {
     const subsequence = this.sequence.substring(start, end);
-    return new RNA(subsequence, this.rnaSubType);
+    return new RNA(subsequence);
   }
 }

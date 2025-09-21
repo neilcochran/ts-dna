@@ -1,5 +1,4 @@
 import { MRNA } from '../../../src/model/nucleic-acids/MRNA';
-import { RNASubType } from '../../../src/enums/rna-sub-type';
 
 describe('MRNA', () => {
   describe('constructor', () => {
@@ -17,7 +16,6 @@ describe('MRNA', () => {
       expect(mRNA.getCodingSequence()).toBe('AUGAAACCCGGG');
       expect(mRNA.hasFivePrimeCap()).toBe(true);
       expect(mRNA.getPolyATailLength()).toBe(10);
-      expect(mRNA.rnaSubType).toBe(RNASubType.M_RNA);
     });
 
     test('creates MRNA with default cap and empty poly-A tail', () => {

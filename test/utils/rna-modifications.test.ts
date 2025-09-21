@@ -28,12 +28,12 @@ describe('rna-modifications', () => {
       expect(cappedRNA).toBeInstanceOf(ProcessedRNA);
       expect(cappedRNA.getSequence()).toBe('AUGAAACCCGGG');
       expect(cappedRNA.hasFivePrimeCap).toBe(true);
-      expect(cappedRNA.rnaSubType).toBe(rna.rnaSubType);
+      expect(cappedRNA.getSequence()).toBe(rna.getSequence()); // Sequence should be preserved
     });
 
     test('adds cap to ProcessedRNA that already exists', () => {
       // Test line 62: when rna instanceof ProcessedRNA
-      const existingProcessedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, false, 'AAAAAAA');
+      const existingProcessedRNA = new ProcessedRNA('AUGAAACCCGGG', false, 'AAAAAAA');
       const cappedRNA = add5PrimeCap(existingProcessedRNA);
 
       expect(cappedRNA).toBeInstanceOf(ProcessedRNA);
@@ -49,13 +49,6 @@ describe('rna-modifications', () => {
       expect(cappedRNA).toBeInstanceOf(ProcessedRNA);
       expect(cappedRNA.getSequence()).toBe('A');
       expect(cappedRNA.hasFivePrimeCap).toBe(true);
-    });
-
-    test('preserves RNA subtype', () => {
-      const rna = new RNA('AUGAAACCCGGG');
-      const cappedRNA = add5PrimeCap(rna);
-
-      expect(cappedRNA.rnaSubType).toBe(rna.rnaSubType);
     });
   });
 
@@ -161,7 +154,7 @@ describe('rna-modifications', () => {
 
     test("preserves 5' cap when adding poly-A tail to ProcessedRNA", () => {
       // Test line 101: when rna instanceof ProcessedRNA
-      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', true, '');
       const result = add3PrimePolyATail(processedRNA, 12, 5);
 
       expect(isSuccess(result)).toBe(true);
@@ -216,7 +209,7 @@ describe('rna-modifications', () => {
 
   describe('remove5PrimeCap', () => {
     test("removes 5' cap from capped RNA", () => {
-      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', true, '');
       const result = remove5PrimeCap(processedRNA);
 
       expect(isSuccess(result)).toBe(true);
@@ -238,7 +231,7 @@ describe('rna-modifications', () => {
 
     test('fails when ProcessedRNA has no cap', () => {
       // Test line 163: when ProcessedRNA doesn't have a cap
-      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, false, 'AAAA');
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', false, 'AAAA');
       const result = remove5PrimeCap(processedRNA);
 
       expect(isFailure(result)).toBe(true);
@@ -293,7 +286,7 @@ describe('rna-modifications', () => {
 
     test('removes poly-A tail from ProcessedRNA', () => {
       // Test lines 131-135: when rna instanceof ProcessedRNA with poly-A tail
-      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAA');
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', true, 'AAAAAAA');
       const result = remove3PrimePolyATail(processedRNA);
 
       expect(isSuccess(result)).toBe(true);
@@ -306,7 +299,7 @@ describe('rna-modifications', () => {
 
     test('fails when ProcessedRNA has no poly-A tail', () => {
       // Test line 132: when ProcessedRNA has empty poly-A tail
-      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', true, '');
       const result = remove3PrimePolyATail(processedRNA);
 
       expect(isFailure(result)).toBe(true);
@@ -335,7 +328,7 @@ describe('rna-modifications', () => {
 
   describe('has5PrimeCap', () => {
     test("detects 5' cap presence", () => {
-      const cappedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
+      const cappedRNA = new ProcessedRNA('AUGAAACCCGGG', true, '');
       const uncappedRNA = new RNA('AUGAAACCCGGG');
 
       expect(has5PrimeCap(cappedRNA)).toBe(true);
@@ -364,9 +357,9 @@ describe('rna-modifications', () => {
 
     test('detects poly-A tail in ProcessedRNA', () => {
       // Test line 196: when rna instanceof ProcessedRNA
-      const processedRNAWithTail = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAAAAA');
-      const processedRNAWithoutTail = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
-      const processedRNAShortTail = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAA');
+      const processedRNAWithTail = new ProcessedRNA('AUGAAACCCGGG', true, 'AAAAAAAAAA');
+      const processedRNAWithoutTail = new ProcessedRNA('AUGAAACCCGGG', true, '');
+      const processedRNAShortTail = new ProcessedRNA('AUGAAACCCGGG', true, 'AAA');
 
       expect(has3PrimePolyATail(processedRNAWithTail)).toBe(true); // 10 A's >= default min
       expect(has3PrimePolyATail(processedRNAWithoutTail)).toBe(false); // 0 A's < default min
@@ -396,8 +389,8 @@ describe('rna-modifications', () => {
 
     test('returns poly-A tail length from ProcessedRNA', () => {
       // Test line 208: when rna instanceof ProcessedRNA
-      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAA');
-      const processedRNANoTail = new ProcessedRNA('AUGAAACCCGGG', undefined, true, '');
+      const processedRNA = new ProcessedRNA('AUGAAACCCGGG', true, 'AAAAAAA');
+      const processedRNANoTail = new ProcessedRNA('AUGAAACCCGGG', true, '');
 
       expect(get3PrimePolyATailLength(processedRNA)).toBe(7);
       expect(get3PrimePolyATailLength(processedRNANoTail)).toBe(0);
@@ -406,14 +399,14 @@ describe('rna-modifications', () => {
 
   describe('getCoreSequence', () => {
     test('removes both cap and poly-A tail', () => {
-      const rna = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAAAAA');
+      const rna = new ProcessedRNA('AUGAAACCCGGG', true, 'AAAAAAAAAA');
       const core = getCoreSequence(rna);
 
       expect(core).toBe('AUGAAACCCGGG');
     });
 
     test('removes only cap when no poly-A tail', () => {
-      const rna = new ProcessedRNA('AUGAAACCCGGGCCC', undefined, true, '');
+      const rna = new ProcessedRNA('AUGAAACCCGGGCCC', true, '');
       const core = getCoreSequence(rna);
 
       expect(core).toBe('AUGAAACCCGGGCCC');
@@ -436,9 +429,9 @@ describe('rna-modifications', () => {
 
   describe('isFullyProcessed', () => {
     test('detects fully processed RNA', () => {
-      const fullyProcessed = new ProcessedRNA('AUGAAACCCGGG', undefined, true, 'AAAAAAAAAA');
-      const onlyCapped = new ProcessedRNA('AUGAAACCCGGGCCC', undefined, true, '');
-      const onlyPolyA = new ProcessedRNA('AUGAAACCCGGG', undefined, false, 'AAAAAAAAAA');
+      const fullyProcessed = new ProcessedRNA('AUGAAACCCGGG', true, 'AAAAAAAAAA');
+      const onlyCapped = new ProcessedRNA('AUGAAACCCGGGCCC', true, '');
+      const onlyPolyA = new ProcessedRNA('AUGAAACCCGGG', false, 'AAAAAAAAAA');
       const unprocessed = new RNA('AUGAAACCCGGGCCC');
 
       expect(isFullyProcessed(fullyProcessed)).toBe(true);

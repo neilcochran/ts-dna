@@ -20,7 +20,6 @@ import {
   STOP_CODONS,
 } from '../../src/utils/nucleic-acids';
 import { NucleicAcidType } from '../../src/enums/nucleic-acid-type';
-import { RNASubType } from '../../src/enums/rna-sub-type';
 import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../../src/data/iupac-symbols';
 import { success, failure, isSuccess, isFailure, validateNucleicAcid } from '../../src';
 import {
@@ -316,12 +315,8 @@ test('construct RNA with lowercase sequence (normalized to uppercase)', () => {
   expect(new RNA('aucg').getSequence()).toEqual('AUCG');
 });
 
-test('construct valid RNA with RNASubType PRE_M_RNA', () => {
-  expect(new RNA(RNA_SEQ, RNASubType.PRE_M_RNA).rnaSubType).toEqual(RNASubType.PRE_M_RNA);
-});
-
-test('construct valid RNA with RNASubType M_RNA', () => {
-  expect(new RNA(RNA_SEQ, RNASubType.M_RNA).rnaSubType).toEqual(RNASubType.M_RNA);
+test('construct valid RNA sequence', () => {
+  expect(new RNA(RNA_SEQ).getSequence()).toEqual(RNA_SEQ);
 });
 
 test('construct invalid RNA sequence', () => {
@@ -390,20 +385,9 @@ test('convert DNA -> RNA convertToRNA', () => {
   expect(convertToRNA(new DNA(DNA_SEQ))).toEqual(new RNA(RNA_SEQ));
 });
 
-test('convert DNA with subtype -> RNA convertToRNA', () => {
-  const result = convertToRNA(new DNA(DNA_SEQ), RNASubType.M_RNA);
+test('convert DNA -> RNA convertToRNA', () => {
+  const result = convertToRNA(new DNA(DNA_SEQ));
   expect(result.getSequence()).toEqual(RNA_SEQ);
-  expect(result.rnaSubType).toEqual(RNASubType.M_RNA);
-});
-
-test('convert DNA -> RNA with RNASubType PRE_M_RNA convertToRNA', () => {
-  expect(convertToRNA(new DNA(DNA_SEQ), RNASubType.PRE_M_RNA).rnaSubType).toEqual(
-    RNASubType.PRE_M_RNA,
-  );
-});
-
-test('convert DNA -> RNA with RNASubType M_RNA convertToRNA', () => {
-  expect(convertToRNA(new DNA(DNA_SEQ), RNASubType.M_RNA).rnaSubType).toEqual(RNASubType.M_RNA);
 });
 
 test('convert RNA -> DNA convertToDNA', () => {
@@ -581,15 +565,6 @@ test('RNA.create returns success for valid sequence', () => {
   if (isSuccess(result)) {
     expect(result.data.getSequence()).toEqual('AUCG');
     expect(isRNA(result.data)).toBe(true);
-  }
-});
-
-test('RNA.create returns success for valid sequence with subtype', () => {
-  const result = RNA.create('AUCG', RNASubType.M_RNA);
-  expect(isSuccess(result)).toBe(true);
-  if (isSuccess(result)) {
-    expect(result.data.getSequence()).toEqual('AUCG');
-    expect(result.data.rnaSubType).toEqual(RNASubType.M_RNA);
   }
 });
 

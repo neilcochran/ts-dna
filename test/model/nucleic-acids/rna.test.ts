@@ -1,7 +1,6 @@
 import { RNA } from '../../../src/model/nucleic-acids/RNA';
 import { InvalidSequenceError } from '../../../src/model/errors/InvalidSequenceError';
 import { NucleicAcidType } from '../../../src/enums/nucleic-acid-type';
-import { RNASubType } from '../../../src/enums/rna-sub-type';
 import { isSuccess, isFailure } from '../../../src/types/validation-result';
 
 describe('RNA Class', () => {
@@ -10,16 +9,6 @@ describe('RNA Class', () => {
       const rna = new RNA('AUCG');
       expect(rna.getSequence()).toBe('AUCG');
       expect(rna.nucleicAcidType).toBe(NucleicAcidType.RNA);
-    });
-
-    test('creates RNA without subtype', () => {
-      const rna = new RNA('AUCG');
-      expect(rna.rnaSubType).toBeUndefined();
-    });
-
-    test('creates RNA with subtype', () => {
-      const rna = new RNA('AUCG', RNASubType.M_RNA);
-      expect(rna.rnaSubType).toBe(RNASubType.M_RNA);
     });
 
     test('normalizes lowercase to uppercase', () => {
@@ -81,14 +70,6 @@ describe('RNA Class', () => {
       const rna = new RNA('A');
       expect(rna.getSequence()).toBe('A');
     });
-
-    test('creates RNA with available subtypes', () => {
-      const mrna = new RNA('AUCG', RNASubType.M_RNA);
-      const prerRNA = new RNA('AUCG', RNASubType.PRE_M_RNA);
-
-      expect(mrna.rnaSubType).toBe(RNASubType.M_RNA);
-      expect(prerRNA.rnaSubType).toBe(RNASubType.PRE_M_RNA);
-    });
   });
 
   describe('static create method', () => {
@@ -99,16 +80,6 @@ describe('RNA Class', () => {
       if (isSuccess(result)) {
         expect(result.data.getSequence()).toBe('AUCG');
         expect(result.data).toBeInstanceOf(RNA);
-      }
-    });
-
-    test('returns success for valid sequence with subtype', () => {
-      const result = RNA.create('AUCG', RNASubType.M_RNA);
-
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.getSequence()).toBe('AUCG');
-        expect(result.data.rnaSubType).toBe(RNASubType.M_RNA);
       }
     });
 
@@ -179,15 +150,15 @@ describe('RNA Class', () => {
       expect(rna1.equals(rna3)).toBe(false);
     });
 
-    test('equals considers subtypes', () => {
-      const rna1 = new RNA('AUCG', RNASubType.M_RNA);
-      const rna2 = new RNA('AUCG', RNASubType.M_RNA);
-      const rna3 = new RNA('AUCG', RNASubType.PRE_M_RNA);
-      const rna4 = new RNA('AUCG'); // No subtype
+    test('equals compares sequences correctly', () => {
+      const rna1 = new RNA('AUCG');
+      const rna2 = new RNA('AUCG');
+      const rna3 = new RNA('AUCG');
+      const rna4 = new RNA('GUCA');
 
       expect(rna1.equals(rna2)).toBe(true);
-      expect(rna1.equals(rna3)).toBe(false);
-      expect(rna1.equals(rna4)).toBe(false);
+      expect(rna1.equals(rna3)).toBe(true);
+      expect(rna1.equals(rna4)).toBe(false); // Different sequence should not be equal
     });
 
     test('implements getComplementSequence method', () => {
@@ -199,27 +170,6 @@ describe('RNA Class', () => {
       expect(complement).toContain('A'); // U -> A
       expect(complement).toContain('G'); // C -> G
       expect(complement).toContain('C'); // G -> C
-    });
-  });
-
-  describe('RNA subtype functionality', () => {
-    test('rnaSubType property is readonly', () => {
-      const rna = new RNA('AUCG', RNASubType.M_RNA);
-      expect(rna.rnaSubType).toBe(RNASubType.M_RNA);
-      // TypeScript prevents modification at compile time
-    });
-
-    test('different subtypes are distinct', () => {
-      const mrna = new RNA('AUCG', RNASubType.M_RNA);
-      const premrna = new RNA('AUCG', RNASubType.PRE_M_RNA);
-
-      expect(mrna.rnaSubType).not.toBe(premrna.rnaSubType);
-      expect(mrna.equals(premrna)).toBe(false);
-    });
-
-    test('undefined subtype works correctly', () => {
-      const rna = new RNA('AUCG');
-      expect(rna.rnaSubType).toBeUndefined();
     });
   });
 
@@ -267,10 +217,9 @@ describe('RNA Class', () => {
     test('handles realistic mRNA sequences', () => {
       // Start codon + coding sequence + stop codon
       const mrnaSequence = 'AUGUGGCACCUGACUCCUGAGGAGAAGUCUGCCGUUACUGCCCUGUGGGGCAAGUAA';
-      const rna = new RNA(mrnaSequence, RNASubType.M_RNA);
+      const rna = new RNA(mrnaSequence);
 
       expect(rna.getSequence()).toBe(mrnaSequence);
-      expect(rna.rnaSubType).toBe(RNASubType.M_RNA);
     });
 
     test('handles codon sequences', () => {
@@ -306,9 +255,8 @@ describe('RNA Class', () => {
     test('handles complex RNA sequences', () => {
       // Simplified RNA sequence (removed invalid D)
       const rnaSequence = 'GCCGAUAUAGCUCAGGGGAGAGCGCCUGCUUUGCACGCAGGAGGUCGGCGGUCCGAUUCCGCCUAUCGGCA';
-      const rna = new RNA(rnaSequence, RNASubType.M_RNA);
+      const rna = new RNA(rnaSequence);
 
-      expect(rna.rnaSubType).toBe(RNASubType.M_RNA);
       expect(rna.getSequence()).toBe(rnaSequence);
     });
   });

@@ -1,6 +1,5 @@
 import { RNA } from './RNA.js';
 import { Gene } from './Gene.js';
-import { RNASubType } from '../../enums/rna-sub-type.js';
 import { GenomicRegion } from '../../types/genomic-region.js';
 
 /**
@@ -61,7 +60,7 @@ export class PreMRNA extends RNA {
     transcriptionStartSite: number,
     polyadenylationSite?: number,
   ) {
-    super(sequence, RNASubType.PRE_M_RNA);
+    super(sequence);
     this.sourceGene = sourceGene;
     this.transcriptionStartSite = transcriptionStartSite;
     this.polyadenylationSite = polyadenylationSite;
