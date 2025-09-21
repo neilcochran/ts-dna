@@ -1,3 +1,8 @@
+# Version 2.1.0
+
+- Remove RNASubType enum now that we have proper classes for all RNA types.
+- Add String like functions to all NucleicAcids and to Polypeptides: length, contains, startsWith, endsWith, indexOf, getSubsequence
+
 # Version 2.0.0
 
 - Added comprehensive DNA replication simulation with biologically accurate enzyme modeling

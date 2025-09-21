@@ -173,3 +173,146 @@ test('polypeptide immutability - mRNA changes do not affect polypeptide', () => 
   expect(polypeptide.aminoAcidSequence[0].slc).toEqual(originalFirstAminoAcid);
   expect(polypeptide.mRNA.getSequence()).toEqual(originalMRNA.getSequence());
 });
+
+describe('length() method', () => {
+  test('returns correct amino acid count', () => {
+    // mRNA with 4 codons: AUG-AAA-GGG-AAA, followed by UAG stop
+    const mRNA = new MRNA('GAUGAAAGGGAAAUAG', 'AUGAAAGGGAAAUAG', 1, 16);
+    const polypeptide = new Polypeptide(mRNA);
+
+    expect(polypeptide.length()).toBe(4);
+    expect(polypeptide.length()).toBe(polypeptide.aminoAcidSequence.length);
+  });
+
+  test('returns correct length for known test sequences', () => {
+    // Both test mRNAs are 60 nucleotides, should produce 20 amino acids (60 ÷ 3 = 20)
+    const polypeptide1 = new Polypeptide(MRNA_ALL_AMINO_ACIDS_1);
+    const polypeptide2 = new Polypeptide(MRNA_ALL_AMINO_ACIDS_2);
+
+    // Verify specific expected counts based on the mRNA sequence lengths
+    expect(polypeptide1.length()).toBe(20);
+    expect(polypeptide2.length()).toBe(20);
+  });
+
+  test('length method matches amino acid sequence length property', () => {
+    const polypeptide = new Polypeptide(MRNA_ALL_AMINO_ACIDS_1);
+
+    // Verify that length() method returns same value as direct property access
+    expect(polypeptide.length()).toBe(polypeptide.aminoAcidSequence.length);
+    expect(typeof polypeptide.length()).toBe('number');
+  });
+});
+
+describe('Polypeptide string-like methods', () => {
+  const polypeptide = new Polypeptide(MRNA_ALL_AMINO_ACIDS_1);
+
+  describe('getSequence()', () => {
+    test('returns expected amino acid sequence', () => {
+      // The test mRNA should produce the expected amino acid sequence
+      const sequence = polypeptide.getSequence();
+      expect(sequence).toBe(ALL_AMINO_ACIDS_SLC_SEQ);
+      expect(sequence.length).toBe(20);
+    });
+
+    test('returns single-letter codes', () => {
+      const sequence = polypeptide.getSequence();
+      // Should be all uppercase single letters
+      expect(sequence).toMatch(/^[A-Z]{20}$/);
+    });
+  });
+
+  describe('contains()', () => {
+    test('finds existing amino acid subsequences', () => {
+      expect(polypeptide.contains('ACD')).toBe(true); // Should be at start
+      expect(polypeptide.contains('DEF')).toBe(true); // Should be in middle
+      expect(polypeptide.contains('A')).toBe(true); // Single amino acid
+    });
+
+    test('returns false for non-existing subsequences', () => {
+      expect(polypeptide.contains('XXX')).toBe(false); // X is not a standard amino acid
+      expect(polypeptide.contains('ZZZ')).toBe(false); // Non-existent sequence
+    });
+
+    test('works with Polypeptide objects', () => {
+      const subPolypeptide = polypeptide.getSubsequence(0, 3); // First 3 amino acids
+      expect(polypeptide.contains(subPolypeptide)).toBe(true);
+    });
+  });
+
+  describe('startsWith()', () => {
+    test('detects correct amino acid prefix', () => {
+      expect(polypeptide.startsWith('A')).toBe(true); // First amino acid
+      expect(polypeptide.startsWith('AC')).toBe(true); // First two
+      expect(polypeptide.startsWith('ACD')).toBe(true); // First three
+    });
+
+    test('returns false for incorrect prefix', () => {
+      expect(polypeptide.startsWith('C')).toBe(false); // Doesn't start with C
+      expect(polypeptide.startsWith('XY')).toBe(false); // Invalid sequence
+    });
+  });
+
+  describe('endsWith()', () => {
+    test('detects correct amino acid suffix', () => {
+      expect(polypeptide.endsWith('Y')).toBe(true); // Last amino acid
+      expect(polypeptide.endsWith('WY')).toBe(true); // Last two
+      expect(polypeptide.endsWith('VWY')).toBe(true); // Last three
+    });
+
+    test('returns false for incorrect suffix', () => {
+      expect(polypeptide.endsWith('A')).toBe(false); // Doesn't end with A
+      expect(polypeptide.endsWith('XZ')).toBe(false); // Invalid sequence
+    });
+  });
+
+  describe('indexOf()', () => {
+    test('finds amino acid positions correctly', () => {
+      expect(polypeptide.indexOf('A')).toBe(0); // First position
+      expect(polypeptide.indexOf('C')).toBe(1); // Second position
+      expect(polypeptide.indexOf('Y')).toBe(19); // Last position
+    });
+
+    test('finds subsequence positions', () => {
+      expect(polypeptide.indexOf('ACD')).toBe(0); // At beginning
+      expect(polypeptide.indexOf('DEF')).toBe(2); // Position 2
+    });
+
+    test('returns -1 for non-existing sequences', () => {
+      expect(polypeptide.indexOf('XXX')).toBe(-1);
+      expect(polypeptide.indexOf('ZZZ')).toBe(-1);
+    });
+
+    test('respects start position parameter', () => {
+      // Look for subsequences after a certain position
+      expect(polypeptide.indexOf('G', 5)).toBe(5); // Should find G at position 5
+    });
+  });
+
+  describe('getSubsequence()', () => {
+    test('extracts amino acid subsequences correctly', () => {
+      const sub1 = polypeptide.getSubsequence(0, 3); // First 3: 'ACD'
+      const sub2 = polypeptide.getSubsequence(2, 5); // Middle 3: 'DEF'
+      const sub3 = polypeptide.getSubsequence(17); // Last 3: 'VWY'
+
+      expect(sub1.getSequence()).toBe('ACD');
+      expect(sub2.getSequence()).toBe('DEF');
+      expect(sub3.getSequence()).toBe('VWY');
+    });
+
+    test('creates valid Polypeptide objects', () => {
+      const sub = polypeptide.getSubsequence(0, 5);
+
+      expect(sub).toBeInstanceOf(Polypeptide);
+      expect(sub.length()).toBe(5);
+      expect(sub.getSequence()).toBe('ACDEF');
+    });
+
+    test('handles edge cases', () => {
+      const singleAA = polypeptide.getSubsequence(0, 1);
+      const lastAA = polypeptide.getSubsequence(19, 20);
+
+      expect(singleAA.getSequence()).toBe('A');
+      expect(lastAA.getSequence()).toBe('Y');
+    });
+  });
+});

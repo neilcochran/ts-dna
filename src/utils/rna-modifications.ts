@@ -1,5 +1,4 @@
 import { RNA } from '../model/nucleic-acids/RNA.js';
-import { RNASubType } from '../enums/rna-sub-type.js';
 import { PolyadenylationSite } from '../types/polyadenylation-site.js';
 import { ValidationResult, success, failure } from '../types/validation-result.js';
 import {
@@ -14,14 +13,12 @@ import {
  * This is a temporary class until we implement the full MRNA class in Phase 5.
  */
 export class ProcessedRNA extends RNA {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(
     sequence: string,
-    rnaSubType?: RNASubType,
     public readonly hasFivePrimeCap: boolean = false,
     public readonly polyATail: string = '',
   ) {
-    super(sequence, rnaSubType);
+    super(sequence);
   }
 
   /**
@@ -59,9 +56,9 @@ export class ProcessedRNA extends RNA {
  */
 export function add5PrimeCap(rna: RNA): ProcessedRNA {
   if (rna instanceof ProcessedRNA) {
-    return new ProcessedRNA(rna.getSequence(), rna.rnaSubType, true, rna.polyATail);
+    return new ProcessedRNA(rna.getSequence(), true, rna.polyATail);
   }
-  return new ProcessedRNA(rna.getSequence(), rna.rnaSubType, true, '');
+  return new ProcessedRNA(rna.getSequence(), true, '');
 }
 
 /**
@@ -99,7 +96,7 @@ export function add3PrimePolyATail(
 
     // Create ProcessedRNA with poly-A tail
     const hasCap = rna instanceof ProcessedRNA ? rna.hasFivePrimeCap : false;
-    const processedRNA = new ProcessedRNA(cleavedSequence, rna.rnaSubType, hasCap, polyATail);
+    const processedRNA = new ProcessedRNA(cleavedSequence, hasCap, polyATail);
     return success(processedRNA);
   } catch (error) {
     return failure(
@@ -132,7 +129,7 @@ export function remove3PrimePolyATail(rna: RNA): ValidationResult<ProcessedRNA> 
         return failure('No poly-A tail found to remove');
       }
       // Return ProcessedRNA without poly-A tail
-      return success(new ProcessedRNA(rna.getSequence(), rna.rnaSubType, rna.hasFivePrimeCap, ''));
+      return success(new ProcessedRNA(rna.getSequence(), rna.hasFivePrimeCap, ''));
     }
 
     // For regular RNA, check if sequence ends with A's
@@ -144,7 +141,7 @@ export function remove3PrimePolyATail(rna: RNA): ValidationResult<ProcessedRNA> 
       return failure('No poly-A tail found to remove');
     }
 
-    const processedRNA = new ProcessedRNA(sequence, rna.rnaSubType, false, '');
+    const processedRNA = new ProcessedRNA(sequence, false, '');
     return success(processedRNA);
   } catch (error) {
     return failure(
@@ -163,7 +160,7 @@ export function remove5PrimeCap(rna: RNA): ValidationResult<ProcessedRNA> {
         return failure("No 5' cap found to remove");
       }
       // Return ProcessedRNA without 5' cap
-      return success(new ProcessedRNA(rna.getSequence(), rna.rnaSubType, false, rna.polyATail));
+      return success(new ProcessedRNA(rna.getSequence(), false, rna.polyATail));
     }
 
     return failure("No 5' cap found to remove");

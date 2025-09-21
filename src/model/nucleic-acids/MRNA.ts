@@ -1,5 +1,4 @@
 import { RNA } from './RNA.js';
-import { RNASubType } from '../../enums/rna-sub-type.js';
 import { MIN_POLY_A_DETECTION_LENGTH, CODON_LENGTH } from '../../constants/biological-constants.js';
 
 /**
@@ -51,7 +50,7 @@ export class MRNA extends RNA {
     fivePrimeCap: boolean = true,
     polyATail: string = '',
   ) {
-    super(sequence, RNASubType.M_RNA);
+    super(sequence);
 
     // Validate coding sequence boundaries
     if (codingStart < 0 || codingEnd > sequence.length || codingStart >= codingEnd) {

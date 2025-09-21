@@ -72,4 +72,23 @@ export class DNA extends NucleicAcid {
   getSequence(): string {
     return this.sequence;
   }
+
+  /**
+   * Returns a DNA subsequence from the specified start position to the end position
+   *
+   * @param start - The starting position (inclusive, 0-based)
+   * @param end - The ending position (exclusive, 0-based). If not specified, goes to end of sequence
+   * @returns A new DNA instance containing the subsequence
+   *
+   * @example
+   * ```typescript
+   * const dna = new DNA('ATCGATCG');
+   * const sub = dna.getSubsequence(2, 5); // Creates new DNA with 'CGA'
+   * console.log(sub.getSequence()); // 'CGA'
+   * ```
+   */
+  getSubsequence(start: number, end?: number): DNA {
+    const subsequence = this.sequence.substring(start, end);
+    return new DNA(subsequence);
+  }
 }

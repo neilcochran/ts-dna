@@ -230,4 +230,136 @@ describe('DNA Class', () => {
       expect(dna.getSequence()).toBe(atRich);
     });
   });
+
+  describe('new utility methods', () => {
+    const testDNA = new DNA('ATCGATCG');
+
+    describe('length()', () => {
+      test('returns correct sequence length', () => {
+        expect(testDNA.length()).toBe(8);
+      });
+
+      test('returns 1 for single nucleotide', () => {
+        const singleDNA = new DNA('A');
+        expect(singleDNA.length()).toBe(1);
+      });
+
+      test('returns correct length for longer sequences', () => {
+        const longDNA = new DNA('ATCGATCGATCGATCGATCG');
+        expect(longDNA.length()).toBe(20);
+      });
+    });
+
+    describe('contains()', () => {
+      test('finds existing subsequence with string', () => {
+        expect(testDNA.contains('TCG')).toBe(true);
+        expect(testDNA.contains('ATC')).toBe(true);
+        expect(testDNA.contains('ATCG')).toBe(true);
+      });
+
+      test('returns false for non-existing subsequence', () => {
+        expect(testDNA.contains('AAA')).toBe(false);
+        expect(testDNA.contains('TTT')).toBe(false);
+        expect(testDNA.contains('XYZ')).toBe(false);
+      });
+
+      test('finds subsequence with DNA object', () => {
+        const subDNA = new DNA('TCG');
+        expect(testDNA.contains(subDNA)).toBe(true);
+      });
+
+      test('is case sensitive after normalization', () => {
+        expect(testDNA.contains('tcg')).toBe(false); // Should be uppercase
+      });
+    });
+
+    describe('startsWith()', () => {
+      test('detects correct prefix with string', () => {
+        expect(testDNA.startsWith('ATC')).toBe(true);
+        expect(testDNA.startsWith('AT')).toBe(true);
+        expect(testDNA.startsWith('ATCGATCG')).toBe(true);
+      });
+
+      test('returns false for incorrect prefix', () => {
+        expect(testDNA.startsWith('GTC')).toBe(false);
+        expect(testDNA.startsWith('TCG')).toBe(false);
+      });
+
+      test('works with DNA object', () => {
+        const prefixDNA = new DNA('ATC');
+        expect(testDNA.startsWith(prefixDNA)).toBe(true);
+      });
+    });
+
+    describe('endsWith()', () => {
+      test('detects correct suffix with string', () => {
+        expect(testDNA.endsWith('TCG')).toBe(true);
+        expect(testDNA.endsWith('CG')).toBe(true);
+        expect(testDNA.endsWith('ATCGATCG')).toBe(true);
+      });
+
+      test('returns false for incorrect suffix', () => {
+        expect(testDNA.endsWith('ATC')).toBe(false);
+        expect(testDNA.endsWith('ATG')).toBe(false);
+      });
+
+      test('works with DNA object', () => {
+        const suffixDNA = new DNA('TCG');
+        expect(testDNA.endsWith(suffixDNA)).toBe(true);
+      });
+    });
+
+    describe('indexOf()', () => {
+      test('finds first occurrence of subsequence', () => {
+        expect(testDNA.indexOf('TCG')).toBe(1);
+        expect(testDNA.indexOf('ATC')).toBe(0);
+        expect(testDNA.indexOf('CG')).toBe(2);
+      });
+
+      test('finds occurrence with start position', () => {
+        // testDNA = 'ATCGATCG' - positions: A(0)T(1)C(2)G(3)A(4)T(5)C(6)G(7)
+        expect(testDNA.indexOf('TCG', 2)).toBe(5); // Second occurrence starts at position 5
+        expect(testDNA.indexOf('C', 3)).toBe(6); // First C after position 3 is at position 6
+      });
+
+      test('returns -1 for non-existing subsequence', () => {
+        expect(testDNA.indexOf('AAA')).toBe(-1);
+        expect(testDNA.indexOf('XYZ')).toBe(-1);
+      });
+
+      test('works with DNA object', () => {
+        const searchDNA = new DNA('TCG');
+        expect(testDNA.indexOf(searchDNA)).toBe(1);
+      });
+    });
+
+    describe('getSubsequence()', () => {
+      test('extracts subsequence with start and end', () => {
+        const sub = testDNA.getSubsequence(2, 5);
+        expect(sub).toBeInstanceOf(DNA);
+        expect(sub.getSequence()).toBe('CGA');
+      });
+
+      test('extracts subsequence from start to end of sequence', () => {
+        const sub = testDNA.getSubsequence(5);
+        expect(sub.getSequence()).toBe('TCG');
+      });
+
+      test('extracts single nucleotide', () => {
+        const sub = testDNA.getSubsequence(0, 1);
+        expect(sub.getSequence()).toBe('A');
+      });
+
+      test('extracts entire sequence', () => {
+        const sub = testDNA.getSubsequence(0);
+        expect(sub.getSequence()).toBe('ATCGATCG');
+        expect(sub.equals(testDNA)).toBe(true);
+      });
+
+      test('handles edge cases', () => {
+        const sub = testDNA.getSubsequence(7, 8);
+        expect(sub.getSequence()).toBe('G');
+      });
+    });
+  });
 });

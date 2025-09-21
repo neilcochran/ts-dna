@@ -1,7 +1,6 @@
 import { NucleotidePatternSymbol } from '../model/nucleic-acids/NucleotidePatternSymbol.js';
 import { NucleicAcid, DNA, RNA } from '../model/index.js';
 import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
-import { RNASubType } from '../enums/rna-sub-type.js';
 
 /**
  * Get the complement of the given nucleotide pattern symbol
@@ -106,26 +105,21 @@ export { isValidNucleicAcid } from './validation.js';
 export { getComplementSequence, getDNABaseComplement, getRNABaseComplement } from './complement.js';
 
 /**
- * Convert the given DNA into RNA, optionally providing an RNA sub type
+ * Convert the given DNA into RNA
  *
  * @param dna - The DNA to convert to RNA
- *
- * @param rnaSubType - Optional RNA sub type
  *
  * @returns The equivalent RNA of the given DNA
  *
  * @example
  * ```typescript
- *  //Convert DNA to RNA with no RNA subtype
+ *  //Convert DNA to RNA
  *  convertToRNA(new DNA('ATG')); //returns RNA('AUG')
- *
- *  //Convert DNA to RNA with an RNA subtype
- *  convertToRNA(new DNA('ATG'), RNASubType.M_RNA); //returns RNA('AUG') with RNASubType.M_RNA
  * ```
  */
-export const convertToRNA = (dna: DNA, rnaSubType?: RNASubType): RNA => {
+export const convertToRNA = (dna: DNA): RNA => {
   const sequence = dna.getSequence();
-  return new RNA(sequence.replaceAll('T', 'U'), rnaSubType);
+  return new RNA(sequence.replaceAll('T', 'U'));
 };
 
 /**

@@ -1,6 +1,5 @@
 import { PreMRNA } from '../../../src/model/nucleic-acids/PreMRNA';
 import { Gene } from '../../../src/model/nucleic-acids/Gene';
-import { RNASubType } from '../../../src/enums/rna-sub-type';
 import { SIMPLE_TWO_EXON_GENE, SINGLE_EXON_GENE } from '../../test-genes';
 
 describe('PreMRNA', () => {
@@ -16,7 +15,6 @@ describe('PreMRNA', () => {
       const preMRNA = new PreMRNA(SIMPLE_TWO_EXON_GENE.rnaSequence, testGene, 0);
 
       expect(preMRNA.getSequence()).toBe(SIMPLE_TWO_EXON_GENE.rnaSequence);
-      expect(preMRNA.rnaSubType).toBe(RNASubType.PRE_M_RNA);
       expect(preMRNA.getSourceGene()).toBe(testGene);
       expect(preMRNA.getTranscriptionStartSite()).toBe(0);
       expect(preMRNA.getPolyadenylationSite()).toBeUndefined();
