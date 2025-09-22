@@ -1,8 +1,8 @@
-import { validateNucleicAcid, unwrap } from '../../utils/validation.js';
+import { validateNucleicAcid } from '../../utils/validation.js';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
-import { ValidationResult } from '../../types/validation-result.js';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError.js';
 import { NucleicAcid } from './NucleicAcid.js';
+import { ValidationResult, success, failure } from '../../types/validation-result.js';
 
 /**
  * A class representing RNA with a valid sequence.
@@ -13,55 +13,52 @@ export class RNA extends NucleicAcid {
   private readonly sequence: string;
 
   /**
-   * @param sequence - String representing the RNA sequence (required)
-   *
-   * @throws {@link InvalidSequenceError}
-   * Thrown if the sequence is invalid
+   * @param source - String sequence OR any NucleicAcid to convert to RNA
    *
    * @example
    * ```typescript
-   * const rna = new RNA('AUCG'); // Valid
-   * const rna = new RNA('aucg'); // Valid - normalized to uppercase
-   * const rna = new RNA(''); // Throws InvalidSequenceError
-   * const rna = new RNA('ATCG'); // Throws InvalidSequenceError - contains T instead of U
+   * const rna1 = new RNA('AUCG');
+   * const rna2 = new RNA(someDNA);
    * ```
    */
-  constructor(sequence: string) {
+  constructor(source: string | NucleicAcid) {
     super(NucleicAcidType.RNA);
-    const validationResult = validateNucleicAcid(sequence, NucleicAcidType.RNA);
+
+    // Handle different input types
+    let sequenceString: string;
+    if (typeof source === 'string') {
+      sequenceString = source;
+    } else {
+      // If it's already RNA, just copy the sequence
+      if (source.nucleicAcidType === NucleicAcidType.RNA) {
+        sequenceString = source.getSequence();
+      } else {
+        // Convert DNA or other nucleic acid to RNA sequence (T→U)
+        sequenceString = source.getSequence().replaceAll('T', 'U');
+      }
+    }
+
+    const validationResult = validateNucleicAcid(sequenceString, NucleicAcidType.RNA);
 
     if (!validationResult.success) {
-      throw new InvalidSequenceError(validationResult.error, sequence, NucleicAcidType.RNA);
+      throw new InvalidSequenceError(validationResult.error, sequenceString, NucleicAcidType.RNA);
     }
 
     this.sequence = validationResult.data;
   }
 
   /**
-   * Creates an RNA instance from a sequence, returning a ValidationResult instead of throwing
+   * Creates an RNA instance with validation.
    *
-   * @param sequence - String representing the RNA sequence
-   * @returns ValidationResult containing RNA instance or error message
-   *
-   * @example
-   * ```typescript
-   * const result = RNA.create('AUCG');
-   * if (result.success) {
-   *     console.log('Valid RNA:', result.data.getSequence());
-   * } else {
-   *     console.log('Error:', result.error);
-   * }
-   * ```
+   * @param source - String sequence OR any NucleicAcid to convert to RNA
+   * @returns ValidationResult containing RNA or error
    */
-  static create(sequence: string): ValidationResult<RNA> {
-    const validationResult = validateNucleicAcid(sequence, NucleicAcidType.RNA);
-
-    if (!validationResult.success) {
-      return validationResult;
+  static create(source: string | NucleicAcid): ValidationResult<RNA> {
+    try {
+      return success(new RNA(source));
+    } catch (error) {
+      return failure(error instanceof Error ? error.message : String(error));
     }
-
-    // Use unwrap since we know validation succeeded
-    return { success: true as const, data: new RNA(unwrap(validationResult)) };
   }
 
   /**
@@ -82,13 +79,17 @@ export class RNA extends NucleicAcid {
    *
    * @example
    * ```typescript
-   * const rna = new RNA('AUCGAUCG');
-   * const sub = rna.getSubsequence(2, 5); // Creates new RNA with 'CGA'
-   * console.log(sub.getSequence()); // 'CGA'
+   * const rnaResult = RNA.create('AUCGAUCG');
+   * if (rnaResult.success) {
+   *   const sub = rnaResult.data.getSubsequence(2, 5); // Creates new RNA with 'CGA'
+   *   console.log(sub.getSequence()); // 'CGA'
+   * }
    * ```
    */
   getSubsequence(start: number, end?: number): RNA {
     const subsequence = this.sequence.substring(start, end);
+    // Since we're working with a substring of a valid RNA sequence,
+    // it should still be valid RNA, so we can use the internal method
     return new RNA(subsequence);
   }
 
@@ -100,13 +101,16 @@ export class RNA extends NucleicAcid {
    *
    * @example
    * ```typescript
-   * const rna = new RNA('AUCG');
-   * const complement = rna.getComplement(); // Returns new RNA('UAGC')
-   * console.log(complement.getSequence()); // 'UAGC'
+   * const rnaResult = RNA.create('AUCG');
+   * if (rnaResult.success) {
+   *   const complement = rnaResult.data.getComplement(); // Returns new RNA('UAGC')
+   *   console.log(complement.getSequence()); // 'UAGC'
+   * }
    * ```
    */
   getComplement(): RNA {
     const complementSequence = this.getComplementSequence();
+    // Complement of valid RNA is valid RNA
     return new RNA(complementSequence);
   }
 
@@ -118,16 +122,20 @@ export class RNA extends NucleicAcid {
    *
    * @example
    * ```typescript
-   * const rna = new RNA('AUCG');
-   * const reverseComplement = rna.getReverseComplement(); // Returns new RNA('CGAU')
+   * const rnaResult = RNA.create('AUCG');
+   * if (rnaResult.success) {
+   *   const rna = rnaResult.data;
+   *   const reverseComplement = rna.getReverseComplement(); // Returns new RNA('CGAU')
    *
-   * // Chainable operations
-   * const original = rna.getReverseComplement().getReverseComplement(); // Returns new RNA('AUCG')
-   * const doubleComplement = rna.getComplement().getComplement(); // Returns new RNA('AUCG')
+   *   // Chainable operations
+   *   const original = rna.getReverseComplement().getReverseComplement(); // Returns new RNA('AUCG')
+   *   const doubleComplement = rna.getComplement().getComplement(); // Returns new RNA('AUCG')
+   * }
    * ```
    */
   getReverseComplement(): RNA {
     const reverseComplementSequence = this.getReverseComplementSequence();
+    // Reverse complement of valid RNA is valid RNA
     return new RNA(reverseComplementSequence);
   }
 }

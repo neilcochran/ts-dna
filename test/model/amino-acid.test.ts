@@ -1,12 +1,12 @@
 import { AminoAcid } from '../../src/model/AminoAcid';
 import { RNA } from '../../src/model/nucleic-acids/RNA';
-import { InvalidCodonError } from '../../src/model/errors/InvalidCodonError';
 import { AminoAcidPolarity } from '../../src/enums/amino-acid-polarity';
 import { AminoAcidCharge } from '../../src/enums/amino-acid-charge';
 import { AminoAcidSideChainType } from '../../src/enums/amino-acid-side-chain-type';
 import { NucleicAcidType } from '../../src/enums/nucleic-acid-type';
 import { AminoAcidData } from '../../src/types/amino-acid-data';
 import { SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP } from '../../src/data/codon-map';
+import { InvalidCodonError } from '../../src/model/errors/InvalidCodonError';
 
 describe('AminoAcid Class', () => {
   describe('constructor', () => {
@@ -34,9 +34,13 @@ describe('AminoAcid Class', () => {
 
     test('creates different amino acids correctly', () => {
       // Test a few key amino acids
-      const met = new AminoAcid(new RNA('AUG')); // Methionine
-      const phe = new AminoAcid(new RNA('UUU')); // Phenylalanine
-      const lys = new AminoAcid(new RNA('AAA')); // Lysine
+      const metCodon = new RNA('AUG'); // Methionine
+      const pheCodon = new RNA('UUU'); // Phenylalanine
+      const lysCodon = new RNA('AAA'); // Lysine
+
+      const met = new AminoAcid(metCodon);
+      const phe = new AminoAcid(pheCodon);
+      const lys = new AminoAcid(lysCodon);
 
       expect(met.name).toBe('Methionine');
       expect(met.singleLetterCode).toBe('M');
@@ -49,49 +53,45 @@ describe('AminoAcid Class', () => {
     });
 
     test('throws error for invalid codon length', () => {
-      expect(() => {
-        new AminoAcid(new RNA('AU')); // Too short
-      }).toThrow(InvalidCodonError);
+      const shortCodon = new RNA('AU'); // Too short
+      expect(() => new AminoAcid(shortCodon)).toThrow(InvalidCodonError);
+      expect(() => new AminoAcid(shortCodon)).toThrow('Invalid codon length');
 
-      expect(() => {
-        new AminoAcid(new RNA('AUGG')); // Too long
-      }).toThrow(InvalidCodonError);
+      const longCodon = new RNA('AUGG'); // Too long
+      expect(() => new AminoAcid(longCodon)).toThrow(InvalidCodonError);
+      expect(() => new AminoAcid(longCodon)).toThrow('Invalid codon length');
     });
 
     test('throws error for stop codons', () => {
-      expect(() => {
-        new AminoAcid(new RNA('UAA')); // Stop codon
-      }).toThrow(InvalidCodonError);
+      const stopCodons = ['UAA', 'UAG', 'UGA'];
 
-      expect(() => {
-        new AminoAcid(new RNA('UAG')); // Stop codon
-      }).toThrow(InvalidCodonError);
-
-      expect(() => {
-        new AminoAcid(new RNA('UGA')); // Stop codon
-      }).toThrow(InvalidCodonError);
+      stopCodons.forEach(stopCodon => {
+        const codon = new RNA(stopCodon);
+        expect(() => new AminoAcid(codon)).toThrow(InvalidCodonError);
+        expect(() => new AminoAcid(codon)).toThrow('No amino acid is associated with the codon');
+        expect(() => new AminoAcid(codon)).toThrow(stopCodon);
+      });
     });
 
     test('error messages include codon sequence', () => {
-      try {
-        new AminoAcid(new RNA('UAA'));
-        fail('Should have thrown InvalidCodonError');
-      } catch (error) {
-        expect(error).toBeInstanceOf(InvalidCodonError);
-        expect((error as InvalidCodonError).message).toContain('UAA');
-      }
+      const codon = new RNA('UAA');
+      expect(() => new AminoAcid(codon)).toThrow('UAA');
     });
   });
 
   describe('getCodonSequence', () => {
     test('returns codon sequence', () => {
-      const aminoAcid = new AminoAcid(new RNA('AUG'));
+      const codon = new RNA('AUG');
+      const aminoAcid = new AminoAcid(codon);
       expect(aminoAcid.getCodonSequence()).toBe('AUG');
     });
 
     test('returns different codon sequences correctly', () => {
-      const met = new AminoAcid(new RNA('AUG'));
-      const phe = new AminoAcid(new RNA('UUU'));
+      const metCodon = new RNA('AUG');
+      const pheCodon = new RNA('UUU');
+
+      const met = new AminoAcid(metCodon);
+      const phe = new AminoAcid(pheCodon);
 
       expect(met.getCodonSequence()).toBe('AUG');
       expect(phe.getCodonSequence()).toBe('UUU');
@@ -100,16 +100,18 @@ describe('AminoAcid Class', () => {
 
   describe('getAllAlternateCodons', () => {
     test('returns all codons for amino acid', () => {
-      const aminoAcid = new AminoAcid(new RNA('UUU')); // Phenylalanine
+      const codon = new RNA('UUU'); // Phenylalanine
+      const aminoAcid = new AminoAcid(codon);
       const alternateCodons = aminoAcid.getAllAlternateCodons();
 
       expect(alternateCodons).toHaveLength(2); // Phe has UUU and UUC
-      expect(alternateCodons.map(codon => codon.getSequence())).toContain('UUU');
-      expect(alternateCodons.map(codon => codon.getSequence())).toContain('UUC');
+      expect(alternateCodons.map((codon: RNA) => codon.getSequence())).toContain('UUU');
+      expect(alternateCodons.map((codon: RNA) => codon.getSequence())).toContain('UUC');
     });
 
     test('returns single codon for methionine (no alternatives)', () => {
-      const aminoAcid = new AminoAcid(new RNA('AUG')); // Methionine
+      const codon = new RNA('AUG'); // Methionine
+      const aminoAcid = new AminoAcid(codon);
       const alternateCodons = aminoAcid.getAllAlternateCodons();
 
       expect(alternateCodons).toHaveLength(1);
@@ -117,7 +119,8 @@ describe('AminoAcid Class', () => {
     });
 
     test('returns multiple codons for leucine (6 codons)', () => {
-      const aminoAcid = new AminoAcid(new RNA('UUA')); // Leucine
+      const codon = new RNA('UUA'); // Leucine
+      const aminoAcid = new AminoAcid(codon);
       const alternateCodons = aminoAcid.getAllAlternateCodons();
 
       expect(alternateCodons.length).toBeGreaterThan(4); // Leucine has 6 codons
@@ -125,7 +128,8 @@ describe('AminoAcid Class', () => {
     });
 
     test('all returned codons are valid RNA objects', () => {
-      const aminoAcid = new AminoAcid(new RNA('GCA')); // Alanine
+      const codon = new RNA('GCA'); // Alanine
+      const aminoAcid = new AminoAcid(codon);
       const alternateCodons = aminoAcid.getAllAlternateCodons();
 
       alternateCodons.forEach(codon => {
@@ -138,33 +142,44 @@ describe('AminoAcid Class', () => {
 
   describe('isAlternateOf', () => {
     test('returns false for same amino acid with same codon', () => {
-      const amino1 = new AminoAcid(new RNA('GCG')); // Alanine
-      const amino2 = new AminoAcid(new RNA('GCG')); // Same Alanine, same codon
+      const amino1Codon = new RNA('GCG'); // Alanine
+      const amino2Codon = new RNA('GCG'); // Same Alanine, same codon
 
+      const amino1 = new AminoAcid(amino1Codon);
+      const amino2 = new AminoAcid(amino2Codon);
       expect(amino1.isAlternateOf(amino2)).toBe(false);
     });
 
     test('returns true for same amino acid with different codon', () => {
-      const amino1 = new AminoAcid(new RNA('GCA')); // Alanine - GCA
-      const amino2 = new AminoAcid(new RNA('GCC')); // Alanine - GCC
+      const amino1Codon = new RNA('GCA'); // Alanine - GCA
+      const amino2Codon = new RNA('GCC'); // Alanine - GCC
 
+      const amino1 = new AminoAcid(amino1Codon);
+      const amino2 = new AminoAcid(amino2Codon);
       expect(amino1.isAlternateOf(amino2)).toBe(true);
       expect(amino2.isAlternateOf(amino1)).toBe(true);
     });
 
     test('returns false for different amino acids', () => {
-      const met = new AminoAcid(new RNA('AUG')); // Methionine
-      const phe = new AminoAcid(new RNA('UUU')); // Phenylalanine
+      const metCodon = new RNA('AUG'); // Methionine
+      const pheCodon = new RNA('UUU'); // Phenylalanine
 
+      const met = new AminoAcid(metCodon);
+      const phe = new AminoAcid(pheCodon);
       expect(met.isAlternateOf(phe)).toBe(false);
       expect(phe.isAlternateOf(met)).toBe(false);
     });
 
     test('works with all alanine codons', () => {
-      const ala1 = new AminoAcid(new RNA('GCA'));
-      const ala2 = new AminoAcid(new RNA('GCC'));
-      const ala3 = new AminoAcid(new RNA('GCG'));
-      const ala4 = new AminoAcid(new RNA('GCU'));
+      const ala1Codon = new RNA('GCA');
+      const ala2Codon = new RNA('GCC');
+      const ala3Codon = new RNA('GCG');
+      const ala4Codon = new RNA('GCU');
+
+      const ala1 = new AminoAcid(ala1Codon);
+      const ala2 = new AminoAcid(ala2Codon);
+      const ala3 = new AminoAcid(ala3Codon);
+      const ala4 = new AminoAcid(ala4Codon);
 
       // All should be alternates of each other
       expect(ala1.isAlternateOf(ala2)).toBe(true);
@@ -176,43 +191,53 @@ describe('AminoAcid Class', () => {
 
   describe('equals', () => {
     test('returns true for identical amino acids', () => {
-      const amino1 = new AminoAcid(new RNA('GCG'));
-      const amino2 = new AminoAcid(new RNA('GCG'));
+      const amino1Codon = new RNA('GCG');
+      const amino2Codon = new RNA('GCG');
+
+      const amino1 = new AminoAcid(amino1Codon);
+      const amino2 = new AminoAcid(amino2Codon);
 
       expect(amino1.equals(amino2)).toBe(true);
     });
 
     test('returns false for same amino acid with different codon', () => {
-      const amino1 = new AminoAcid(new RNA('GCA')); // Alanine - GCA
-      const amino2 = new AminoAcid(new RNA('GCC')); // Alanine - GCC
+      const amino1Codon = new RNA('GCA'); // Alanine - GCA
+      const amino2Codon = new RNA('GCC'); // Alanine - GCC
 
+      const amino1 = new AminoAcid(amino1Codon);
+      const amino2 = new AminoAcid(amino2Codon);
       expect(amino1.equals(amino2)).toBe(false);
     });
 
     test('returns false for different amino acids', () => {
-      const met = new AminoAcid(new RNA('AUG')); // Methionine
-      const phe = new AminoAcid(new RNA('UUU')); // Phenylalanine
+      const metCodon = new RNA('AUG'); // Methionine
+      const pheCodon = new RNA('UUU'); // Phenylalanine
 
+      const met = new AminoAcid(metCodon);
+      const phe = new AminoAcid(pheCodon);
       expect(met.equals(phe)).toBe(false);
     });
 
     test('equality is reflexive', () => {
-      const amino = new AminoAcid(new RNA('AUG'));
+      const codon = new RNA('AUG');
+      const amino = new AminoAcid(codon);
       expect(amino.equals(amino)).toBe(true);
     });
 
     test('equality is symmetric', () => {
-      const amino1 = new AminoAcid(new RNA('UUU'));
-      const amino2 = new AminoAcid(new RNA('UUU'));
+      const amino1Codon = new RNA('UUU');
+      const amino2Codon = new RNA('UUU');
 
+      const amino1 = new AminoAcid(amino1Codon);
+      const amino2 = new AminoAcid(amino2Codon);
       expect(amino1.equals(amino2)).toBe(amino2.equals(amino1));
     });
   });
 
   describe('amino acid properties', () => {
     test('methionine has correct properties', () => {
-      const met = new AminoAcid(new RNA('AUG'));
-
+      const codon = new RNA('AUG');
+      const met = new AminoAcid(codon);
       expect(met.name).toBe('Methionine');
       expect(met.singleLetterCode).toBe('M');
       expect(met.abbrv).toBe('Met');
@@ -220,7 +245,8 @@ describe('AminoAcid Class', () => {
     });
 
     test('lysine has positive charge', () => {
-      const lys = new AminoAcid(new RNA('AAA'));
+      const codon = new RNA('AAA');
+      const lys = new AminoAcid(codon);
 
       expect(lys.name).toBe('Lysine');
       expect(lys.charge).toBe(AminoAcidCharge.POSITIVE);
@@ -228,24 +254,24 @@ describe('AminoAcid Class', () => {
     });
 
     test('aspartic acid has negative charge', () => {
-      const asp = new AminoAcid(new RNA('GAU'));
-
+      const codon = new RNA('GAU');
+      const asp = new AminoAcid(codon);
       expect(asp.name).toBe('Aspartic acid');
       expect(asp.charge).toBe(AminoAcidCharge.NEGATIVE);
       expect(asp.sideChainType).toBe(AminoAcidSideChainType.ACIDIC);
     });
 
     test('alanine has neutral charge', () => {
-      const ala = new AminoAcid(new RNA('GCA'));
-
+      const codon = new RNA('GCA');
+      const ala = new AminoAcid(codon);
       expect(ala.name).toBe('Alanine');
       expect(ala.charge).toBe(AminoAcidCharge.NEUTRAL);
       expect(ala.polarity).toBe(AminoAcidPolarity.NONPOLAR);
     });
 
     test('serine has polar properties', () => {
-      const ser = new AminoAcid(new RNA('UCU'));
-
+      const codon = new RNA('UCU');
+      const ser = new AminoAcid(codon);
       expect(ser.name).toBe('Serine');
       expect(ser.polarity).toBe(AminoAcidPolarity.POLAR);
       expect(ser.sideChainType).toBe(AminoAcidSideChainType.HYDROXYL_CONTAINING);
@@ -255,7 +281,8 @@ describe('AminoAcid Class', () => {
       const codons = ['AUG', 'UUU', 'UUC', 'UUA', 'GCA', 'AAA', 'GAU'];
 
       codons.forEach(codonSeq => {
-        const amino = new AminoAcid(new RNA(codonSeq));
+        const codon = new RNA(codonSeq);
+        const amino = new AminoAcid(codon);
         expect(amino.molecularWeight).toBeGreaterThan(0);
         expect(amino.molecularWeight).toBeLessThan(1000); // Reasonable upper bound
       });
@@ -265,7 +292,8 @@ describe('AminoAcid Class', () => {
       const codons = ['AUG', 'UUU', 'UUC', 'UUA', 'GCA', 'AAA', 'GAU'];
 
       codons.forEach(codonSeq => {
-        const amino = new AminoAcid(new RNA(codonSeq));
+        const codon = new RNA(codonSeq);
+        const amino = new AminoAcid(codon);
         expect(amino.hydrophobicity).toBeGreaterThan(-10);
         expect(amino.hydrophobicity).toBeLessThan(10);
       });
@@ -274,8 +302,8 @@ describe('AminoAcid Class', () => {
 
   describe('immutability', () => {
     test('amino acid properties are readonly', () => {
-      const amino = new AminoAcid(new RNA('AUG'));
-
+      const codon = new RNA('AUG');
+      const amino = new AminoAcid(codon);
       // These should be readonly (TypeScript compile-time check)
       expect(amino.name).toBe('Methionine');
       expect(amino.singleLetterCode).toBe('M');
@@ -285,15 +313,14 @@ describe('AminoAcid Class', () => {
     test('codon reference is preserved', () => {
       const codon = new RNA('AUG');
       const amino = new AminoAcid(codon);
-
       expect(amino.codon).toBe(codon); // Same reference
     });
   });
 
   describe('AminoAcidData interface implementation', () => {
     test('implements AminoAcidData interface correctly', () => {
-      const amino = new AminoAcid(new RNA('AUG')); // Methionine
-
+      const codon = new RNA('AUG'); // Methionine
+      const amino = new AminoAcid(codon);
       // Check that amino acid instance has all AminoAcidData properties
       const aminoAsData: AminoAcidData = amino;
       expect(aminoAsData.name).toBe('Methionine');
@@ -316,7 +343,8 @@ describe('AminoAcid Class', () => {
       ];
 
       testCases.forEach(({ codon, singleLetterCode }) => {
-        const amino = new AminoAcid(new RNA(codon));
+        const rnaCodon = new RNA(codon);
+        const amino = new AminoAcid(rnaCodon);
         const dataMapEntry = SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP[singleLetterCode];
 
         expect(amino.name).toBe(dataMapEntry.name);
@@ -356,8 +384,8 @@ describe('AminoAcid Class', () => {
       ];
 
       testCodons.forEach(codonSeq => {
-        const amino = new AminoAcid(new RNA(codonSeq));
-
+        const codon = new RNA(codonSeq);
+        const amino = new AminoAcid(codon);
         expect(amino.name).toBeDefined();
         expect(amino.name).not.toBe('');
         expect(amino.abbrv).toBeDefined();
@@ -377,7 +405,15 @@ describe('AminoAcid Class', () => {
     test('alternate codons for same amino acid have identical properties', () => {
       // Test alanine codons (GCA, GCC, GCG, GCU)
       const alanineCodens = ['GCA', 'GCC', 'GCG', 'GCU'];
-      const alanines = alanineCodens.map(codon => new AminoAcid(new RNA(codon)));
+      const alanines: AminoAcid[] = [];
+
+      alanineCodens.forEach(codon => {
+        const rnaCodon = new RNA(codon);
+        const amino = new AminoAcid(rnaCodon);
+        alanines.push(amino);
+      });
+
+      expect(alanines.length).toBe(4);
 
       // All should have identical properties except codon
       for (let i = 1; i < alanines.length; i++) {
@@ -398,7 +434,15 @@ describe('AminoAcid Class', () => {
     test('leucine codons have consistent properties', () => {
       // Leucine has 6 codons: UUA, UUG, CUA, CUC, CUG, CUU
       const leucineCodens = ['UUA', 'UUG', 'CUA', 'CUC', 'CUG', 'CUU'];
-      const leucines = leucineCodens.map(codon => new AminoAcid(new RNA(codon)));
+      const leucines: AminoAcid[] = [];
+
+      leucineCodens.forEach(codon => {
+        const rnaCodon = new RNA(codon);
+        const amino = new AminoAcid(rnaCodon);
+        leucines.push(amino);
+      });
+
+      expect(leucines.length).toBe(6);
 
       // All should be leucine with same properties
       leucines.forEach(leu => {
@@ -410,7 +454,8 @@ describe('AminoAcid Class', () => {
     });
 
     test('properties come from single source of truth', () => {
-      const amino = new AminoAcid(new RNA('UUU')); // Phenylalanine
+      const codon = new RNA('UUU'); // Phenylalanine
+      const amino = new AminoAcid(codon);
       const dataMapEntry = SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP['F'];
 
       // Verify the instance gets its data from the map
@@ -427,17 +472,24 @@ describe('AminoAcid Class', () => {
   describe('biochemical property validation', () => {
     test('charged amino acids have correct charges', () => {
       // Positive
-      const lys = new AminoAcid(new RNA('AAA')); // Lysine
-      const arg = new AminoAcid(new RNA('AGA')); // Arginine
-      const his = new AminoAcid(new RNA('CAU')); // Histidine
+      const lysCodon = new RNA('AAA'); // Lysine
+      const argCodon = new RNA('AGA'); // Arginine
+      const hisCodon = new RNA('CAU'); // Histidine
+
+      const lys = new AminoAcid(lysCodon);
+      const arg = new AminoAcid(argCodon);
+      const his = new AminoAcid(hisCodon);
 
       expect(lys.charge).toBe(AminoAcidCharge.POSITIVE);
       expect(arg.charge).toBe(AminoAcidCharge.POSITIVE);
       expect(his.charge).toBe(AminoAcidCharge.POSITIVE);
 
       // Negative
-      const asp = new AminoAcid(new RNA('GAU')); // Aspartic acid
-      const glu = new AminoAcid(new RNA('GAA')); // Glutamic acid
+      const aspCodon = new RNA('GAU'); // Aspartic acid
+      const gluCodon = new RNA('GAA'); // Glutamic acid
+
+      const asp = new AminoAcid(aspCodon);
+      const glu = new AminoAcid(gluCodon);
 
       expect(asp.charge).toBe(AminoAcidCharge.NEGATIVE);
       expect(glu.charge).toBe(AminoAcidCharge.NEGATIVE);
@@ -447,7 +499,8 @@ describe('AminoAcid Class', () => {
       const hydrophobicCodons = ['UUU', 'AUU', 'UUA', 'GUU', 'GCA']; // Phe, Ile, Leu, Val, Ala
 
       hydrophobicCodons.forEach(codon => {
-        const amino = new AminoAcid(new RNA(codon));
+        const rnaCodon = new RNA(codon);
+        const amino = new AminoAcid(rnaCodon);
         expect(amino.hydrophobicity).toBeGreaterThan(0);
         expect(amino.polarity).toBe(AminoAcidPolarity.NONPOLAR);
       });
@@ -457,7 +510,8 @@ describe('AminoAcid Class', () => {
       const polarCodons = ['UCU', 'ACU', 'UAU', 'AAU', 'CAA']; // Ser, Thr, Tyr, Asn, Gln
 
       polarCodons.forEach(codon => {
-        const amino = new AminoAcid(new RNA(codon));
+        const rnaCodon = new RNA(codon);
+        const amino = new AminoAcid(rnaCodon);
         expect(amino.polarity).toBe(AminoAcidPolarity.POLAR);
       });
     });
@@ -466,7 +520,8 @@ describe('AminoAcid Class', () => {
       const aromaticCodons = ['UUU', 'UAU', 'UGG']; // Phe, Tyr, Trp
 
       aromaticCodons.forEach(codon => {
-        const amino = new AminoAcid(new RNA(codon));
+        const rnaCodon = new RNA(codon);
+        const amino = new AminoAcid(rnaCodon);
         expect(amino.sideChainType).toBe(AminoAcidSideChainType.AROMATIC);
       });
     });
@@ -540,11 +595,10 @@ describe('AminoAcid Class', () => {
       ];
 
       validCodons.forEach(codonSeq => {
-        expect(() => {
-          const amino = new AminoAcid(new RNA(codonSeq));
-          expect(amino.name).toBeDefined();
-          expect(amino.singleLetterCode).toBeDefined();
-        }).not.toThrow();
+        const codon = new RNA(codonSeq);
+        const amino = new AminoAcid(codon);
+        expect(amino.name).toBeDefined();
+        expect(amino.singleLetterCode).toBeDefined();
       });
     });
 
@@ -552,9 +606,9 @@ describe('AminoAcid Class', () => {
       const stopCodons = ['UAA', 'UAG', 'UGA'];
 
       stopCodons.forEach(codonSeq => {
-        expect(() => {
-          new AminoAcid(new RNA(codonSeq));
-        }).toThrow(InvalidCodonError);
+        const codon = new RNA(codonSeq);
+        expect(() => new AminoAcid(codon)).toThrow(InvalidCodonError);
+        expect(() => new AminoAcid(codon)).toThrow('No amino acid is associated with the codon');
       });
     });
   });

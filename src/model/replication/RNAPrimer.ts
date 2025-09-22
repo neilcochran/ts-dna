@@ -7,7 +7,7 @@
  */
 
 import { RNA } from '../nucleic-acids/RNA.js';
-import { validateNucleicAcid } from '../../utils/validation.js';
+import { validateNucleicAcid, unwrap } from '../../utils/validation.js';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
 import { ValidationResult, success, failure } from '../../types/validation-result.js';
 import {

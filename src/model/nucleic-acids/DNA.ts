@@ -1,8 +1,8 @@
 import { NucleicAcid } from './NucleicAcid.js';
-import { validateNucleicAcid, unwrap } from '../../utils/validation.js';
+import { validateNucleicAcid } from '../../utils/validation.js';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
-import { ValidationResult } from '../../types/validation-result.js';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError.js';
+import { ValidationResult, success, failure } from '../../types/validation-result.js';
 
 /**
  * A class representing DNA with a valid sequence.
@@ -13,55 +13,52 @@ export class DNA extends NucleicAcid {
   private readonly sequence: string;
 
   /**
-   * @param sequence - String representing the DNA sequence (required)
-   *
-   * @throws {@link InvalidSequenceError}
-   * Thrown if the sequence is invalid
+   * @param source - String sequence OR any NucleicAcid to convert to DNA
    *
    * @example
    * ```typescript
-   * const dna = new DNA('ATCG'); // Valid
-   * const dna = new DNA('atcg'); // Valid - normalized to uppercase
-   * const dna = new DNA(''); // Throws InvalidSequenceError
-   * const dna = new DNA('ATUX'); // Throws InvalidSequenceError - invalid characters
+   * const dna1 = new DNA('ATCG');
+   * const dna2 = new DNA(someRNA);
    * ```
    */
-  constructor(sequence: string) {
+  constructor(source: string | NucleicAcid) {
     super(NucleicAcidType.DNA);
-    const validationResult = validateNucleicAcid(sequence, NucleicAcidType.DNA);
+
+    // Handle different input types
+    let sequenceString: string;
+    if (typeof source === 'string') {
+      sequenceString = source;
+    } else {
+      // If it's already DNA, just copy the sequence
+      if (source.nucleicAcidType === NucleicAcidType.DNA) {
+        sequenceString = source.getSequence();
+      } else {
+        // Convert RNA or other nucleic acid to DNA sequence (U→T)
+        sequenceString = source.getSequence().replaceAll('U', 'T');
+      }
+    }
+
+    const validationResult = validateNucleicAcid(sequenceString, NucleicAcidType.DNA);
 
     if (!validationResult.success) {
-      throw new InvalidSequenceError(validationResult.error, sequence, NucleicAcidType.DNA);
+      throw new InvalidSequenceError(validationResult.error, sequenceString, NucleicAcidType.DNA);
     }
 
     this.sequence = validationResult.data;
   }
 
   /**
-   * Creates a DNA instance from a sequence, returning a ValidationResult instead of throwing
+   * Creates a DNA instance with validation.
    *
-   * @param sequence - String representing the DNA sequence
-   * @returns ValidationResult containing DNA instance or error message
-   *
-   * @example
-   * ```typescript
-   * const result = DNA.create('ATCG');
-   * if (result.success) {
-   *     console.log('Valid DNA:', result.data.getSequence());
-   * } else {
-   *     console.log('Error:', result.error);
-   * }
-   * ```
+   * @param source - String sequence OR any NucleicAcid to convert to DNA
+   * @returns ValidationResult containing DNA or error
    */
-  static create(sequence: string): ValidationResult<DNA> {
-    const validationResult = validateNucleicAcid(sequence, NucleicAcidType.DNA);
-
-    if (!validationResult.success) {
-      return validationResult;
+  static create(source: string | NucleicAcid): ValidationResult<DNA> {
+    try {
+      return success(new DNA(source));
+    } catch (error) {
+      return failure(error instanceof Error ? error.message : String(error));
     }
-
-    // Use unwrap since we know validation succeeded
-    return { success: true as const, data: new DNA(unwrap(validationResult)) };
   }
 
   /**
@@ -82,13 +79,17 @@ export class DNA extends NucleicAcid {
    *
    * @example
    * ```typescript
-   * const dna = new DNA('ATCGATCG');
-   * const sub = dna.getSubsequence(2, 5); // Creates new DNA with 'CGA'
-   * console.log(sub.getSequence()); // 'CGA'
+   * const dnaResult = DNA.create('ATCGATCG');
+   * if (dnaResult.success) {
+   *   const sub = dnaResult.data.getSubsequence(2, 5); // Creates new DNA with 'CGA'
+   *   console.log(sub.getSequence()); // 'CGA'
+   * }
    * ```
    */
   getSubsequence(start: number, end?: number): DNA {
     const subsequence = this.sequence.substring(start, end);
+    // Since we're working with a substring of a valid DNA sequence,
+    // it should still be valid DNA, so we can use the internal method
     return new DNA(subsequence);
   }
 
@@ -100,13 +101,16 @@ export class DNA extends NucleicAcid {
    *
    * @example
    * ```typescript
-   * const dna = new DNA('ATCG');
-   * const complement = dna.getComplement(); // Returns new DNA('TAGC')
-   * console.log(complement.getSequence()); // 'TAGC'
+   * const dnaResult = DNA.create('ATCG');
+   * if (dnaResult.success) {
+   *   const complement = dnaResult.data.getComplement(); // Returns new DNA('TAGC')
+   *   console.log(complement.getSequence()); // 'TAGC'
+   * }
    * ```
    */
   getComplement(): DNA {
     const complementSequence = this.getComplementSequence();
+    // Complement of valid DNA is valid DNA
     return new DNA(complementSequence);
   }
 
@@ -118,16 +122,20 @@ export class DNA extends NucleicAcid {
    *
    * @example
    * ```typescript
-   * const dna = new DNA('ATCG');
-   * const reverseComplement = dna.getReverseComplement(); // Returns new DNA('CGAT')
+   * const dnaResult = DNA.create('ATCG');
+   * if (dnaResult.success) {
+   *   const dna = dnaResult.data;
+   *   const reverseComplement = dna.getReverseComplement(); // Returns new DNA('CGAT')
    *
-   * // Chainable operations
-   * const original = dna.getReverseComplement().getReverseComplement(); // Returns new DNA('ATCG')
-   * const doubleComplement = dna.getComplement().getComplement(); // Returns new DNA('ATCG')
+   *   // Chainable operations
+   *   const original = dna.getReverseComplement().getReverseComplement(); // Returns new DNA('ATCG')
+   *   const doubleComplement = dna.getComplement().getComplement(); // Returns new DNA('ATCG')
+   * }
    * ```
    */
   getReverseComplement(): DNA {
     const reverseComplementSequence = this.getReverseComplementSequence();
+    // Reverse complement of valid DNA is valid DNA
     return new DNA(reverseComplementSequence);
   }
 }
