@@ -338,7 +338,7 @@ describe('polyadenylation', () => {
         .mockImplementationOnce(() => {
           throw new Error('Invalid pattern');
         })
-        .mockImplementation(sequence => []);
+        .mockImplementation(() => []);
 
       // Mock the NucleotidePattern constructor
       const mockPattern = {
@@ -360,7 +360,7 @@ describe('polyadenylation', () => {
 
       const PatternSpy = jest
         .spyOn({ NucleotidePattern }, 'NucleotidePattern')
-        .mockImplementation((_pattern: string) => mockPattern);
+        .mockImplementation(() => mockPattern);
 
       const rna = new RNA('AUGAAACCCAAUAAAGGGCCCAAAUUUCCCGGG');
       const sites = findPolyadenylationSites(rna);

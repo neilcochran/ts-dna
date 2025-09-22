@@ -1,5 +1,4 @@
 import { RNA } from './nucleic-acids/index.js';
-import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
 import {
   getAminoAcidDataByCodon,
   SINGLE_LETTER_CODE_ALT_CODONS_MAP,
@@ -19,7 +18,6 @@ import { CODON_LENGTH } from '../constants/biological-constants.js';
  */
 export class AminoAcid implements AminoAcidData {
   public readonly codon: RNA;
-  public readonly acidType: NucleicAcidType;
   public readonly name!: string;
   public readonly abbrv!: string;
   public readonly singleLetterCode!: string;
@@ -52,7 +50,6 @@ export class AminoAcid implements AminoAcidData {
     Object.assign(this, aminoAcidData);
 
     // Set codon-specific properties
-    this.acidType = codon.nucleicAcidType;
     this.codon = codon;
   }
 

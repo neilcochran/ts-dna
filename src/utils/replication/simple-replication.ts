@@ -12,9 +12,9 @@ import { ValidationResult, success, failure } from '../../types/validation-resul
 import { OrganismProfile, E_COLI } from '../../types/replication-types.js';
 
 /**
- * Options for DNA replication.
+ * Options for simple DNA replication.
  */
-export interface ReplicationOptions {
+export interface SimpleReplicationOptions {
   /** Organism profile defining biological parameters (default: E_COLI) */
   organism?: OrganismProfile;
   /** Starting position for replication (default: 0) */
@@ -83,7 +83,7 @@ export interface ReplicationResult {
  */
 export function replicateDNA(
   dna: DNA,
-  options: ReplicationOptions = {},
+  options: SimpleReplicationOptions = {},
 ): ValidationResult<ReplicationResult> {
   try {
     // Apply defaults

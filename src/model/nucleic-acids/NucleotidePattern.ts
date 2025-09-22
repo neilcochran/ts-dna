@@ -309,6 +309,36 @@ export class NucleotidePattern {
   }
 
   /**
+   * Creates a NucleotidePattern representing the reverse complement of this pattern.
+   *
+   * @returns A new NucleotidePattern representing the reverse complement
+   *
+   * @example
+   * ```typescript
+   *  const pattern = new NucleotidePattern('GAATTC');
+   *  const reverseComplement = pattern.getReverseComplement();
+   *  // Returns pattern equivalent to 'GAATTC' (EcoRI site is palindromic)
+   *
+   *  const asymmetric = new NucleotidePattern('ATCG');
+   *  const rcAsymmetric = asymmetric.getReverseComplement();
+   *  // Returns pattern equivalent to 'CGAT'
+   * ```
+   */
+  getReverseComplement(): NucleotidePattern {
+    // Get complement pattern string
+    const complementPattern = NucleotidePattern.getNucleotidePattern(
+      this.pattern,
+      true,
+      false,
+    ) as string;
+
+    // Reverse the complement pattern
+    const reverseComplementPattern = complementPattern.split('').reverse().join('');
+
+    return new NucleotidePattern(reverseComplementPattern);
+  }
+
+  /**
    * Internal method to convert IUPAC nucleotide patterns to regular expressions.
    *
    * @param pattern - The IUPAC nucleotide pattern string

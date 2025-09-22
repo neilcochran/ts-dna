@@ -1,4 +1,13 @@
+# Version 2.3.0
+
+- Remove redundant NucleicAcidType from AminoAcid
+- Add integration test coverage to existing unit test coverage
+- RNA / DNA constructors now support NucleicAcid objects, in addition to the existing string sequence based constructors. 
+- RNA / DNA constructors no longer throw errors, and properly follow the ValidationResult pattern
+- Fix a coordinate issue in the gene expression pipeline
+
 # Version 2.2.0
+
 - Add functions to nucleic acids for getComplementSequence, and getReverseComplementSequence that return strings and getComplement and getReverseComplement that return the relevant nucleic acid class
 - Replace amino acid 'slc' abbreviation with 'singleLetterCode'
 

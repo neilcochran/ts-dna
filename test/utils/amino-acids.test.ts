@@ -317,7 +317,7 @@ describe('RNAtoAminoAcids', () => {
       { seq: 'AUGAAAUGA', stopCodon: 'UGA' },
     ];
 
-    testCases.forEach(({ seq, stopCodon }) => {
+    testCases.forEach(({ seq }) => {
       const rna = new RNA(seq);
       const aminoAcids = RNAtoAminoAcids(rna);
 

@@ -2,7 +2,7 @@ import { DNA } from '../../../src/model/nucleic-acids/DNA.js';
 import {
   replicateDNA,
   replicateDNASimple,
-  ReplicationOptions,
+  SimpleReplicationOptions,
 } from '../../../src/utils/replication/simple-replication.js';
 import { E_COLI, HUMAN } from '../../../src/types/replication-types.js';
 import { isSuccess, isFailure } from '../../../src/types/validation-result.js';
@@ -240,11 +240,11 @@ describe('Simple DNA Replication', () => {
     });
   });
 
-  describe('ReplicationOptions interface', () => {
+  describe('SimpleReplicationOptions interface', () => {
     test('accepts all valid option combinations', () => {
       const dna = new DNA('ATGCGATCGTAGCTACGT');
 
-      const options: ReplicationOptions[] = [
+      const options: SimpleReplicationOptions[] = [
         {},
         { organism: E_COLI },
         { organism: HUMAN },

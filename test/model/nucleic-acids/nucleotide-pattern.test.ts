@@ -128,7 +128,7 @@ describe('NucleotidePattern Core Functionality', () => {
       const dna = new DNA('ATGAGCGATC');
       const matches = pattern.findMatches(dna);
 
-      expect(matches.length).toBeGreaterThan(0);
+      expect(matches.length).toBe(3); // AT at 0, GC at 4, AT at 6
       // First match should be 'AT' at position 0 (A matches R, T matches Y)
       expect(matches[0].start).toBe(0);
       expect(matches[0].match).toBe('AT');
@@ -543,6 +543,111 @@ describe('NucleotidePatternSymbol Core Functionality', () => {
         expect(error).toBeInstanceOf(InvalidNucleotidePatternError);
         expect((error as InvalidNucleotidePatternError).message).toContain('X');
       }
+    });
+  });
+});
+
+describe('Complement and Reverse Complement', () => {
+  describe('createComplement static method', () => {
+    test('creates complement pattern for simple sequence', () => {
+      const pattern = new NucleotidePattern('ATCG');
+      const complement = NucleotidePattern.createComplement(pattern);
+
+      // The complement of ATCG should be TAGC
+      expect(complement.pattern).toBe('TAGC');
+    });
+
+    test('creates complement pattern for IUPAC symbols', () => {
+      const pattern = new NucleotidePattern('RY'); // R=A|G, Y=C|T
+      const complement = NucleotidePattern.createComplement(pattern);
+
+      // The complement of RY should be YR (R becomes Y, Y becomes R)
+      expect(complement.pattern).toBe('YR');
+    });
+
+    test('complement pattern functions correctly', () => {
+      const original = new NucleotidePattern('ATCG');
+      const complement = NucleotidePattern.createComplement(original);
+
+      // The complement should match the complement sequence
+      const dna = new DNA('TAGC'); // Complement of ATCG
+      expect(complement.matches(dna)).toBe(true);
+      expect(original.matches(dna)).toBe(false);
+    });
+  });
+
+  describe('getReverseComplement instance method', () => {
+    test('creates reverse complement for simple sequence', () => {
+      const pattern = new NucleotidePattern('ATCG');
+      const reverseComplement = pattern.getReverseComplement();
+
+      // ATCG -> complement: TAGC -> reverse: CGAT
+      expect(reverseComplement.pattern).toBe('CGAT');
+    });
+
+    test('creates reverse complement for palindromic sequence', () => {
+      const pattern = new NucleotidePattern('GAATTC'); // EcoRI site
+      const reverseComplement = pattern.getReverseComplement();
+
+      // GAATTC -> complement: CTTAAG -> reverse: GAATTC (palindromic)
+      expect(reverseComplement.pattern).toBe('GAATTC');
+    });
+
+    test('creates reverse complement for IUPAC symbols', () => {
+      const pattern = new NucleotidePattern('RYK'); // R=A|G, Y=C|T, K=G|T
+      const reverseComplement = pattern.getReverseComplement();
+
+      // RYK -> complement: YRM -> reverse: MRY
+      expect(reverseComplement.pattern).toBe('MRY');
+    });
+
+    test('reverse complement pattern functions correctly', () => {
+      const original = new NucleotidePattern('ATCG');
+      const reverseComplement = original.getReverseComplement();
+
+      // The reverse complement should match the reverse complement sequence
+      const dna = new DNA('CGAT'); // Reverse complement of ATCG
+      expect(reverseComplement.matches(dna)).toBe(true);
+      expect(original.matches(dna)).toBe(false);
+    });
+
+    test('reverse complement for single nucleotide', () => {
+      const pattern = new NucleotidePattern('A');
+      const reverseComplement = pattern.getReverseComplement();
+
+      // A -> complement: T -> reverse: T
+      expect(reverseComplement.pattern).toBe('T');
+    });
+
+    test('reverse complement works with longer sequences', () => {
+      const pattern = new NucleotidePattern('ATCGATCG');
+      const reverseComplement = pattern.getReverseComplement();
+
+      // ATCGATCG -> complement: TAGCTAGC -> reverse: CGAGATCG
+      expect(reverseComplement.pattern).toBe('CGATCGAT');
+    });
+  });
+
+  describe('complement methods comparison', () => {
+    test('createComplement vs getReverseComplement for asymmetric pattern', () => {
+      const pattern = new NucleotidePattern('ATCG');
+      const complement = NucleotidePattern.createComplement(pattern);
+      const reverseComplement = pattern.getReverseComplement();
+
+      expect(complement.pattern).toBe('TAGC');
+      expect(reverseComplement.pattern).toBe('CGAT');
+      expect(complement.pattern).not.toBe(reverseComplement.pattern);
+    });
+
+    test('createComplement vs getReverseComplement for palindromic pattern', () => {
+      const pattern = new NucleotidePattern('GAATTC');
+      const complement = NucleotidePattern.createComplement(pattern);
+      const reverseComplement = pattern.getReverseComplement();
+
+      // Both should be the same for palindromic sequences
+      expect(complement.pattern).toBe('CTTAAG');
+      expect(reverseComplement.pattern).toBe('GAATTC');
+      expect(complement.pattern).not.toBe(reverseComplement.pattern);
     });
   });
 });

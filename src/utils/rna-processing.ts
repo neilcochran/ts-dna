@@ -1,7 +1,5 @@
 import { RNA } from '../model/nucleic-acids/RNA.js';
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
-import { Gene } from '../model/nucleic-acids/Gene.js';
-import { GenomicRegion } from '../types/genomic-region.js';
 import { ValidationResult, success, failure, isFailure } from '../types/validation-result.js';
 import { START_CODON } from './nucleic-acids.js';
 
@@ -59,48 +57,6 @@ export function spliceRNA(
       `RNA splicing failed: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
-}
-
-/**
- * Validates all splice sites in a gene to ensure proper splicing can occur.
- */
-function _validateAllSpliceSites(
-  gene: Gene,
-  exonRegions: GenomicRegion[],
-): ValidationResult<boolean> {
-  if (exonRegions.length <= 1) {
-    // Single exon genes don't need splice site validation
-    return success(true);
-  }
-
-  const sequence = gene.getSequence();
-  const introns = gene.getIntrons();
-
-  for (let i = 0; i < introns.length; i++) {
-    const intron = introns[i];
-
-    // Check 5' splice site (donor) - should start with GT
-    if (intron.start + 1 < sequence.length) {
-      const donorSite = sequence.substring(intron.start, intron.start + 2);
-      if (donorSite !== 'GT') {
-        return failure(
-          `Invalid 5' splice site at position ${intron.start}: expected GT, found ${donorSite}`,
-        );
-      }
-    }
-
-    // Check 3' splice site (acceptor) - should end with AG
-    if (intron.end >= 2) {
-      const acceptorSite = sequence.substring(intron.end - 2, intron.end);
-      if (acceptorSite !== 'AG') {
-        return failure(
-          `Invalid 3' splice site at position ${intron.end - 2}: expected AG, found ${acceptorSite}`,
-        );
-      }
-    }
-  }
-
-  return success(true);
 }
 
 /**
