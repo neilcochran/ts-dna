@@ -259,32 +259,32 @@ describe('Codon Map Data', () => {
     test('amino acids with single codons have only one mapping', () => {
       // Methionine and Tryptophan have unique codons
       const methionineCodens = Object.entries(CODON_TO_SINGLE_LETTER_CODE_MAP)
-        .filter(([_, singleLetterCode]) => singleLetterCode === 'M')
-        .map(([codon, _]) => codon);
+        .filter(([, singleLetterCode]) => singleLetterCode === 'M')
+        .map(([codon]) => codon);
       expect(methionineCodens).toEqual(['AUG']);
 
       const tryptophanCodens = Object.entries(CODON_TO_SINGLE_LETTER_CODE_MAP)
-        .filter(([_, singleLetterCode]) => singleLetterCode === 'W')
-        .map(([codon, _]) => codon);
+        .filter(([, singleLetterCode]) => singleLetterCode === 'W')
+        .map(([codon]) => codon);
       expect(tryptophanCodens).toEqual(['UGG']);
     });
 
     test('amino acids with multiple codons have correct counts', () => {
       // Leucine has 6 codons (most degenerate)
       const leucineCodens = Object.entries(CODON_TO_SINGLE_LETTER_CODE_MAP).filter(
-        ([_, singleLetterCode]) => singleLetterCode === 'L',
+        ([, singleLetterCode]) => singleLetterCode === 'L',
       );
       expect(leucineCodens).toHaveLength(6);
 
       // Serine has 6 codons
       const serineCodens = Object.entries(CODON_TO_SINGLE_LETTER_CODE_MAP).filter(
-        ([_, singleLetterCode]) => singleLetterCode === 'S',
+        ([, singleLetterCode]) => singleLetterCode === 'S',
       );
       expect(serineCodens).toHaveLength(6);
 
       // Arginine has 6 codons
       const arginineCodens = Object.entries(CODON_TO_SINGLE_LETTER_CODE_MAP).filter(
-        ([_, singleLetterCode]) => singleLetterCode === 'R',
+        ([, singleLetterCode]) => singleLetterCode === 'R',
       );
       expect(arginineCodens).toHaveLength(6);
     });
@@ -294,7 +294,7 @@ describe('Codon Map Data', () => {
 
       fourFoldDegenerateAA.forEach(slc => {
         const codons = Object.entries(CODON_TO_SINGLE_LETTER_CODE_MAP).filter(
-          ([_, mappedSLC]) => mappedSLC === slc,
+          ([, mappedSLC]) => mappedSLC === slc,
         );
         expect(codons).toHaveLength(4);
       });
@@ -305,7 +305,7 @@ describe('Codon Map Data', () => {
 
       twoFoldDegenerateAA.forEach(slc => {
         const codons = Object.entries(CODON_TO_SINGLE_LETTER_CODE_MAP).filter(
-          ([_, mappedSLC]) => mappedSLC === slc,
+          ([, mappedSLC]) => mappedSLC === slc,
         );
         expect(codons).toHaveLength(2);
       });
@@ -313,10 +313,10 @@ describe('Codon Map Data', () => {
 
     test('isoleucine has 3 codons (special case)', () => {
       const isoleucineCodens = Object.entries(CODON_TO_SINGLE_LETTER_CODE_MAP).filter(
-        ([_, singleLetterCode]) => singleLetterCode === 'I',
+        ([, singleLetterCode]) => singleLetterCode === 'I',
       );
       expect(isoleucineCodens).toHaveLength(3);
-      expect(isoleucineCodens.map(([codon, _]) => codon).sort()).toEqual(['AUA', 'AUC', 'AUU']);
+      expect(isoleucineCodens.map(([codon]) => codon).sort()).toEqual(['AUA', 'AUC', 'AUU']);
     });
   });
 
@@ -396,21 +396,11 @@ describe('Codon Map Data', () => {
     test('codon counts are consistent between maps', () => {
       Object.entries(SINGLE_LETTER_CODE_ALT_CODONS_MAP).forEach(([slc, codons]) => {
         const codonToSLCCount = Object.entries(CODON_TO_SINGLE_LETTER_CODE_MAP).filter(
-          ([_, mappedSLC]) => mappedSLC === slc,
+          ([, mappedSLC]) => mappedSLC === slc,
         ).length;
 
         if (codons.length !== codonToSLCCount) {
-          console.log(
-            `Mismatch for ${slc}: ALT_CODONS=${codons.length}, CODON_TO_SLC=${codonToSLCCount}`,
-          );
-          console.log(`  ALT_CODONS: ${JSON.stringify(codons)}`);
-          console.log(
-            `  CODON_TO_SLC: ${JSON.stringify(
-              Object.entries(CODON_TO_SINGLE_LETTER_CODE_MAP)
-                .filter(([_, mappedSLC]) => mappedSLC === slc)
-                .map(([codon, _]) => codon),
-            )}`,
-          );
+          // Mismatch detected - test will fail with expect below
         }
         expect(codons.length).toBe(codonToSLCCount);
       });

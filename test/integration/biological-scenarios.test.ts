@@ -178,14 +178,10 @@ describe('Biological Scenarios Integration Tests', () => {
       if (isSuccess(transcriptionResult)) {
         const preMRNA = transcriptionResult.data;
         expect(preMRNA.hasIntrons()).toBe(false);
-        console.log('Prokaryotic pre-mRNA sequence:', preMRNA.getSequence());
-        console.log('Prokaryotic exon regions:', preMRNA.getExonRegions());
 
         const processingResult = processRNA(preMRNA);
         if (isFailure(processingResult)) {
-          console.log('Prokaryotic processing failed:', processingResult.error);
           // For prokaryotic genes, processing might fail but pre-mRNA should be usable
-          console.log('Testing pre-mRNA directly as it has no introns');
 
           // Verify pre-mRNA has correct properties
           const preMRNASeq = preMRNA.getSequence();
@@ -197,8 +193,6 @@ describe('Biological Scenarios Integration Tests', () => {
           const mRNA = processingResult.data;
           const codingSeq = mRNA.getCodingSequence();
 
-          console.log('Prokaryotic coding sequence:', codingSeq);
-          console.log('Prokaryotic coding sequence length:', codingSeq.length);
           expect(codingSeq.startsWith('AUG')).toBe(true);
           expect(codingSeq.endsWith('UAG')).toBe(true);
           expect(codingSeq.length % 3).toBe(0);

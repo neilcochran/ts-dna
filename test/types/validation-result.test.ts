@@ -215,7 +215,7 @@ describe('ValidationResult Types', () => {
     test('stops chain on first failure', () => {
       const result = success(10);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const chained = chain(result, _value => failure('operation failed'));
+      const chained = chain(result, () => failure('operation failed'));
 
       expect(isFailure(chained)).toBe(true);
       if (isFailure(chained)) {
@@ -228,7 +228,7 @@ describe('ValidationResult Types', () => {
       let mapperCalled = false;
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const chained = chain(result, _value => {
+      const chained = chain(result, () => {
         mapperCalled = true;
         return success('should not happen');
       });
@@ -403,11 +403,11 @@ describe('ValidationResult Types', () => {
       let step3Called = false;
 
       const step1 = success(10);
-      const step2 = chain(step1, _x => {
+      const step2 = chain(step1, () => {
         step2Called = true;
         return failure('Step 2 failed');
       });
-      const step3 = map(step2, _x => {
+      const step3 = map(step2, () => {
         step3Called = true;
         return 'should not reach here';
       });
@@ -463,7 +463,7 @@ describe('ValidationResult Types', () => {
       const result = success(10);
 
       expect(() => {
-        map(result, _value => {
+        map(result, () => {
           throw new Error('Mapper failed');
         });
       }).toThrow('Mapper failed');
@@ -473,7 +473,7 @@ describe('ValidationResult Types', () => {
       const result = success(10);
 
       expect(() => {
-        chain(result, _value => {
+        chain(result, () => {
           throw new Error('Chain mapper failed');
         });
       }).toThrow('Chain mapper failed');

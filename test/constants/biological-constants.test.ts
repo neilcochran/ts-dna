@@ -144,7 +144,7 @@ describe('Biological Constants Validation', () => {
       const otherSignals = Object.entries(POLYA_SIGNALS).filter(
         ([signal]) => signal !== 'AAUAAA' && signal !== 'AUUAAA',
       );
-      otherSignals.forEach(([_signal, strength]) => {
+      otherSignals.forEach(([, strength]) => {
         expect(strength).toBeLessThan(POLYA_SIGNALS.AUUAAA);
       });
     });

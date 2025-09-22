@@ -21,7 +21,7 @@ describe('DNA Replication Pipeline Integration', () => {
       expect(isSuccess(replicationResult)).toBe(true);
 
       if (isSuccess(replicationResult)) {
-        const { replicatedStrands, steps: _steps, eventCount } = replicationResult.data;
+        const { replicatedStrands, steps, eventCount } = replicationResult.data;
         const [strand1, strand2] = replicatedStrands;
 
         // Verify both strands are identical to original
@@ -29,11 +29,11 @@ describe('DNA Replication Pipeline Integration', () => {
         expect(strand2.getSequence()).toBe(plasmidSequence);
 
         // Verify replication actually occurred (realistic event counts)
-        expect(_steps).toBeGreaterThanOrEqual(10); // Meaningful minimum steps for replication
+        expect(steps).toBeGreaterThanOrEqual(10); // Meaningful minimum steps for replication
         expect(eventCount).toBeGreaterThanOrEqual(5); // Meaningful minimum events
 
         // Verify biological realism - replication is a complex process with many steps
-        expect(_steps).toBeLessThan(plasmidSequence.length * 10); // Allow for detailed simulation complexity
+        expect(steps).toBeLessThan(plasmidSequence.length * 10); // Allow for detailed simulation complexity
       }
     });
 
@@ -46,7 +46,7 @@ describe('DNA Replication Pipeline Integration', () => {
       expect(isSuccess(replicationResult)).toBe(true);
 
       if (isSuccess(replicationResult)) {
-        const { replicatedStrands, steps: _steps, eventCount } = replicationResult.data;
+        const { replicatedStrands, eventCount } = replicationResult.data;
         const [strand1, strand2] = replicatedStrands;
 
         // Both strands should be complete and identical
