@@ -18,7 +18,7 @@ describe('AminoAcid Class', () => {
       expect(aminoAcid.singleLetterCode).toBe('M');
       expect(aminoAcid.abbrv).toBe('Met');
       expect(aminoAcid.codon).toBe(codon);
-      expect(aminoAcid.acidType).toBe(NucleicAcidType.RNA);
+      expect(aminoAcid.codon.nucleicAcidType).toBe(NucleicAcidType.RNA);
     });
 
     test('creates amino acid with correct molecular properties', () => {
