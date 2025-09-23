@@ -1,11 +1,15 @@
 import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
+import { GenomicRegion } from '../../src/types/genomic-region';
+import { isSuccess } from '../../src/types/validation-result';
 import {
   SpliceVariant,
   AlternativeSplicingProfile,
   SplicingOutcome,
   SpliceVariantPatterns,
+  DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
+  AlternativeSplicingOptions,
 } from '../../src/types/alternative-splicing';
 import {
   spliceRNAWithVariant,
@@ -13,6 +17,7 @@ import {
   validateSpliceVariant,
   processDefaultSpliceVariant,
   findVariantsByPolypeptideLength,
+  generateAllSpliceVariants,
 } from '../../src/utils/alternative-splicing';
 import { FOUR_EXON_GENE } from '../test-genes';
 
@@ -680,6 +685,224 @@ describe('Alternative Splicing Functions', () => {
 
       const variantSequence = gene.getVariantSequence(variant);
       expect(variantSequence).toBe('ATGAAAGGGTTTTAG'); // exon1 + exon3 + exon4
+    });
+  });
+
+  describe('generateAllSpliceVariants', () => {
+    test('generates all possible combinations for simple gene', () => {
+      // Two-exon gene: should generate 3 variants (2^2 - 1 = 3)
+      // Allow skipping first and last exons to get all combinations
+      const simpleSequence = 'ATGAAA' + 'G'.repeat(20) + 'TTTAGG'; // 6bp + 20bp intron + 6bp = 32bp
+      const simpleExons: GenomicRegion[] = [
+        { start: 0, end: 6, name: 'exon1' }, // ATGAAA
+        { start: 26, end: 32, name: 'exon2' }, // TTTAGG (20bp intron)
+      ];
+      const simpleGene = new Gene(simpleSequence, simpleExons);
+
+      const options: AlternativeSplicingOptions = {
+        validateReadingFrames: false,
+        requireMinimumExons: false,
+        validateCodons: false,
+        allowSkipFirstExon: true,
+        allowSkipLastExon: true,
+      };
+
+      const result = generateAllSpliceVariants(simpleGene, options);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data).toHaveLength(3);
+
+        const variantNames = result.data.map(v => v.name).sort();
+        expect(variantNames).toEqual([
+          'generated-variant-0',
+          'generated-variant-0-1',
+          'generated-variant-1',
+        ]);
+
+        // Check specific combinations
+        const exon0Only = result.data.find(v => v.name === 'generated-variant-0');
+        const exon1Only = result.data.find(v => v.name === 'generated-variant-1');
+        const bothExons = result.data.find(v => v.name === 'generated-variant-0-1');
+
+        expect(exon0Only?.includedExons).toEqual([0]);
+        expect(exon1Only?.includedExons).toEqual([1]);
+        expect(bothExons?.includedExons).toEqual([0, 1]);
+      }
+    });
+
+    test('generates correct number of variants for four-exon gene', () => {
+      // Four-exon gene with default settings (allowSkipFirstExon = false, allowSkipLastExon = false)
+      // Only variants that include both first (0) and last (3) exons are allowed
+      // Possible variants: [0,3], [0,1,3], [0,2,3], [0,1,2,3] = exactly 4 variants
+      const gene = new Gene(testSequence, testExons);
+
+      const result = generateAllSpliceVariants(gene);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        // With default options requiring first and last exon, we get exactly 4 variants
+        expect(result.data).toHaveLength(4);
+
+        // Verify we have exactly the expected variants
+        const expectedVariants = ['0-3', '0-1-3', '0-2-3', '0-1-2-3'];
+        const actualVariants = result.data.map(v => v.includedExons.join('-')).sort();
+        expect(actualVariants).toEqual(expectedVariants.sort());
+
+        // Verify all variants include first and last exon
+        result.data.forEach(variant => {
+          expect(variant.includedExons).toContain(0); // First exon
+          expect(variant.includedExons).toContain(3); // Last exon (index 3 for 4-exon gene)
+        });
+      }
+    });
+
+    test('respects allowSkipFirstExon option', () => {
+      const gene = new Gene(testSequence, testExons);
+      const options: AlternativeSplicingOptions = {
+        ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
+        allowSkipFirstExon: false,
+      };
+
+      const result = generateAllSpliceVariants(gene, options);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        // With allowSkipFirstExon = false and allowSkipLastExon = false (default),
+        // we should get exactly 4 variants: [0,3], [0,1,3], [0,2,3], [0,1,2,3]
+        expect(result.data).toHaveLength(4);
+
+        // All variants should include exon 0
+        result.data.forEach(variant => {
+          expect(variant.includedExons).toContain(0);
+        });
+      }
+    });
+
+    test('respects allowSkipLastExon option', () => {
+      const gene = new Gene(testSequence, testExons);
+      const options: AlternativeSplicingOptions = {
+        ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
+        allowSkipLastExon: false,
+      };
+
+      const result = generateAllSpliceVariants(gene, options);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        // With allowSkipFirstExon = false (default) and allowSkipLastExon = false,
+        // we should get exactly 4 variants: [0,3], [0,1,3], [0,2,3], [0,1,2,3]
+        expect(result.data).toHaveLength(4);
+
+        // All variants should include the last exon (index 3)
+        result.data.forEach(variant => {
+          expect(variant.includedExons).toContain(3);
+        });
+      }
+    });
+
+    test('respects minimum exon count requirement', () => {
+      const gene = new Gene(testSequence, testExons);
+      const options: AlternativeSplicingOptions = {
+        ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
+        requireMinimumExons: true,
+        minimumExonCount: 3,
+      };
+
+      const result = generateAllSpliceVariants(gene, options);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        // With minimum 3 exons, first/last required, we get exactly 3 variants: [0,1,3], [0,2,3], [0,1,2,3]
+        expect(result.data).toHaveLength(3);
+
+        // All variants should have at least 3 exons
+        result.data.forEach(variant => {
+          expect(variant.includedExons.length).toBeGreaterThanOrEqual(3);
+        });
+
+        // Verify specific variants
+        const variantStrings = result.data.map(v => v.includedExons.join('-')).sort();
+        expect(variantStrings).toEqual(['0-1-3', '0-1-2-3', '0-2-3'].sort());
+      }
+    });
+
+    test('validates reading frames when enabled', () => {
+      // Create a gene where some combinations will break reading frame
+      const validFrameSequence = 'ATGAAA' + 'G'.repeat(20) + 'ATGCCC' + 'T'.repeat(20) + 'TAG'; // With proper intron spacing
+      const validFrameExons: GenomicRegion[] = [
+        { start: 0, end: 6, name: 'exon1' }, // ATGAAA (6bp, divisible by 3)
+        { start: 26, end: 32, name: 'exon2' }, // ATGCCC (6bp, divisible by 3) - 20bp intron
+        { start: 52, end: 55, name: 'exon3' }, // TAG (3bp, divisible by 3) - 20bp intron
+      ];
+      const gene = new Gene(validFrameSequence, validFrameExons);
+
+      const options: AlternativeSplicingOptions = {
+        ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
+        validateReadingFrames: true,
+        allowSkipFirstExon: true,
+        allowSkipLastExon: true,
+      };
+
+      const result = generateAllSpliceVariants(gene, options);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        // All returned variants should have sequences divisible by 3
+        result.data.forEach(variant => {
+          const variantSequence = gene.getVariantSequence(variant);
+          expect(variantSequence.length % 3).toBe(0);
+        });
+      }
+    });
+
+    test('fails with gene that has no exons', () => {
+      expect(() => {
+        new Gene('ATGAAATAG', []); // This should fail in Gene constructor
+      }).toThrow();
+    });
+
+    test('maintains exon order in generated variants', () => {
+      const gene = new Gene(testSequence, testExons);
+
+      const result = generateAllSpliceVariants(gene);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        result.data.forEach(variant => {
+          // Check that exon indices are in ascending order
+          for (let i = 1; i < variant.includedExons.length; i++) {
+            expect(variant.includedExons[i]).toBeGreaterThan(variant.includedExons[i - 1]);
+          }
+        });
+      }
+    });
+
+    test('generates unique variant names', () => {
+      const gene = new Gene(testSequence, testExons);
+
+      const result = generateAllSpliceVariants(gene);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        const names = result.data.map(v => v.name);
+        const uniqueNames = new Set(names);
+        expect(uniqueNames.size).toBe(names.length); // All names should be unique
+      }
+    });
+
+    test('works with single exon gene', () => {
+      const singleExonSequence = 'ATGAAATAG';
+      const singleExonGene = new Gene(singleExonSequence, [{ start: 0, end: 9, name: 'exon1' }]);
+
+      const result = generateAllSpliceVariants(singleExonGene);
+
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data).toHaveLength(1);
+        expect(result.data[0].includedExons).toEqual([0]);
+        expect(result.data[0].name).toBe('generated-variant-0');
+      }
     });
   });
 });

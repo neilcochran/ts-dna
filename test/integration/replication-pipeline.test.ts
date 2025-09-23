@@ -168,4 +168,96 @@ describe('DNA Replication Pipeline Integration', () => {
       }
     });
   });
+
+  describe('Step Count Accuracy Integration', () => {
+    test('validates step count fix across different sequence sizes', () => {
+      // Test various sequence sizes to ensure step counting is accurate
+      const testCases = [
+        { name: '10bp', sequence: 'ATGAAATCGT', expectedSteps: 10 },
+        { name: '25bp', sequence: 'ATGAAATCGTAAGGCCTTAACCGGT', expectedSteps: 25 },
+        { name: '50bp', sequence: 'ATGAAATCGT'.repeat(5), expectedSteps: 50 },
+        { name: '100bp', sequence: 'ATGAAATCGT'.repeat(10), expectedSteps: 100 },
+      ];
+
+      testCases.forEach(({ name, sequence, expectedSteps }) => {
+        const dna = new DNA(sequence);
+        const result = replicateDNA(dna);
+
+        expect(isSuccess(result)).toBe(true);
+        if (isSuccess(result)) {
+          // Step count should match sequence length exactly (stepSize = 1 for small sequences)
+          expect(result.data.steps).toBe(expectedSteps);
+
+          // Events should be separate from steps and typically higher
+          expect(result.data.eventCount).toBeGreaterThanOrEqual(result.data.steps);
+
+          // Verify maxSteps enforcement works correctly
+          const limitedResult = replicateDNA(dna, { maxSteps: expectedSteps - 1 });
+          expect(isSuccess(limitedResult)).toBe(false);
+          if (!isSuccess(limitedResult)) {
+            expect(limitedResult.error).toContain(
+              `did not complete within ${expectedSteps - 1} steps`,
+            );
+          }
+        }
+      });
+    });
+
+    test('validates step size calculation for larger sequences', () => {
+      // Test larger sequences where stepSize = floor(length/100)
+      const testCases = [
+        {
+          name: '500bp',
+          sequence: 'ATGAAATCGT'.repeat(50),
+          expectedStepSize: 5,
+          expectedSteps: 100, // ceil(500/5) = 100
+        },
+        {
+          name: '1000bp',
+          sequence: 'ATGAAATCGT'.repeat(100),
+          expectedStepSize: 10,
+          expectedSteps: 100, // ceil(1000/10) = 100
+        },
+      ];
+
+      testCases.forEach(({ name, sequence, expectedSteps }) => {
+        const dna = new DNA(sequence);
+        const result = replicateDNA(dna);
+
+        expect(isSuccess(result)).toBe(true);
+        if (isSuccess(result)) {
+          expect(result.data.steps).toBe(expectedSteps);
+          expect(result.data.basePairsProcessed).toBe(sequence.length);
+          expect(result.data.completionPercentage).toBe(100);
+        }
+      });
+    });
+
+    test('step count consistency under different maxSteps limits', () => {
+      const dna = new DNA('ATGAAATCGT'.repeat(20)); // 200bp
+
+      // Test with generous maxSteps limit
+      const generousResult = replicateDNA(dna, { maxSteps: 1000 });
+      expect(isSuccess(generousResult)).toBe(true);
+
+      if (isSuccess(generousResult)) {
+        const actualSteps = generousResult.data.steps;
+
+        // Test with generous maxSteps limit that should always work
+        const safeResult = replicateDNA(dna, { maxSteps: actualSteps + 10 });
+        expect(isSuccess(safeResult)).toBe(true);
+
+        if (isSuccess(safeResult)) {
+          expect(safeResult.data.steps).toBe(actualSteps);
+        }
+
+        // Test with limit that's definitely too low
+        const limitedResult = replicateDNA(dna, { maxSteps: Math.max(1, actualSteps - 5) });
+        expect(isSuccess(limitedResult)).toBe(false);
+        if (!isSuccess(limitedResult)) {
+          expect(limitedResult.error).toContain('did not complete within');
+        }
+      }
+    });
+  });
 });

@@ -1,5 +1,6 @@
 ## Version 2.4.0
 
+- Add generateAllSpliceVariants() to alternative-splicing functions
 - Fix replication returning event count instead of step count
 
 ## Version 2.3.0

@@ -265,6 +265,104 @@ export function processDefaultSpliceVariant(
 }
 
 /**
+ * Generates all possible splice variants for a gene by creating combinations of exons.
+ *
+ * @param gene - The gene to generate variants for
+ * @param options - Optional configuration for filtering generated variants
+ * @returns ValidationResult containing array of generated SpliceVariant objects
+ *
+ * @example
+ * ```typescript
+ * const result = generateAllSpliceVariants(gene);
+ * if (result.success) {
+ *     console.log(`Generated ${result.data.length} possible splice variants`);
+ *     result.data.forEach(variant => {
+ *         console.log(`${variant.name}: exons [${variant.includedExons.join(', ')}]`);
+ *     });
+ * }
+ * ```
+ */
+export function generateAllSpliceVariants(
+  gene: Gene,
+  options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
+): ValidationResult<SpliceVariant[]> {
+  const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
+  const exons = gene.getExons();
+
+  if (exons.length === 0) {
+    return failure('Gene has no exons to generate variants from');
+  }
+
+  // Generate all possible combinations of exons
+  const allVariants: SpliceVariant[] = [];
+  const totalExons = exons.length;
+
+  // For n exons, we have 2^n possible combinations (each exon can be included or excluded)
+  // But we need at least one exon, so we exclude the empty combination (2^n - 1 variants)
+  const maxCombinations = Math.pow(2, totalExons);
+
+  for (let i = 1; i < maxCombinations; i++) {
+    // Start from 1 to exclude empty combination
+    const includedExons: number[] = [];
+
+    // Check each bit position to determine which exons to include
+    for (let exonIndex = 0; exonIndex < totalExons; exonIndex++) {
+      if (i & (1 << exonIndex)) {
+        includedExons.push(exonIndex);
+      }
+    }
+
+    // Create variant with sequential exon indices (maintain order)
+    includedExons.sort((a, b) => a - b);
+
+    const variantName = `generated-variant-${includedExons.join('-')}`;
+    const variant: SpliceVariant = {
+      name: variantName,
+      includedExons: includedExons,
+    };
+
+    // Validate the variant if validation is enabled
+    if (
+      opts.validateReadingFrames ??
+      (false || opts.validateCodons) ??
+      (false || opts.requireMinimumExons) ??
+      false
+    ) {
+      const validation = validateSpliceVariant(variant, gene, opts);
+      if (validation.success) {
+        allVariants.push(variant);
+      }
+    } else {
+      // Add all variants without validation
+      allVariants.push(variant);
+    }
+  }
+
+  // Apply additional filtering based on options
+  let filteredVariants = allVariants;
+
+  // Filter by minimum exon count if specified
+  if (opts.requireMinimumExons && opts.minimumExonCount) {
+    filteredVariants = filteredVariants.filter(
+      variant => variant.includedExons.length >= (opts.minimumExonCount ?? 1),
+    );
+  }
+
+  // Filter by first/last exon requirements
+  if (!opts.allowSkipFirstExon) {
+    filteredVariants = filteredVariants.filter(variant => variant.includedExons.includes(0));
+  }
+
+  if (!opts.allowSkipLastExon) {
+    filteredVariants = filteredVariants.filter(variant =>
+      variant.includedExons.includes(totalExons - 1),
+    );
+  }
+
+  return success(filteredVariants);
+}
+
+/**
  * Finds all splice variants that produce polypeptides of a specific length range.
  *
  * @param preMRNA - The pre-mRNA to analyze
