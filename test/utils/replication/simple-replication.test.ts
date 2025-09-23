@@ -75,12 +75,40 @@ describe('Simple DNA Replication', () => {
     });
 
     test('replicates with custom max steps', () => {
-      const dna = new DNA('ATGCGATCGTAGCTACGT');
+      const dna = new DNA('ATGCGATCGTAGCTACGT'); // 18bp
       const result = replicateDNA(dna, { maxSteps: 1000 });
 
       expect(isSuccess(result)).toBe(true);
       if (isSuccess(result)) {
-        expect(result.data.steps).toBeLessThanOrEqual(1000);
+        // For 18bp: stepSize = max(1, floor(18/100)) = 1, so exactly 18 steps expected
+        expect(result.data.steps).toBe(18);
+        expect(result.data.steps).toBeLessThanOrEqual(1000); // Within maxSteps limit
+
+        // Events should be tracked separately and may be higher than steps
+        expect(result.data.eventCount).toBeGreaterThanOrEqual(result.data.steps);
+      }
+    });
+
+    test('reported steps accurately reflect actual steps taken', () => {
+      const dna = new DNA('ATGCGATCGTAGCTACGTAAGGCCTTTAAA'); // 30bp
+
+      // Test with a limit that should allow completion
+      const resultSuccess = replicateDNA(dna, { maxSteps: 100 });
+      expect(isSuccess(resultSuccess)).toBe(true);
+      if (isSuccess(resultSuccess)) {
+        // For 30bp: stepSize = max(1, floor(30/100)) = 1, so exactly 30 steps expected
+        expect(resultSuccess.data.steps).toBe(30);
+        expect(resultSuccess.data.steps).toBeLessThanOrEqual(100); // Within maxSteps limit
+
+        // Events should be separate from steps and typically higher
+        expect(resultSuccess.data.eventCount).toBeGreaterThanOrEqual(resultSuccess.data.steps);
+      }
+
+      // Test with a very small limit that should be enforced
+      const resultFail = replicateDNA(dna, { maxSteps: 5 });
+      expect(isSuccess(resultFail)).toBe(false);
+      if (!isSuccess(resultFail)) {
+        expect(resultFail.error).toContain('did not complete within 5 steps');
       }
     });
 
@@ -94,6 +122,9 @@ describe('Simple DNA Replication', () => {
         expect(result.data.replicatedStrands[0].getSequence()).toBe(longSequence);
         expect(result.data.replicatedStrands[1].getSequence()).toBe(longSequence);
         expect(result.data.basePairsProcessed).toBe(longSequence.length);
+
+        // For 900bp: stepSize = max(1, floor(900/100)) = 9, steps = ceil(900/9) = 100
+        expect(result.data.steps).toBe(100);
       }
     });
 

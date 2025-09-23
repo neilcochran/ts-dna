@@ -26,6 +26,7 @@ export class ForkCoordinator {
   private readonly leadingStrand: LeadingStrandSynthesis;
   private readonly laggingStrand: LaggingStrandSynthesis;
   private readonly allEvents: ReplicationEvent[] = [];
+  private actualStepsTaken: number = 0;
 
   /**
    * Creates a new fork coordinator.
@@ -141,6 +142,9 @@ export class ForkCoordinator {
       steps++;
     }
 
+    // Store the actual steps taken for accurate reporting
+    this.actualStepsTaken = steps;
+
     if (steps >= maxSteps) {
       return failure(`Replication did not complete within ${maxSteps} steps`);
     }
@@ -207,6 +211,7 @@ export class ForkCoordinator {
    */
   getStatistics(): {
     totalEvents: number;
+    actualSteps: number;
     fork: {
       position: number;
       completion: number;
@@ -239,6 +244,7 @@ export class ForkCoordinator {
 
     return {
       totalEvents: this.allEvents.length,
+      actualSteps: this.actualStepsTaken,
       fork: {
         position: this.fork.position,
         completion: this.fork.getCompletionPercentage(),
