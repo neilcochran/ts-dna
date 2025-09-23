@@ -31,9 +31,13 @@ describe('transcription', () => {
         expect(preMRNA.getSourceGene()).toBe(testGene);
         expect(preMRNA.hasIntrons()).toBe(true);
 
-        // Should have found polyadenylation site (if implemented)
-        // Note: May not be defined if poly-A signal detection is not yet implemented
-        // expect(preMRNA.getPolyadenylationSite()).toBeDefined();
+        // COMPLEX_GENE contains AATAAA at position 37, should be detected
+        const polyASite = preMRNA.getPolyadenylationSite();
+        expect(polyASite).toBeDefined();
+        if (polyASite !== undefined) {
+          // Polyadenylation site should be downstream from the transcription start
+          expect(polyASite).toBeGreaterThan(preMRNA.getTranscriptionStartSite());
+        }
       }
     });
 

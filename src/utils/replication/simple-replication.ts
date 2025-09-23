@@ -131,7 +131,7 @@ export function replicateDNA(
 
     const result: ReplicationResult = {
       replicatedStrands: [replicatedStrand1, replicatedStrand2],
-      steps: statistics.totalEvents,
+      steps: statistics.actualSteps,
       eventCount: events.length,
       completionPercentage: finalState.completionPercentage,
       basePairsProcessed: finalState.forkPosition,

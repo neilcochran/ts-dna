@@ -1,4 +1,9 @@
-# Version 2.3.0
+## Version 2.4.0
+
+- Add generateAllSpliceVariants() to alternative-splicing functions
+- Fix replication returning event count instead of step count
+
+## Version 2.3.0
 
 - Remove redundant NucleicAcidType from AminoAcid
 - Add integration test coverage to existing unit test coverage
@@ -6,17 +11,17 @@
 - RNA / DNA constructors no longer throw errors, and properly follow the ValidationResult pattern
 - Fix a coordinate issue in the gene expression pipeline
 
-# Version 2.2.0
+## Version 2.2.0
 
 - Add functions to nucleic acids for getComplementSequence, and getReverseComplementSequence that return strings and getComplement and getReverseComplement that return the relevant nucleic acid class
 - Replace amino acid 'slc' abbreviation with 'singleLetterCode'
 
-# Version 2.1.0
+## Version 2.1.0
 
 - Remove RNASubType enum now that we have proper classes for all RNA types.
 - Add String like functions to all NucleicAcids and to Polypeptides: length, contains, startsWith, endsWith, indexOf, getSubsequence
 
-# Version 2.0.0
+## Version 2.0.0
 
 - Added comprehensive DNA replication simulation with biologically accurate enzyme modeling
 - Added new classes: `Helicase`, `Primase`, `DNAPolymerase`, `DNALigase`, `Exonuclease`, `Replisome`, `OkazakiFragment`, `RNAPrimer`, `ReplicationFork`
@@ -24,33 +29,33 @@
 - Added simple replication API: `replicateDNA()` and `replicateDNASimple()` functions for easy DNA duplication
 - Added comprehensive replication types and organism profiles (E. coli, Human) with biologically accurate parameters
 
-# Version 1.5.1
+## Version 1.5.1
 
 - Add optional skipSpliceSiteValidation parameter to processRNA (which passes it through to spliceRNA)
 
-# Version 1.5.0
+## Version 1.5.0
 
 - Added optional `options` parameter with skipSpliceSiteValidation boolean flag to support mutation modeling
 
-# Version 1.4.0
+## Version 1.4.0
 
 - Fix polypeptide stop codon issue
 
-# Version 1.3.0
+## Version 1.3.0
 
 - Fix coordinate system mismatch in splice site validation
 
-# Version 1.2.0
+## Version 1.2.0
 
 - Remove CJS and dual build support, targeting only ESM
 
-# Version 1.0.3
+## Version 1.0.3
 
 - Added strict TypeScript linting rules for explicit return types, nullish coalescing, and enhanced type safety
 - Remove RNASubType since we now have classes for RNA types
 - Correct Polypeptide constructor to take in MRNA not RNA
 
-# Version 1.0.2
+## Version 1.0.2
 
 - Update the README to use the shields.io npm version badge to avoid long caching issues
 

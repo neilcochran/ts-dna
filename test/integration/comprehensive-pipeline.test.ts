@@ -10,8 +10,14 @@ import { DNA } from '../../src/model/nucleic-acids/DNA';
 import { RNA } from '../../src/model/nucleic-acids/RNA';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
 import { Polypeptide } from '../../src/model/Polypeptide';
+import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
 import { transcribe } from '../../src/utils/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
+import { replicateDNA } from '../../src/utils/replication/simple-replication';
+import {
+  generateAllSpliceVariants,
+  spliceRNAWithVariant,
+} from '../../src/utils/alternative-splicing';
 // Removed convertToRNA, convertToDNA imports - using direct constructors instead
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import { isSuccess, isFailure } from '../../src/types/validation-result';
@@ -430,15 +436,140 @@ describe('Comprehensive Pipeline Integration Tests', () => {
       const reverseComplement = dna.getReverseComplement();
       expect(reverseComplement.length()).toBe(dna.length());
 
-      // Test replication of large sequence (TODO: implement replication system)
-      // const replicationResult = replicateDNA(dna);
-      // expect(isSuccess(replicationResult)).toBe(true);
+      // Test replication of large sequence
+      const replicationResult = replicateDNA(dna);
+      expect(isSuccess(replicationResult)).toBe(true);
 
-      // if (isSuccess(replicationResult)) {
-      //   const [strand1, strand2] = replicationResult.data.replicatedStrands;
-      //   expect(strand1.length()).toBe(dna.length());
-      //   expect(strand2.length()).toBe(dna.length());
-      // }
+      if (isSuccess(replicationResult)) {
+        const [strand1, strand2] = replicationResult.data.replicatedStrands;
+        expect(strand1.getSequence().length).toBe(dna.getSequence().length);
+        expect(strand2.getSequence().length).toBe(dna.getSequence().length);
+
+        // Verify step count is accurate for large sequences
+        expect(replicationResult.data.steps).toBe(100); // stepSize = floor(2000/100) = 20, steps = ceil(2000/20) = 100
+      }
+    });
+  });
+
+  describe('Alternative Splicing Integration Pipeline', () => {
+    test('complete splice variant generation and processing pipeline', () => {
+      // Create a multi-exon gene for comprehensive splicing analysis
+      const baseSequence = 'ATGAAA' + 'G'.repeat(20); // exon1 + intron1
+      const exon2 = 'CCCGGG' + 'T'.repeat(20); // exon2 + intron2
+      const exon3 = 'GGGTTT' + 'A'.repeat(20); // exon3 + intron3
+      const exon4 = 'TAGTAG'; // exon4 (stop codon)
+
+      const fullSequence = baseSequence + exon2 + exon3 + exon4;
+      const exons = [
+        { start: 0, end: 6, name: 'exon1' }, // ATGAAA
+        { start: 26, end: 32, name: 'exon2' }, // CCCGGG
+        { start: 52, end: 58, name: 'exon3' }, // GGGTTT
+        { start: 78, end: 84, name: 'exon4' }, // TAGTAG
+      ];
+
+      const gene = new Gene(fullSequence, exons, 'multi-exon-test');
+
+      // Step 1: Generate all possible splice variants
+      const variantOptions = {
+        validateReadingFrames: false,
+        requireMinimumExons: false,
+        validateCodons: false,
+        allowSkipFirstExon: true,
+        allowSkipLastExon: true,
+      };
+
+      const variantResult = generateAllSpliceVariants(gene, variantOptions);
+      expect(isSuccess(variantResult)).toBe(true);
+
+      if (isSuccess(variantResult)) {
+        // Should generate 2^4 - 1 = 15 variants
+        expect(variantResult.data).toHaveLength(15);
+
+        // Verify specific key variants exist
+        const variantNames = variantResult.data.map(v => v.name);
+        expect(variantNames).toContain('generated-variant-0-1-2-3'); // full-length
+        expect(variantNames).toContain('generated-variant-0-3'); // skip middle exons
+        expect(variantNames).toContain('generated-variant-1-2'); // skip first and last
+
+        // Step 2: Process each variant through the complete pipeline
+        let processedVariants = 0;
+
+        // Test a subset of variants through complete processing
+        const keyVariants = variantResult.data.filter(v =>
+          ['generated-variant-0-1-2-3', 'generated-variant-0-3', 'generated-variant-1-2'].includes(
+            v.name,
+          ),
+        );
+
+        keyVariants.forEach(variant => {
+          // Create PreMRNA for processing
+          const preMRNA = new PreMRNA(gene.getSequence().replace(/T/g, 'U'), gene, 0);
+
+          // Process variant to mRNA
+          const splicingResult = spliceRNAWithVariant(preMRNA, variant);
+          if (isSuccess(splicingResult)) {
+            const mRNA = splicingResult.data;
+
+            // Verify mRNA sequence matches expected variant sequence
+            const expectedSequence = gene.getVariantSequence(variant).replace(/T/g, 'U');
+            expect(mRNA.getSequence()).toBe(expectedSequence);
+
+            // Step 3: Translate to amino acids if possible
+            if (mRNA.getSequence().length >= 3 && mRNA.getSequence().length % 3 === 0) {
+              const aminoAcidResult = RNAtoAminoAcids(mRNA);
+              expect(aminoAcidResult).toBeDefined();
+
+              if (aminoAcidResult) {
+                expect(aminoAcidResult.length).toBeGreaterThan(0);
+                processedVariants++;
+              }
+            }
+          }
+        });
+
+        // Verify we successfully processed multiple variants through the complete pipeline
+        expect(processedVariants).toBeGreaterThan(0);
+      }
+    });
+
+    test('splice variant generation integrates with biological validation', () => {
+      // Test variant generation with biological constraints
+      const biologySequence =
+        'ATGAAAGGG' + 'C'.repeat(20) + 'CCCGGGTTT' + 'A'.repeat(20) + 'TTTAAAAAG';
+      const biologyExons = [
+        { start: 0, end: 9, name: 'exon1' }, // ATGAAAGGG (9bp, divisible by 3)
+        { start: 29, end: 38, name: 'exon2' }, // CCCGGGTTT (9bp, divisible by 3)
+        { start: 58, end: 67, name: 'exon3' }, // TTTAAAAAG (9bp, divisible by 3)
+      ];
+
+      const biologyGene = new Gene(biologySequence, biologyExons);
+
+      // Generate variants with strict biological validation
+      const strictOptions = {
+        validateReadingFrames: true,
+        requireMinimumExons: true,
+        minimumExonCount: 2,
+        validateCodons: false, // Skip codon validation to avoid start/stop issues
+        allowSkipFirstExon: false,
+        allowSkipLastExon: false,
+      };
+
+      const strictResult = generateAllSpliceVariants(biologyGene, strictOptions);
+      expect(isSuccess(strictResult)).toBe(true);
+
+      if (isSuccess(strictResult)) {
+        // Should get fewer variants due to biological constraints
+        // With 3 exons, first/last required, minimum 2 exons: [0,2], [0,1,2]
+        expect(strictResult.data).toHaveLength(2);
+
+        // All variants should maintain reading frame
+        strictResult.data.forEach(variant => {
+          const sequence = biologyGene.getVariantSequence(variant);
+          expect(sequence.length % 3).toBe(0);
+          expect(variant.includedExons).toContain(0); // first exon
+          expect(variant.includedExons).toContain(2); // last exon
+        });
+      }
     });
   });
 });
