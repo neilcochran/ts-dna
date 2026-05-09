@@ -44,7 +44,7 @@ export interface ReplicationResult {
 /**
  * Replicates a DNA sequence, producing two identical copies.
  *
- * This is the main entry point for DNA replication in ts-dna. It handles
+ * This is the main entry point for DNA replication in nucleate. It handles
  * all the biological complexity of DNA replication including:
  * - Fork coordination and enzyme management
  * - Leading and lagging strand synthesis
@@ -58,7 +58,7 @@ export interface ReplicationResult {
  *
  * @example
  * ```typescript
- * import { DNA, replicateDNA } from 'ts-dna';
+ * import { DNA, replicateDNA } from '@neilcochran/nucleate';
  *
  * const dna = new DNA('ATGCGATCGTAGCTACGT');
  * const result = replicateDNA(dna);
@@ -73,7 +73,7 @@ export interface ReplicationResult {
  * @example
  * ```typescript
  * // With custom organism and options
- * import { HUMAN } from 'ts-dna';
+ * import { HUMAN } from '@neilcochran/nucleate';
  *
  * const result = replicateDNA(dna, {
  *   organism: HUMAN,
@@ -157,7 +157,7 @@ export function replicateDNA(
  *
  * @example
  * ```typescript
- * import { DNA, replicateDNASimple } from 'ts-dna';
+ * import { DNA, replicateDNASimple } from '@neilcochran/nucleate';
  *
  * const dna = new DNA('ATGCGATCGTAGCTACGT');
  * const result = replicateDNASimple(dna);

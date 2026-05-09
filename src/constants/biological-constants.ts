@@ -1,5 +1,5 @@
 /**
- * Biological constants used throughout the ts-dna library.
+ * Biological constants used throughout the nucleate library.
  * Centralizes hardcoded values to prevent drift and improve maintainability.
  */
 

@@ -1,8 +1,10 @@
-# ts-dna
+# nucleate
 
 A comprehensive TypeScript library for molecular biology simulation, modeling DNA replication, gene expression, and polypeptide translation with biological accuracy.
 
-[![npm version](https://img.shields.io/npm/v/ts-dna)](https://www.npmjs.com/package/ts-dna)
+<!-- npm version badge - uncomment once @neilcochran/nucleate is published to npm
+[![npm version](https://img.shields.io/npm/v/@neilcochran/nucleate)](https://www.npmjs.com/package/@neilcochran/nucleate)
+-->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://badges.frapsoft.com/typescript/version/typescript-next.svg?v=101)](https://github.com/ellerbrock/typescript-badges/)
 
@@ -38,13 +40,17 @@ A comprehensive TypeScript library for molecular biology simulation, modeling DN
 
 ## Installation
 
+> Not yet published to npm. The package will be available as `@neilcochran/nucleate` once v0.1.0 is released.
+
+<!-- Uncomment once @neilcochran/nucleate is published to npm:
 ```bash
-npm install ts-dna
+npm install @neilcochran/nucleate
 ```
 
 ```bash
-yarn add ts-dna
+yarn add @neilcochran/nucleate
 ```
+-->
 
 ## Requirements
 
@@ -53,14 +59,14 @@ yarn add ts-dna
 
 ## API Documentation
 
-Complete API documentation with detailed examples is available at [GitHub pages](https://neilcochran.github.io/ts-dna/).
+Complete API documentation with detailed examples is available at [GitHub pages](https://neilcochran.github.io/nucleate/).
 
 ## Quick Start
 
 ### Basic DNA/RNA Operations
 
 ```typescript
-import { DNA, RNA, convertToRNA, NucleicAcidType } from 'ts-dna';
+import { DNA, RNA, convertToRNA, NucleicAcidType } from '@neilcochran/nucleate';
 
 // Create and manipulate nucleic acids
 const dna = new DNA('ATGTGCGACGAATTC');
@@ -73,7 +79,7 @@ console.log(rna.getSequence());   // 'AUGUGCGACGAAUC'
 ### DNA Replication
 
 ```typescript
-import { DNA, replicateDNA, replicateDNASimple, E_COLI, HUMAN } from 'ts-dna';
+import { DNA, replicateDNA, replicateDNASimple, E_COLI, HUMAN } from '@neilcochran/nucleate';
 
 // Simple DNA replication
 const originalDNA = new DNA('ATGTGCGACGAATTC');
@@ -110,7 +116,7 @@ import {
   processRNA,
   Polypeptide,
   isSuccess
-} from 'ts-dna';
+} from '@neilcochran/nucleate';
 
 // Define a simple gene
 const geneSequence =
@@ -147,7 +153,7 @@ import {
   AlternativeSplicingProfile,
   transcribe,
   processAllSplicingVariants
-} from 'ts-dna';
+} from '@neilcochran/nucleate';
 
 // Define splicing variants
 const splicingProfile: AlternativeSplicingProfile = {
@@ -179,7 +185,7 @@ for (const outcome of outcomes) {
 ### Pattern Matching
 
 ```typescript
-import { NucleotidePattern, DNA } from 'ts-dna';
+import { NucleotidePattern, DNA } from '@neilcochran/nucleate';
 
 // IUPAC pattern matching
 const tataBox = new NucleotidePattern('TATAAWAW');
@@ -196,7 +202,7 @@ console.log(`Found ${matches.length} TATA boxes`);
 ### Amino Acid Analysis
 
 ```typescript
-import { AminoAcid, RNA, getAminoAcidByCodon } from 'ts-dna';
+import { AminoAcid, RNA, getAminoAcidByCodon } from '@neilcochran/nucleate';
 
 // Single amino acid properties
 const phe = new AminoAcid(new RNA('UUU'));
@@ -223,7 +229,7 @@ import {
   E_COLI,
   HUMAN,
   isSuccess
-} from 'ts-dna';
+} from '@neilcochran/nucleate';
 
 // Create replication machinery
 const dna = new DNA('ATGTGCGACGAATTCGGCATGGCC');
@@ -248,7 +254,7 @@ console.log(`Active Okazaki fragments: ${statistics.activeOkazakiFragments}`);
 ### Promoter Recognition
 
 ```typescript
-import { findPromoters, TATA_BOX, GC_BOX } from 'ts-dna';
+import { findPromoters, TATA_BOX, GC_BOX } from '@neilcochran/nucleate';
 
 const dna = new DNA('GCGCTATAAAAGGCCAATCGGGGCGG');
 const promoters = findPromoters(dna, {
@@ -271,7 +277,7 @@ import {
   findPolyadenylationSites,
   add5PrimeCap,
   add3PrimePolyATail
-} from 'ts-dna';
+} from '@neilcochran/nucleate';
 
 // Custom RNA processing
 const preMRNA = transcribe(gene).unwrap();
@@ -294,7 +300,7 @@ const mRNA = add3PrimePolyATailAtSite(
 ### Error Handling
 
 ```typescript
-import { DNA, ValidationResult, isSuccess, isFailure } from 'ts-dna';
+import { DNA, ValidationResult, isSuccess, isFailure } from '@neilcochran/nucleate';
 
 // Safe construction with validation
 const result: ValidationResult<DNA> = DNA.create('INVALID_SEQUENCE');
@@ -354,7 +360,7 @@ import {
   MAX_RNA_PRIMER_LENGTH,
   PROKARYOTIC_FRAGMENT_SIZE_RANGE,
   EUKARYOTIC_FRAGMENT_SIZE_RANGE
-} from 'ts-dna';
+} from '@neilcochran/nucleate';
 ```
 
 ## License

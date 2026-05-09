@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import { existsSync, copyFileSync } from 'fs';
 
 (function main() {
-    console.log('🏗️  Starting ts-dna build process...\n');
+    console.log('🏗️  Starting nucleate build process...\n');
 
     // Run linting (ESLint + CSpell)
     console.log('🔍 Step 1: Linting code...');
