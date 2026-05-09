@@ -1,5 +1,5 @@
 {
-  "name": "ts-dna",
+  "name": "@neilcochran/nucleate",
   "version": "3.0.0",
   "license": "MIT",
   "description": "A comprehensive TypeScript library for molecular biology simulation, modeling the gene expression pathway from DNA transcription to polypeptide translation with biological accuracy.",
