@@ -1,5 +1,5 @@
 import { RNA } from '../sequence/index.js';
-import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
+import { PreMRNA } from '../transcription/index.js';
 import { Result, success, failure, isFailure } from '../result/index.js';
 
 /**
@@ -17,8 +17,8 @@ export function spliceRNA(
   options: { skipSpliceSiteValidation?: boolean } = {},
 ): Result<RNA> {
   try {
-    const exonRegions = preMRNA.getExonRegions();
-    const sequence = preMRNA.getSequence();
+    const exonRegions = preMRNA.exonRegions;
+    const sequence = preMRNA.sequence.sequence;
 
     // Validate that we have exons to work with
     if (exonRegions.length === 0) {
@@ -66,14 +66,14 @@ export function spliceRNA(
  * @returns Result indicating whether all splice sites are valid
  */
 function validateTranscriptSpliceSites(preMRNA: PreMRNA): Result<boolean> {
-  const intronRegions = preMRNA.getIntronRegions();
+  const intronRegions = preMRNA.intronRegions;
 
   if (intronRegions.length === 0) {
     // Single exon transcripts don't need splice site validation
     return success(true);
   }
 
-  const transcriptSequence = preMRNA.getSequence();
+  const transcriptSequence = preMRNA.sequence.sequence;
 
   for (let i = 0; i < intronRegions.length; i++) {
     const intron = intronRegions[i];

@@ -8,7 +8,7 @@
 import { parseGene } from '../../src/gene';
 import { DNA, RNA, parseDNA, parseRNA, transcribeSequence } from '../../src/sequence';
 import { NucleotidePattern } from '../../src/pattern';
-import { transcribe } from '../../src/utils/transcription';
+import { transcribe } from '../../src/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import { isSuccess, isFailure } from '../../src/result/Result';
@@ -208,7 +208,7 @@ describe('Validation Scenarios Integration Tests', () => {
 
         if (isSuccess(transcriptionResult)) {
           const preMRNA = transcriptionResult.data;
-          expect(preMRNA.getSequence().startsWith('AUG')).toBe(true);
+          expect(preMRNA.sequence.sequence.startsWith('AUG')).toBe(true);
         } else {
           expect(isFailure(transcriptionResult)).toBe(true);
           expect(transcriptionResult.error).toBeTruthy();

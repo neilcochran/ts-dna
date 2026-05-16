@@ -1,7 +1,5 @@
 export * from './amino-acids.js';
-export * from './promoter-recognition.js';
 export * from './splice-sites.js';
-export * from './transcription.js';
 export * from './polyadenylation.js';
 export * from './rna-processing.js';
 export * from './rna-modifications.js';

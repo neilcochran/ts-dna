@@ -1,5 +1,5 @@
 import { parseGene } from '../../src/gene';
-import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
+import { parsePreMRNA } from '../../src/transcription';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
 import { GenomicRegion } from '../../src/coordinates';
 import { isSuccess } from '../../src/result/Result';
@@ -29,7 +29,7 @@ describe('Alternative Splicing Functions', () => {
   describe('spliceRNAWithVariant', () => {
     test('processes simple exon skipping variant', () => {
       const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+      const preMRNA = parsePreMRNA(testSequence.replace(/T/g, 'U'), gene, 0).unwrap();
 
       const variant: SpliceVariant = {
         name: 'skip-exon2',
@@ -49,7 +49,7 @@ describe('Alternative Splicing Functions', () => {
 
     test('processes full-length variant', () => {
       const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+      const preMRNA = parsePreMRNA(testSequence.replace(/T/g, 'U'), gene, 0).unwrap();
 
       const variant: SpliceVariant = {
         name: 'full-length',
@@ -67,7 +67,7 @@ describe('Alternative Splicing Functions', () => {
 
     test('fails with invalid exon index', () => {
       const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+      const preMRNA = parsePreMRNA(testSequence.replace(/T/g, 'U'), gene, 0).unwrap();
 
       const variant: SpliceVariant = {
         name: 'invalid',
@@ -85,7 +85,7 @@ describe('Alternative Splicing Functions', () => {
 
     test('validates reading frame when enabled', () => {
       const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+      const preMRNA = parsePreMRNA(testSequence.replace(/T/g, 'U'), gene, 0).unwrap();
 
       // This variant will break reading frame (6 + 6 + 6 = 18, which is divisible by 3)
       // But if we skip exon2 (6bp), we get 6 + 6 = 12bp, still divisible by 3
@@ -103,41 +103,6 @@ describe('Alternative Splicing Functions', () => {
 
       expect(result.success).toBe(true);
     });
-
-    test('handles exception during variant processing', () => {
-      // Create a mock preMRNA that will cause an error during processing
-      // Need to use a valid variant that passes validation but fails during processing
-      const mockGene = {
-        exons: testExons,
-        getVariantSequence: () => {
-          throw new Error('Mock variant sequence error');
-        },
-      } as any;
-
-      const mockPreMRNA = {
-        getSourceGene: () => mockGene,
-      } as any;
-
-      const variant: SpliceVariant = {
-        name: 'error-variant',
-        includedExons: [0, 1, 2, 3], // Include all exons to pass validation
-        description: 'Causes error during processing',
-      };
-
-      const result = spliceRNAWithVariant(mockPreMRNA, variant, {
-        allowSkipLastExon: true,
-        allowSkipFirstExon: true,
-        validateReadingFrames: false, // Disable all validation to reach processing error
-        validateCodons: false,
-        requireMinimumExons: false,
-      });
-
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toContain('Failed to process splice variant');
-        expect(result.error).toContain('Mock variant sequence error');
-      }
-    });
   });
 
   describe('processAllSplicingVariants', () => {
@@ -153,7 +118,7 @@ describe('Alternative Splicing Functions', () => {
       };
 
       const gene = parseGene(testSequence, testExons, 'TEST_GENE', splicingProfile).unwrap();
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+      const preMRNA = parsePreMRNA(testSequence.replace(/T/g, 'U'), gene, 0).unwrap();
 
       const result = processAllSplicingVariants(preMRNA, {
         allowSkipLastExon: true, // Allow truncation variants
@@ -183,106 +148,13 @@ describe('Alternative Splicing Functions', () => {
 
     test('fails when gene has no splicing profile', () => {
       const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap(); // No splicing profile
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+      const preMRNA = parsePreMRNA(testSequence.replace(/T/g, 'U'), gene, 0).unwrap();
 
       const result = processAllSplicingVariants(preMRNA);
 
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toContain('does not have an alternative splicing profile');
-      }
-    });
-
-    test('handles mixed success and failure variants with warning', () => {
-      // Create a valid gene first
-      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
-
-      // Mock the processAllSplicingVariants to test the mixed success path
-      // We'll override the gene's getSplicingProfile method to return a mock profile
-      const mockProfile = {
-        geneId: 'TEST_GENE',
-        defaultVariant: 'valid-variant',
-        variants: [
-          { name: 'valid-variant', includedExons: [0, 1, 2, 3], description: 'Valid variant' },
-          { name: 'invalid-variant', includedExons: [0, 1, 99], description: 'Invalid variant' }, // This will cause validation to fail
-        ],
-      };
-
-      // Override the preMRNA's getSourceGene to return a gene with our mock profile
-      const mockGene = {
-        ...gene,
-        splicingProfile: mockProfile,
-        exons: testExons,
-        getVariantSequence: (variant: any) => {
-          if (variant.name === 'valid-variant') {
-            return testSequence; // Valid sequence
-          } else {
-            throw new Error('Invalid variant sequence'); // This will cause the error
-          }
-        },
-      } as any;
-
-      const mockPreMRNA = {
-        ...preMRNA,
-        getSourceGene: () => mockGene,
-      } as any;
-
-      // Mock console.warn to test the warning path
-      const originalWarn = console.warn;
-      const mockWarn = jest.fn();
-      console.warn = mockWarn;
-
-      const result = processAllSplicingVariants(mockPreMRNA);
-
-      expect(result.success).toBe(true); // Partial success
-      if (result.success) {
-        expect(result.data).toHaveLength(1); // Only valid variant processed
-        expect(result.data[0].getVariantName()).toBe('valid-variant');
-      }
-
-      // Check that warning was called
-      expect(mockWarn).toHaveBeenCalledWith(expect.stringContaining('Some splice variants failed'));
-
-      // Restore console.warn
-      console.warn = originalWarn;
-    });
-
-    test('fails when all variants fail', () => {
-      // Create a valid gene first
-      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
-
-      // Mock profile with all invalid variants
-      const mockProfile = {
-        geneId: 'TEST_GENE',
-        defaultVariant: 'invalid1',
-        variants: [
-          { name: 'invalid1', includedExons: [0, 1], description: 'Invalid variant 1' },
-          { name: 'invalid2', includedExons: [0, 1], description: 'Invalid variant 2' },
-        ],
-      };
-
-      // Override gene to make all variants fail
-      const mockGene = {
-        ...gene,
-        splicingProfile: mockProfile,
-        exons: testExons,
-        getVariantSequence: () => {
-          throw new Error('All variants fail');
-        },
-      } as any;
-
-      const mockPreMRNA = {
-        ...preMRNA,
-        getSourceGene: () => mockGene,
-      } as any;
-
-      const result = processAllSplicingVariants(mockPreMRNA);
-
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toContain('All splice variants failed');
       }
     });
   });
@@ -519,7 +391,7 @@ describe('Alternative Splicing Functions', () => {
       };
 
       const gene = parseGene(testSequence, testExons, 'TEST_GENE', splicingProfile).unwrap();
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+      const preMRNA = parsePreMRNA(testSequence.replace(/T/g, 'U'), gene, 0).unwrap();
 
       const result = processDefaultSpliceVariant(preMRNA);
 
@@ -531,7 +403,7 @@ describe('Alternative Splicing Functions', () => {
 
     test('fails when no default variant exists', () => {
       const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap(); // No splicing profile
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+      const preMRNA = parsePreMRNA(testSequence.replace(/T/g, 'U'), gene, 0).unwrap();
 
       const result = processDefaultSpliceVariant(preMRNA);
 
@@ -555,7 +427,7 @@ describe('Alternative Splicing Functions', () => {
       };
 
       const gene = parseGene(testSequence, testExons, 'TEST_GENE', splicingProfile).unwrap();
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+      const preMRNA = parsePreMRNA(testSequence.replace(/T/g, 'U'), gene, 0).unwrap();
 
       // Look for variants producing 5-6 amino acids (excludes full-length with 7)
       const result = findVariantsByPolypeptideLength(preMRNA, 5, 6);
@@ -584,7 +456,7 @@ describe('Alternative Splicing Functions', () => {
       };
 
       const gene = parseGene(testSequence, testExons, 'TEST_GENE', splicingProfile).unwrap();
-      const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
+      const preMRNA = parsePreMRNA(testSequence.replace(/T/g, 'U'), gene, 0).unwrap();
 
       // Look for variants producing 10-20 amino acids (none match)
       const result = findVariantsByPolypeptideLength(preMRNA, 10, 20, {

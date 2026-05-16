@@ -10,7 +10,7 @@
 
 import { parseGene } from '../../src/gene';
 import { Polypeptide } from '../../src/model/Polypeptide';
-import { transcribe } from '../../src/utils/transcription';
+import { transcribe } from '../../src/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { isSuccess, isFailure } from '../../src/result/Result';
 
@@ -85,12 +85,8 @@ describe('Gene Expression Pipeline Integration', () => {
       // Should fail transcription (either no promoter found or TSS/exon conflict)
       expect(isFailure(transcriptionResult)).toBe(true);
       if (isFailure(transcriptionResult)) {
-        // Accept either type of failure
-        const error = transcriptionResult.error;
-        const hasValidError =
-          error.includes('No promoters found') ||
-          error.includes('conflicts with gene exon structure');
-        expect(hasValidError).toBe(true);
+        const kind = transcriptionResult.error.kind;
+        expect(kind === 'no-promoter-found' || kind === 'tss-conflicts-with-exons').toBe(true);
       }
     });
 
@@ -117,7 +113,7 @@ describe('Gene Expression Pipeline Integration', () => {
 
       if (isSuccess(transcriptionResult)) {
         const preMRNA = transcriptionResult.data;
-        expect(preMRNA.getTranscriptionStartSite()).toBe(16);
+        expect(preMRNA.transcriptionStartSite).toBe(16);
 
         // Should be able to process RNA normally
         const processingResult = processRNA(preMRNA);
@@ -188,11 +184,11 @@ describe('Gene Expression Pipeline Integration', () => {
 
       if (isSuccess(transcriptionResult)) {
         const preMRNA = transcriptionResult.data;
-        const tss = preMRNA.getTranscriptionStartSite();
+        const tss = preMRNA.transcriptionStartSite;
 
         // Verify exon transformation math
         const originalExons = gene.exons;
-        const transformedExons = preMRNA.getExonRegions();
+        const transformedExons = preMRNA.exonRegions;
 
         originalExons.forEach((originalExon, i) => {
           const transformedExon = transformedExons[i];

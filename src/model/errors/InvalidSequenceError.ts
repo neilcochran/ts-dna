@@ -10,8 +10,8 @@ export type NucleicAcidKind = 'DNA' | 'RNA';
  *
  * Production code should prefer the structured `DNAError` / `RNAError` payloads returned by
  * `parseDNA` / `parseRNA`. This error class exists for callers that go through the throwing
- * `new DNA(...)` / `new RNA(...)` constructors (notably the sub-classes `Gene`, `MRNA`,
- * `PreMRNA` whose own constructors call `super(sequence)`).
+ * `new DNA(...)` / `new RNA(...)` constructors (notably the `MRNA` sub-class, whose own
+ * constructor calls `super(sequence)`).
  */
 export class InvalidSequenceError extends Error {
   /** The invalid sequence as it was provided to the failing validator. */

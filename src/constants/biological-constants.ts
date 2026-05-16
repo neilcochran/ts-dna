@@ -104,7 +104,6 @@ export const DEFAULT_DOWNSTREAM_SEARCH_DISTANCE = 100; // Default downstream sea
 export const MAX_POLY_A_TAIL_LENGTH = 1000; // Maximum allowed poly-A tail length
 export const TSS_PROXIMITY_THRESHOLD = 10; // Maximum distance between TSS candidates to consider them the same
 export const DEFAULT_MIN_PROMOTER_STRENGTH = 5; // Default minimum promoter strength for transcription
-export const FORCE_TSS_DISABLED = -1; // Value indicating forced TSS is disabled
 
 // Cleavage site recognition constants
 export const DEFAULT_POLYA_SIGNALS = ['AAUAAA', 'AUUAAA', 'AGUAAA', 'AAUAUA', 'AAUACA'] as const;

@@ -5,7 +5,7 @@
  */
 
 import { parseGene } from '../../src/gene';
-import { transcribe } from '../../src/utils/transcription';
+import { transcribe } from '../../src/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { findPolyadenylationSites } from '../../src/utils/polyadenylation';
 import { isSuccess } from '../../src/result/Result';
@@ -29,7 +29,7 @@ describe('Polyadenylation Integration Tests', () => {
       const preMRNA = transcriptionResult.data;
 
       // Check that polyadenylation site detection works
-      const sites = findPolyadenylationSites(preMRNA);
+      const sites = findPolyadenylationSites(preMRNA.sequence);
       expect(sites.length).toBeGreaterThanOrEqual(0); // May or may not find sites
 
       // Process RNA - should succeed
@@ -68,7 +68,7 @@ describe('Polyadenylation Integration Tests', () => {
       const preMRNA = transcriptionResult.data;
 
       // This should not throw an error
-      const sites = findPolyadenylationSites(preMRNA);
+      const sites = findPolyadenylationSites(preMRNA.sequence);
       expect(Array.isArray(sites)).toBe(true);
 
       // If sites are found, they should have basic structure

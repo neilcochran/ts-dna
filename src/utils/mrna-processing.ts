@@ -1,4 +1,4 @@
-import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
+import { PreMRNA } from '../transcription/index.js';
 import { MRNA } from '../model/nucleic-acids/MRNA.js';
 import { Result, success, failure, isSuccess } from '../result/index.js';
 import { spliceRNA } from './rna-processing.js';

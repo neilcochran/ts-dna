@@ -1,4 +1,4 @@
-import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
+import { PreMRNA } from '../transcription/index.js';
 import { MRNA } from '../model/nucleic-acids/MRNA.js';
 import {
   DNA,
@@ -39,7 +39,7 @@ export function spliceRNAWithVariant(
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): Result<MRNA> {
   const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
-  const sourceGene = preMRNA.getSourceGene();
+  const sourceGene = preMRNA.sourceGene;
 
   // Validate variant against gene structure
   const validation = validateSpliceVariant(variant, sourceGene, opts);
@@ -95,7 +95,7 @@ export function processAllSplicingVariants(
   preMRNA: PreMRNA,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): Result<SplicingOutcome[]> {
-  const sourceGene = preMRNA.getSourceGene();
+  const sourceGene = preMRNA.sourceGene;
   const splicingProfile = sourceGene.splicingProfile;
 
   if (!splicingProfile) {
@@ -258,7 +258,7 @@ export function processDefaultSpliceVariant(
   preMRNA: PreMRNA,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): Result<MRNA> {
-  const sourceGene = preMRNA.getSourceGene();
+  const sourceGene = preMRNA.sourceGene;
   const defaultVariant = sourceGene.getDefaultSplicingVariant();
 
   if (!defaultVariant) {

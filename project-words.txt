@@ -117,3 +117,6 @@ nucleate
 neilcochran
 complementation
 TATAAAT
+PREMRNA
+premrna
+AUGCCCGGGAAAUUUAAA

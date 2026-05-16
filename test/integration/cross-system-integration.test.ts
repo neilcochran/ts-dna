@@ -8,7 +8,7 @@
  */
 
 import { parseGene } from '../../src/gene';
-import { transcribe } from '../../src/utils/transcription';
+import { transcribe } from '../../src/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { replicateDNA } from '../../src/utils/replication/simple-replication';
@@ -36,10 +36,10 @@ describe('Cross-System Integration Tests', () => {
       if (isSuccess(transcriptionResult)) {
         const preMRNA = transcriptionResult.data;
         // Transcript should contain the exact expected length (exon + 3'UTR)
-        expect(preMRNA.getSequence().length).toBe(72);
-        expect(preMRNA.getSequence().startsWith('AUG')).toBe(true);
+        expect(preMRNA.sequence.sequence.length).toBe(72);
+        expect(preMRNA.sequence.sequence.startsWith('AUG')).toBe(true);
         // Should contain stop codon but might not end with it due to 3'UTR
-        expect(preMRNA.getSequence()).toContain('UAG');
+        expect(preMRNA.sequence.sequence).toContain('UAG');
 
         // Step 2: RNA Processing (should succeed or fail gracefully)
         const processingResult = processRNA(preMRNA);
@@ -105,8 +105,8 @@ describe('Cross-System Integration Tests', () => {
       if (isSuccess(transcriptionResult)) {
         const preMRNA = transcriptionResult.data;
         // Transcript should contain the exact expected length (just the exon)
-        expect(preMRNA.getSequence().length).toBe(66);
-        expect(preMRNA.getSequence().startsWith('AUG')).toBe(true);
+        expect(preMRNA.sequence.sequence.length).toBe(66);
+        expect(preMRNA.sequence.sequence.startsWith('AUG')).toBe(true);
 
         // Test that the system doesn't crash on processing attempts
         const processingResult = processRNA(preMRNA);

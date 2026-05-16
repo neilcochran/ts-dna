@@ -11,8 +11,8 @@ import { UNSAFE_RNA_KEY } from './internal-keys.js';
  * (`getSubsequence`, `getComplement`, `getReverseComplement`) returns a new `RNA`.
  *
  * The constructor validates and throws {@link InvalidSequenceError} on bad input. Prefer
- * {@link parseRNA} (which returns a `Result`) for untrusted input. Subclasses (`MRNA`,
- * `PreMRNA`) call `super(sequence)` directly and benefit from the same validation.
+ * {@link parseRNA} (which returns a `Result`) for untrusted input. The `MRNA` subclass calls
+ * `super(sequence)` directly and benefits from the same validation.
  *
  * The constructor accepts an optional second parameter that is reserved for sequence-internal
  * trusted construction (the `unsafeRNA` factory). Public callers must not pass it; the key

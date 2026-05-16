@@ -10,8 +10,8 @@ import { DNA } from '../../src/sequence';
 import { RNA } from '../../src/sequence';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
 import { Polypeptide } from '../../src/model/Polypeptide';
-import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
-import { transcribe } from '../../src/utils/transcription';
+import { parsePreMRNA } from '../../src/transcription';
+import { transcribe } from '../../src/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { replicateDNA } from '../../src/utils/replication/simple-replication';
 import {
@@ -167,7 +167,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
       // Should fail due to TSS/exon conflict
       expect(isFailure(transcriptionResult)).toBe(true);
       if (isFailure(transcriptionResult)) {
-        expect(transcriptionResult.error).toContain('conflicts with gene exon structure');
+        expect(transcriptionResult.error.kind).toBe('tss-conflicts-with-exons');
       }
     });
   });
@@ -196,13 +196,13 @@ describe('Comprehensive Pipeline Integration Tests', () => {
 
       if (isSuccess(transcriptionResult)) {
         const preMRNA = transcriptionResult.data;
-        const tss = preMRNA.getTranscriptionStartSite();
+        const tss = preMRNA.transcriptionStartSite;
 
         // Verify TSS detection
         expect(tss).toBe(29);
 
         // Verify coordinate transformation
-        const transcriptExons = preMRNA.getExonRegions();
+        const transcriptExons = preMRNA.exonRegions;
         expect(transcriptExons).toHaveLength(2);
 
         // Exon 1: 29-56 in gene → 0-27 in transcript
@@ -503,7 +503,11 @@ describe('Comprehensive Pipeline Integration Tests', () => {
 
         keyVariants.forEach(variant => {
           // Create PreMRNA for processing
-          const preMRNA = new PreMRNA(gene.sequence.getSequence().replace(/T/g, 'U'), gene, 0);
+          const preMRNA = parsePreMRNA(
+            gene.sequence.getSequence().replace(/T/g, 'U'),
+            gene,
+            0,
+          ).unwrap();
 
           // Process variant to mRNA
           const splicingResult = spliceRNAWithVariant(preMRNA, variant);

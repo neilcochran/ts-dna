@@ -8,7 +8,7 @@
 import { parseGene } from '../../src/gene';
 import { DNA } from '../../src/sequence';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
-import { transcribe } from '../../src/utils/transcription';
+import { transcribe } from '../../src/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { transcribeSequence } from '../../src/sequence';
@@ -184,7 +184,7 @@ describe('Biological Scenarios Integration Tests', () => {
           // For prokaryotic genes, processing might fail but pre-mRNA should be usable
 
           // Verify pre-mRNA has correct properties
-          const preMRNASeq = preMRNA.getSequence();
+          const preMRNASeq = preMRNA.sequence.sequence;
           expect(preMRNASeq.startsWith('AUG')).toBe(true);
           expect(preMRNASeq.endsWith('UAG')).toBe(true);
           expect(preMRNASeq.length % 3).toBe(0);
