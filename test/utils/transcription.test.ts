@@ -1,6 +1,6 @@
 import { transcribe, TranscriptionOptions } from '../../src/utils/transcription';
 import { Gene } from '../../src/model/nucleic-acids/Gene';
-import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
+import { NucleotidePattern } from '../../src/pattern';
 import { isSuccess, isFailure } from '../../src/result/Result';
 import {
   MAX_PROMOTER_SEARCH_DISTANCE,
@@ -279,15 +279,15 @@ describe('transcription', () => {
       const testGene = new Gene(geneSequence, exons);
 
       // Mock to force exception in polyadenylation search
-      const originalPattern = NucleotidePattern.prototype.findMatches;
-      NucleotidePattern.prototype.findMatches = jest.fn(() => {
+      const originalPattern = NucleotidePattern.prototype.findAll;
+      NucleotidePattern.prototype.findAll = jest.fn(() => {
         throw new Error('Pattern search error');
       });
 
       const result = transcribe(testGene);
 
       // Restore original method
-      NucleotidePattern.prototype.findMatches = originalPattern;
+      NucleotidePattern.prototype.findAll = originalPattern;
 
       expect(isFailure(result)).toBe(true);
       if (isFailure(result)) {

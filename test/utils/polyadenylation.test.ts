@@ -6,7 +6,6 @@ import {
 } from '../../src/utils/polyadenylation';
 import { DEFAULT_CLEAVAGE_OPTIONS } from '../../src/types/polyadenylation-site';
 import { POLYA_SIGNAL_OFFSET } from '../../src/constants/biological-constants';
-import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
 
 describe('polyadenylation', () => {
   describe('findPolyadenylationSites', () => {
@@ -329,46 +328,19 @@ describe('polyadenylation', () => {
   });
 
   describe('error handling and edge cases', () => {
-    test('handles invalid pattern exceptions gracefully', () => {
-      // Test exception handling gracefully with minimal mocking
-
-      // Create a spy that throws on a specific pattern
-      const mockFindMatches = jest
-        .fn()
-        .mockImplementationOnce(() => {
-          throw new Error('Invalid pattern');
-        })
-        .mockImplementation(() => []);
-
-      // Mock the NucleotidePattern constructor
-      const mockPattern = {
-        pattern: 'AAUAAA',
-        patternRegex: /AAUAAA/,
-        findMatches: mockFindMatches,
-        matches: jest.fn(),
-        findFirst: jest.fn(),
-        findLast: jest.fn(),
-        getComplementPattern: jest.fn(),
-        getPatternLength: jest.fn(),
-        toString: jest.fn(),
-        getSequence: jest.fn(),
-        getType: jest.fn(),
-        getComplement: jest.fn(),
-        length: jest.fn(),
-        equals: jest.fn(),
-      } as any;
-
-      const PatternSpy = jest
-        .spyOn({ NucleotidePattern }, 'NucleotidePattern')
-        .mockImplementation(() => mockPattern);
-
+    test('skips polyA signals that fail to compile as patterns', () => {
+      // Mixing a valid canonical signal with a pattern-string that cannot be parsed verifies
+      // that findPolyadenylationSites tolerates ill-formed user-supplied signals and still
+      // reports matches for the valid ones. AAUAAA is listed first so the downstream
+      // signal-length lookup (which keys off polyASignal[0]) sizes the cleavage distance
+      // against the canonical 6-bp signal.
       const rna = new RNA('AUGAAACCCAAUAAAGGGCCCAAAUUUCCCGGG');
-      const sites = findPolyadenylationSites(rna);
+      const sites = findPolyadenylationSites(rna, {
+        polyASignal: ['AAUAAA', 'NOTASIGNAL'],
+      });
 
-      // Should not throw and should handle the exception gracefully
       expect(Array.isArray(sites)).toBe(true);
-
-      PatternSpy.mockRestore();
+      expect(sites.some(site => site.signal === 'AAUAAA')).toBe(true);
     });
 
     test('handles edge case where search region is invalid', () => {

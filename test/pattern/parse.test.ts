@@ -1,0 +1,130 @@
+import {
+  parseNucleotidePattern,
+  parseNucleotidePatternSymbol,
+  NucleotidePattern,
+  NucleotidePatternSymbol,
+} from '../../src/pattern';
+import { isSuccess, isFailure } from '../../src/result';
+
+describe('parseNucleotidePattern', () => {
+  test('returns success carrying a NucleotidePattern for valid input', () => {
+    const result = parseNucleotidePattern('TATAWAR');
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+      expect(result.data).toBeInstanceOf(NucleotidePattern);
+      expect(result.data.pattern).toBe('TATAWAR');
+    }
+  });
+
+  test('accepts regex quantifiers and character classes', () => {
+    const result = parseNucleotidePattern('ATGN{3}GCC');
+    expect(isSuccess(result)).toBe(true);
+  });
+
+  test('returns empty-pattern failure for empty input', () => {
+    const result = parseNucleotidePattern('');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error).toEqual({ kind: 'empty-pattern' });
+    }
+  });
+
+  test('returns invalid-iupac-character failure with offending character and index', () => {
+    const result = parseNucleotidePattern('TATAX');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error.kind).toBe('invalid-iupac-character');
+      if (result.error.kind === 'invalid-iupac-character') {
+        expect(result.error.character).toBe('X');
+        expect(result.error.index).toBe(4);
+      }
+    }
+  });
+
+  test('reports the first invalid character, not all of them', () => {
+    const result = parseNucleotidePattern('AXY');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result) && result.error.kind === 'invalid-iupac-character') {
+      expect(result.error.character).toBe('X');
+      expect(result.error.index).toBe(1);
+    }
+  });
+
+  test('returns invalid-regex-construction for patterns whose regex is malformed', () => {
+    // 'A[' has only IUPAC alpha chars but compiles to an unterminated character class
+    const result = parseNucleotidePattern('A[');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error.kind).toBe('invalid-regex-construction');
+      if (result.error.kind === 'invalid-regex-construction') {
+        expect(result.error.pattern).toBe('A[');
+        expect(typeof result.error.cause).toBe('string');
+      }
+    }
+  });
+});
+
+describe('parseNucleotidePatternSymbol', () => {
+  test('returns success for every IUPAC symbol', () => {
+    for (const symbol of [
+      'A',
+      'T',
+      'C',
+      'G',
+      'U',
+      'R',
+      'Y',
+      'K',
+      'M',
+      'S',
+      'W',
+      'B',
+      'V',
+      'D',
+      'H',
+      'N',
+    ]) {
+      const result = parseNucleotidePatternSymbol(symbol);
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data).toBeInstanceOf(NucleotidePatternSymbol);
+        expect(result.data.symbol).toBe(symbol);
+      }
+    }
+  });
+
+  test('normalizes lowercase input', () => {
+    const result = parseNucleotidePatternSymbol('w');
+    expect(isSuccess(result)).toBe(true);
+    if (isSuccess(result)) {
+      expect(result.data.symbol).toBe('W');
+    }
+  });
+
+  test('returns empty-symbol failure for empty input', () => {
+    const result = parseNucleotidePatternSymbol('');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error).toEqual({ kind: 'empty-symbol' });
+    }
+  });
+
+  test('returns invalid-iupac-symbol failure for non-IUPAC input', () => {
+    const result = parseNucleotidePatternSymbol('Z');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error.kind).toBe('invalid-iupac-symbol');
+      if (result.error.kind === 'invalid-iupac-symbol') {
+        expect(result.error.symbol).toBe('Z');
+      }
+    }
+  });
+
+  test('rejects multi-character input as invalid symbol', () => {
+    const result = parseNucleotidePatternSymbol('AT');
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error.kind).toBe('invalid-iupac-symbol');
+    }
+  });
+});

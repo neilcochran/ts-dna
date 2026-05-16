@@ -1,4 +1,4 @@
-import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern.js';
+import { NucleotidePattern } from '../pattern/index.js';
 import { PromoterElement } from '../model/PromoterElement.js';
 import {
   TATA_BOX_CONSENSUS,

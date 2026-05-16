@@ -1,6 +1,6 @@
 import { Promoter } from '../../src/model/Promoter';
 import { PromoterElement } from '../../src/model/PromoterElement';
-import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
+import { NucleotidePattern } from '../../src/pattern';
 import {
   TATA_BOX_TYPICAL_POSITION,
   DPE_TYPICAL_POSITION,

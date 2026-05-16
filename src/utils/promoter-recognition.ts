@@ -153,13 +153,13 @@ function findAllElementMatches(
 
   for (const element of elements) {
     const pattern = element.pattern;
-    const patternMatches = pattern.findMatches(dna);
+    const patternMatches = pattern.findAll(dna);
 
     for (const match of patternMatches) {
       matches.push({
         element,
         position: match.start,
-        sequence: match.match,
+        sequence: match.matched,
       });
     }
   }

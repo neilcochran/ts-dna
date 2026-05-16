@@ -1,7 +1,7 @@
 import { Gene } from '../model/nucleic-acids/Gene.js';
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
 import { DNA, transcribeSequence } from '../sequence/index.js';
-import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern.js';
+import { NucleotidePattern } from '../pattern/index.js';
 import { Result, success, failure, isFailure, isSuccess } from '../result/index.js';
 import { findPromoters, identifyTSS, PromoterSearchOptions } from './promoter-recognition.js';
 import {
@@ -13,6 +13,13 @@ import {
   CANONICAL_POLYA_SIGNAL_DNA,
 } from '../constants/biological-constants.js';
 import { TATA_BOX } from '../data/promoter-elements.js';
+
+/**
+ * Compiled once at module load: searches for the canonical DNA polyadenylation signal
+ * (`AATAAA`). Hoisted out of {@link findPolyadenylationSite} so the regex is not rebuilt on
+ * every transcription call.
+ */
+const CANONICAL_POLYA_PATTERN = new NucleotidePattern(CANONICAL_POLYA_SIGNAL_DNA);
 
 /**
  * Configuration options for transcription.
@@ -210,8 +217,7 @@ function findPolyadenylationSite(gene: Gene, tss: number): Result<number> {
     const searchDNA = new DNA(searchRegion);
 
     // Look for canonical polyadenylation signal AATAAA in DNA
-    const polyAPattern = new NucleotidePattern(CANONICAL_POLYA_SIGNAL_DNA);
-    const matches = polyAPattern.findMatches(searchDNA);
+    const matches = CANONICAL_POLYA_PATTERN.findAll(searchDNA);
 
     if (matches.length === 0) {
       return failure('No polyadenylation signal found');

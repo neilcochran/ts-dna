@@ -7,7 +7,7 @@
 
 import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { DNA, RNA, parseDNA, parseRNA, transcribeSequence } from '../../src/sequence';
-import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
+import { NucleotidePattern } from '../../src/pattern';
 import { transcribe } from '../../src/utils/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
@@ -101,7 +101,7 @@ describe('Validation Scenarios Integration Tests', () => {
       const testSequence = new DNA('ATGAAAGCCTTTGTGAACCAACACCTT');
 
       const validPattern = new NucleotidePattern('ATGN{3}GCC');
-      const matches = validPattern.findMatches(testSequence);
+      const matches = validPattern.findAll(testSequence);
       expect(matches.length).toBe(1);
 
       expect(() => new NucleotidePattern('')).toThrow();
@@ -109,7 +109,7 @@ describe('Validation Scenarios Integration Tests', () => {
 
       const longPattern = 'A'.repeat(1000);
       const longPatternObj = new NucleotidePattern(longPattern);
-      const longMatches = longPatternObj.findMatches(testSequence);
+      const longMatches = longPatternObj.findAll(testSequence);
       expect(longMatches).toHaveLength(0);
     });
   });

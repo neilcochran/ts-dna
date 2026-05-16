@@ -2,7 +2,7 @@ import { findPromoters, identifyTSS } from '../../src/utils/promoter-recognition
 import { DNA } from '../../src/sequence';
 import { Promoter } from '../../src/model/Promoter';
 import { PromoterElement } from '../../src/model/PromoterElement';
-import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
+import { NucleotidePattern } from '../../src/pattern';
 import { MAX_PROMOTER_SEARCH_DISTANCE } from '../../src/constants/biological-constants';
 
 describe('promoter-recognition', () => {
