@@ -1,4 +1,4 @@
-import { RNA, DNA } from '../../src/sequence';
+import { parseDNA, parseRNA } from '../../src/sequence';
 import { AminoAcid } from '../../src/translation';
 import { parseMRNA } from '../../src/processing';
 
@@ -8,18 +8,18 @@ export const RNA_SEQ_COMP = 'UAGCCGAU';
 export const DNA_SEQ = 'ATCGGCTA';
 export const DNA_SEQ_COMP = 'TAGCCGAT';
 
-export const ALANINE_RNA_CODON_1 = new RNA('GCU');
-export const ALANINE_RNA_CODON_2 = new RNA('GCG');
-export const ALANINE_DNA_CODON_1 = new DNA('GCT');
-export const ALANINE_DNA_CODON_2 = new DNA('GCG');
+export const ALANINE_RNA_CODON_1 = parseRNA('GCU').unwrap();
+export const ALANINE_RNA_CODON_2 = parseRNA('GCG').unwrap();
+export const ALANINE_DNA_CODON_1 = parseDNA('GCT').unwrap();
+export const ALANINE_DNA_CODON_2 = parseDNA('GCG').unwrap();
 
 //ALL_AMINO_ACIDS_1 vs ALL_AMINO_ACIDS_2 use alternate codons but will code for the same amino acid sequence
-export const RNA_ALL_AMINO_ACIDS_1 = new RNA(
+export const RNA_ALL_AMINO_ACIDS_1 = parseRNA(
   'GCAUGCGACGAAUUCGGACACAUAAAAUUAAUGAACCCACAAAGAAGCACAGUAUGGUAC',
-);
-export const RNA_ALL_AMINO_ACIDS_2 = new RNA(
+).unwrap();
+export const RNA_ALL_AMINO_ACIDS_2 = parseRNA(
   'GCCUGUGAUGAGUUUGGCCAUAUCAAGUUGAUGAAUCCCCAGAGGAGUACCGUCUGGUAU',
-);
+).unwrap();
 
 // MRNA versions for Polypeptide tests - use the coding sequences directly
 export const MRNA_ALL_AMINO_ACIDS_1 = parseMRNA(
@@ -33,12 +33,12 @@ export const MRNA_ALL_AMINO_ACIDS_2 = parseMRNA(
   0,
   60,
 ).unwrap();
-export const DNA_ALL_AMINO_ACIDS_1 = new DNA(
+export const DNA_ALL_AMINO_ACIDS_1 = parseDNA(
   'GCATGCGACGAATTCGGACACATAAAATTAATGAACCCACAAAGAAGCACAGTATGGTAC',
-);
-export const DNA_ALL_AMINO_ACIDS_2 = new DNA(
+).unwrap();
+export const DNA_ALL_AMINO_ACIDS_2 = parseDNA(
   'GCCTGTGATGAGTTTGGCCATATCAAGTTGATGAATCCCCAGAGGAGTACCGTCTGGTAT',
-);
+).unwrap();
 
 //the sequence of amino acid SINGLE_LETTER_CODEs produced by the above codons (all amino acids in alphabetic order by SINGLE_LETTER_CODE)
 export const ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ = 'ACDEFGHIKLMNPQRSTVWY';

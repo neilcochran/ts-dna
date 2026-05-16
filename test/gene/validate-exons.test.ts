@@ -1,7 +1,6 @@
-import { validateExons } from '../../src/gene';
+import { validateExons, MIN_INTRON_SIZE } from '../../src/gene';
 import { isFailure, isSuccess } from '../../src/result';
 import type { GenomicRegion } from '../../src/coordinates';
-import { MIN_INTRON_SIZE } from '../../src/constants/biological-constants';
 
 describe('validateExons', () => {
   test('validates a single exon successfully', () => {

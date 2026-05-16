@@ -1,7 +1,4 @@
 import { isDeepStrictEqual } from 'util';
-import { InvalidSequenceError } from '../model/errors/InvalidSequenceError.js';
-import { describeDNAError } from './errors.js';
-import { validateDNAString } from './internal-validation.js';
 import { UNSAFE_DNA_KEY } from './internal-keys.js';
 
 /**
@@ -10,14 +7,8 @@ import { UNSAFE_DNA_KEY } from './internal-keys.js';
  * Instances are immutable: the `sequence` field is `readonly` and every transformation
  * (`getSubsequence`, `getComplement`, `getReverseComplement`) returns a new `DNA`.
  *
- * The constructor validates and throws {@link InvalidSequenceError} on bad input. Prefer
- * {@link parseDNA} (which returns a `Result`) for untrusted input. Subclasses (`Gene`) call
- * `super(sequence)` directly and benefit from the same validation.
- *
- * The constructor accepts an optional second parameter that is reserved for sequence-internal
- * trusted construction (the `unsafeDNA` factory). Public callers must not pass it; the key
- * is module-private and the parameter exists only to enable the bypass without an
- * `Object.create` hack.
+ * Public callers construct instances via {@link parseDNA}; the constructor is gated by a
+ * module-private sentinel.
  */
 export class DNA {
   /** Validated, normalized (upper-case) DNA sequence. */
@@ -30,26 +21,18 @@ export class DNA {
   public readonly nucleicAcidType = 'DNA' as const;
 
   /**
-   * Constructs a DNA instance with constructor-time validation.
+   * Constructs a `DNA`. Module-private; public callers must go through {@link parseDNA}.
    *
-   * @param sequence - The DNA sequence string (case-insensitive; normalized to upper-case)
-   * @param trustedKey - Sequence-internal construction key. Module-private; public callers
-   * must not pass this. When supplied with the matching key, `sequence` is stored verbatim
-   * with no validation. See {@link UNSAFE_DNA_KEY}.
+   * @param sequence - A pre-validated, normalized (upper-case) DNA sequence
+   * @param trustedKey - Sentinel proving the caller is `sequence/`-internal
    *
-   * @throws {@link InvalidSequenceError} when `sequence` is empty or contains characters
-   * outside the set A, C, G, T (case-insensitive)
+   * @internal
    */
-  constructor(sequence: string, trustedKey?: typeof UNSAFE_DNA_KEY) {
-    if (trustedKey === UNSAFE_DNA_KEY) {
-      this.sequence = sequence;
-      return;
+  constructor(sequence: string, trustedKey: typeof UNSAFE_DNA_KEY) {
+    if (trustedKey !== UNSAFE_DNA_KEY) {
+      throw new Error('DNA must be constructed via parseDNA');
     }
-    const outcome = validateDNAString(sequence);
-    if (!outcome.ok) {
-      throw new InvalidSequenceError(describeDNAError(outcome.error), sequence, 'DNA');
-    }
-    this.sequence = outcome.normalized;
+    this.sequence = sequence;
   }
 
   /**

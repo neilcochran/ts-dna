@@ -1,74 +1,61 @@
-import { NucleotidePatternSymbol, NUCLEOTIDE_PATTERN_SYMBOLS } from '../../src/pattern';
-import { InvalidNucleotidePatternError } from '../../src/model/errors/InvalidNucleotidePatternError';
+import {
+  NucleotidePatternSymbol,
+  parseNucleotidePatternSymbol,
+  NUCLEOTIDE_PATTERN_SYMBOLS,
+} from '../../src/pattern';
+
+function symbol(source: string): NucleotidePatternSymbol {
+  return parseNucleotidePatternSymbol(source).unwrap();
+}
 
 describe('NucleotidePatternSymbol', () => {
-  describe('construction', () => {
-    test('accepts every IUPAC symbol and exposes its matching bases', () => {
-      for (const [symbol, expectedBases] of Object.entries(NUCLEOTIDE_PATTERN_SYMBOLS)) {
-        const instance = new NucleotidePatternSymbol(symbol);
-        expect(instance.symbol).toBe(symbol);
+  describe('basic shape', () => {
+    test('exposes the validated symbol and its matching bases for every IUPAC code', () => {
+      for (const [code, expectedBases] of Object.entries(NUCLEOTIDE_PATTERN_SYMBOLS)) {
+        const instance = symbol(code);
+        expect(instance.symbol).toBe(code);
         expect(instance.matchingBases).toEqual(expectedBases);
       }
     });
 
     test('normalizes lowercase input to uppercase', () => {
-      expect(new NucleotidePatternSymbol('a').symbol).toBe('A');
-      expect(new NucleotidePatternSymbol('w').symbol).toBe('W');
-      expect(new NucleotidePatternSymbol('n').symbol).toBe('N');
-    });
-
-    test('throws InvalidNucleotidePatternError on empty input', () => {
-      expect(() => new NucleotidePatternSymbol('')).toThrow(InvalidNucleotidePatternError);
-    });
-
-    test('throws InvalidNucleotidePatternError on non-IUPAC characters', () => {
-      expect(() => new NucleotidePatternSymbol('Z')).toThrow(InvalidNucleotidePatternError);
-      expect(() => new NucleotidePatternSymbol('1')).toThrow(InvalidNucleotidePatternError);
-      expect(() => new NucleotidePatternSymbol('!')).toThrow(InvalidNucleotidePatternError);
-    });
-
-    test('error message names the offending symbol', () => {
-      try {
-        new NucleotidePatternSymbol('X');
-        fail('Expected NucleotidePatternSymbol to throw');
-      } catch (error) {
-        expect(error).toBeInstanceOf(InvalidNucleotidePatternError);
-        expect((error as InvalidNucleotidePatternError).message).toContain('X');
-      }
+      expect(symbol('a').symbol).toBe('A');
+      expect(symbol('w').symbol).toBe('W');
+      expect(symbol('n').symbol).toBe('N');
     });
   });
 
   describe('matchingRegex', () => {
     test('A symbol regex matches a/A only', () => {
-      const symbol = new NucleotidePatternSymbol('A');
-      expect(symbol.matchingRegex.source).toBe('[Aa]');
-      expect(symbol.matchingRegex.test('A')).toBe(true);
-      expect(symbol.matchingRegex.test('a')).toBe(true);
-      expect(symbol.matchingRegex.test('T')).toBe(false);
+      const a = symbol('A');
+      expect(a.matchingRegex.source).toBe('[Aa]');
+      expect(a.matchingRegex.test('A')).toBe(true);
+      expect(a.matchingRegex.test('a')).toBe(true);
+      expect(a.matchingRegex.test('T')).toBe(false);
     });
 
     test('W ambiguity matches A or T (case-insensitive)', () => {
-      const symbol = new NucleotidePatternSymbol('W');
-      expect(symbol.matchingRegex.source).toBe('[AaTt]');
-      expect(symbol.matchingRegex.test('A')).toBe(true);
-      expect(symbol.matchingRegex.test('T')).toBe(true);
-      expect(symbol.matchingRegex.test('t')).toBe(true);
-      expect(symbol.matchingRegex.test('C')).toBe(false);
+      const w = symbol('W');
+      expect(w.matchingRegex.source).toBe('[AaTt]');
+      expect(w.matchingRegex.test('A')).toBe(true);
+      expect(w.matchingRegex.test('T')).toBe(true);
+      expect(w.matchingRegex.test('t')).toBe(true);
+      expect(w.matchingRegex.test('C')).toBe(false);
     });
 
     test('N ambiguity matches every concrete base', () => {
-      const symbol = new NucleotidePatternSymbol('N');
+      const n = symbol('N');
       for (const base of ['A', 'C', 'G', 'T', 'a', 'c', 'g', 't']) {
-        expect(symbol.matchingRegex.test(base)).toBe(true);
+        expect(n.matchingRegex.test(base)).toBe(true);
       }
     });
 
     test('B ambiguity excludes A', () => {
-      const symbol = new NucleotidePatternSymbol('B');
-      expect(symbol.matchingRegex.test('G')).toBe(true);
-      expect(symbol.matchingRegex.test('T')).toBe(true);
-      expect(symbol.matchingRegex.test('C')).toBe(true);
-      expect(symbol.matchingRegex.test('A')).toBe(false);
+      const b = symbol('B');
+      expect(b.matchingRegex.test('G')).toBe(true);
+      expect(b.matchingRegex.test('T')).toBe(true);
+      expect(b.matchingRegex.test('C')).toBe(true);
+      expect(b.matchingRegex.test('A')).toBe(false);
     });
   });
 });

@@ -141,3 +141,7 @@ dsdna
 nucleosome
 semiconservative
 semiconservatively
+CFTR
+spliceosome
+behaviour
+hexamer

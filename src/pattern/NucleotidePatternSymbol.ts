@@ -1,14 +1,13 @@
-import { InvalidNucleotidePatternError } from '../model/errors/InvalidNucleotidePatternError.js';
-import { NUCLEOTIDE_PATTERN_SYMBOLS, isIUPACSymbol } from './iupac-symbols.js';
+import { NUCLEOTIDE_PATTERN_SYMBOLS } from './iupac-symbols.js';
 import type { IUPACSymbol } from './iupac-symbols.js';
+import { UNSAFE_NUCLEOTIDE_PATTERN_SYMBOL_KEY } from './internal-keys.js';
 
 /**
  * A single IUPAC nucleotide notation symbol (e.g. `A`, `T`, `R`, `N`) with the concrete bases
  * it matches and a compiled, case-insensitive regex character class.
  *
- * Instances are immutable. The constructor validates and throws
- * {@link InvalidNucleotidePatternError} on an unknown symbol; prefer {@link parseNucleotidePatternSymbol}
- * (returns a `Result`) for untrusted input.
+ * Instances are immutable. Public callers construct instances via
+ * {@link parseNucleotidePatternSymbol}; the constructor is gated by a module-private sentinel.
  *
  * @see {@link https://en.wikipedia.org/wiki/Nucleic_acid_notation#IUPAC_notation|IUPAC notation}
  */
@@ -23,28 +22,33 @@ export class NucleotidePatternSymbol {
   public readonly matchingRegex: RegExp;
 
   /**
-   * Constructs a `NucleotidePatternSymbol` with constructor-time validation.
+   * Constructs a `NucleotidePatternSymbol`. Module-private; public callers must go through
+   * {@link parseNucleotidePatternSymbol}.
    *
-   * @param symbol - An IUPAC nucleotide symbol (case-insensitive; normalized to upper-case)
+   * @param symbol - A pre-validated, upper-cased IUPAC nucleotide symbol
+   * @param trustedKey - Sentinel proving the caller is `pattern/`-internal
    *
-   * @throws {@link InvalidNucleotidePatternError} when `symbol` is empty or is not one of
-   * the IUPAC nucleotide symbols
+   * @internal
    */
-  constructor(symbol: string) {
-    const normalized = symbol.toUpperCase();
-    if (normalized === '') {
-      throw new InvalidNucleotidePatternError('Nucleotide pattern symbol cannot be empty', symbol);
-    }
-    if (!isIUPACSymbol(normalized)) {
-      throw new InvalidNucleotidePatternError(
-        `Invalid IUPAC nucleotide symbol: '${symbol}'`,
-        symbol,
+  constructor(symbol: IUPACSymbol, trustedKey: typeof UNSAFE_NUCLEOTIDE_PATTERN_SYMBOL_KEY) {
+    if (trustedKey !== UNSAFE_NUCLEOTIDE_PATTERN_SYMBOL_KEY) {
+      throw new Error(
+        'NucleotidePatternSymbol must be constructed via parseNucleotidePatternSymbol',
       );
     }
-    this.symbol = normalized;
-    this.matchingBases = NUCLEOTIDE_PATTERN_SYMBOLS[normalized];
+    this.symbol = symbol;
+    this.matchingBases = NUCLEOTIDE_PATTERN_SYMBOLS[symbol];
     this.matchingRegex = buildSymbolRegex(this.matchingBases);
   }
+}
+
+/**
+ * Constructs a {@link NucleotidePatternSymbol} from a pre-validated, upper-cased IUPAC symbol.
+ *
+ * @internal
+ */
+export function unsafeNucleotidePatternSymbol(symbol: IUPACSymbol): NucleotidePatternSymbol {
+  return new NucleotidePatternSymbol(symbol, UNSAFE_NUCLEOTIDE_PATTERN_SYMBOL_KEY);
 }
 
 /**

@@ -1,9 +1,7 @@
 import { Result, success, failure } from '../result/index.js';
 import type { GenomicRegion } from '../coordinates/index.js';
-import {
-  MIN_INTRON_LENGTH_FOR_SPLICING,
-  DEFAULT_MAX_INTRON_SEARCH,
-} from '../constants/biological-constants.js';
+import { MIN_INTRON_LENGTH_FOR_SPLICING } from './biological-constants.js';
+import { DEFAULT_MAX_INTRON_SEARCH } from '../gene/biological-constants.js';
 import { DNA_DONOR_SPLICE_CONSENSUS, DNA_ACCEPTOR_SPLICE_CONSENSUS } from './splice-consensus.js';
 import type { SplicingError } from './errors.js';
 

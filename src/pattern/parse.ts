@@ -1,8 +1,12 @@
 import { Result, success, failure } from '../result/index.js';
 import { isIUPACSymbol } from './iupac-symbols.js';
 import type { PatternError } from './errors.js';
-import { NucleotidePattern } from './NucleotidePattern.js';
-import { NucleotidePatternSymbol } from './NucleotidePatternSymbol.js';
+import { NucleotidePattern, compilePatternRegexSource } from './NucleotidePattern.js';
+import {
+  NucleotidePatternSymbol,
+  unsafeNucleotidePatternSymbol,
+} from './NucleotidePatternSymbol.js';
+import { UNSAFE_NUCLEOTIDE_PATTERN_KEY } from './internal-keys.js';
 
 /**
  * Parses an untrusted IUPAC pattern string into a {@link NucleotidePattern}.
@@ -25,27 +29,22 @@ import { NucleotidePatternSymbol } from './NucleotidePatternSymbol.js';
  * ```
  */
 export function parseNucleotidePattern(input: string): Result<NucleotidePattern, PatternError> {
-  if (input === '') {
-    return failure({ kind: 'empty-pattern' });
+  const outcome = compilePatternRegexSource(input);
+  if (!outcome.ok) {
+    return failure(outcome.error);
   }
-  for (let i = 0; i < input.length; i++) {
-    const character = input[i];
-    if (/[a-zA-Z]/.test(character)) {
-      const isEscapeSequence = i > 0 && input[i - 1] === '\\';
-      if (isEscapeSequence) {
-        continue;
-      }
-      if (!isIUPACSymbol(character.toUpperCase())) {
-        return failure({ kind: 'invalid-iupac-character', character, index: i });
-      }
-    }
-  }
+  let basicRegex: RegExp;
+  let globalRegex: RegExp;
   try {
-    return success(new NucleotidePattern(input));
+    basicRegex = new RegExp(outcome.source);
+    globalRegex = new RegExp(outcome.source, 'g');
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : String(cause);
     return failure({ kind: 'invalid-regex-construction', pattern: input, cause: message });
   }
+  return success(
+    new NucleotidePattern(input, basicRegex, globalRegex, UNSAFE_NUCLEOTIDE_PATTERN_KEY),
+  );
 }
 
 /**
@@ -73,8 +72,9 @@ export function parseNucleotidePatternSymbol(
   if (input === '') {
     return failure({ kind: 'empty-symbol' });
   }
-  if (!isIUPACSymbol(input.toUpperCase())) {
+  const upper = input.toUpperCase();
+  if (!isIUPACSymbol(upper)) {
     return failure({ kind: 'invalid-iupac-symbol', symbol: input });
   }
-  return success(new NucleotidePatternSymbol(input));
+  return success(unsafeNucleotidePatternSymbol(upper));
 }

@@ -186,9 +186,8 @@ export function processDefaultSpliceVariant(
  * Lazy iterator yielding every splice variant of a gene that satisfies the supplied
  * {@link AlternativeSplicingOptions}.
  *
- * Replaces the previous `generateAllSpliceVariants` which materialized up to `2^n` variants
- * upfront. The iterator yields variants one at a time as the consumer pulls them, so callers
- * can `break` early, `take(n)`, or filter without paying for variants they never observe.
+ * The iterator yields variants one at a time as the consumer pulls them, so callers can
+ * `break` early, `take(n)`, or filter without paying for variants they never observe.
  *
  * Filtering applies the structural rules (first/last exon presence, minimum exon count) and,
  * when enabled, the reading-frame and start/stop-codon checks. Variants that fail validation

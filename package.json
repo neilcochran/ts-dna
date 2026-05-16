@@ -15,6 +15,42 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./result": {
+      "types": "./dist/result/index.d.ts",
+      "import": "./dist/result/index.js"
+    },
+    "./coordinates": {
+      "types": "./dist/coordinates/index.d.ts",
+      "import": "./dist/coordinates/index.js"
+    },
+    "./sequence": {
+      "types": "./dist/sequence/index.d.ts",
+      "import": "./dist/sequence/index.js"
+    },
+    "./pattern": {
+      "types": "./dist/pattern/index.d.ts",
+      "import": "./dist/pattern/index.js"
+    },
+    "./gene": {
+      "types": "./dist/gene/index.d.ts",
+      "import": "./dist/gene/index.js"
+    },
+    "./transcription": {
+      "types": "./dist/transcription/index.d.ts",
+      "import": "./dist/transcription/index.js"
+    },
+    "./processing": {
+      "types": "./dist/processing/index.d.ts",
+      "import": "./dist/processing/index.js"
+    },
+    "./translation": {
+      "types": "./dist/translation/index.d.ts",
+      "import": "./dist/translation/index.js"
+    },
+    "./replication": {
+      "types": "./dist/replication/index.d.ts",
+      "import": "./dist/replication/index.js"
     }
   },
   "engines": {
@@ -28,7 +64,7 @@
     "test:coverage": "jest --coverage",
     "doc": "rimraf doc/ && typedoc --includeVersion --readme none --out docs src/",
     "build": "node scripts/build.js",
-    "clean": "rimraf dist/ dist-cjs/ doc/",
+    "clean": "rimraf dist/ doc/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\""
   },

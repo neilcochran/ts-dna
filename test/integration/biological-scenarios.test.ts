@@ -6,7 +6,7 @@
  */
 
 import { parseGene } from '../../src/gene';
-import { DNA } from '../../src/sequence';
+import { parseDNA } from '../../src/sequence';
 import { parseMRNA, processRNA } from '../../src/processing';
 import { transcribe } from '../../src/transcription';
 import { translate } from '../../src/translation';
@@ -381,12 +381,12 @@ describe('Biological Scenarios Integration Tests', () => {
 
       // High GC content (common in some organisms)
       const highGCSequence = 'ATGGGCGGCGGCCTGCCGCTGTAG';
-      const highGCDNA = new DNA(highGCSequence);
+      const highGCDNA = parseDNA(highGCSequence).unwrap();
       const highGCRNA = transcribeSequence(highGCDNA);
 
       // Low GC content
       const lowGCSequence = 'ATGAAAAATAAATTTAATTTATAG';
-      const lowGCDNA = new DNA(lowGCSequence);
+      const lowGCDNA = parseDNA(lowGCSequence).unwrap();
       const lowGCRNA = transcribeSequence(lowGCDNA);
 
       // Test exact GC content differences

@@ -11,7 +11,7 @@ import {
   MIN_POLY_A_DETECTION_LENGTH,
   POLY_A_TAIL_PATTERN,
   DEFAULT_CLEAVAGE_OFFSET,
-} from '../constants/biological-constants.js';
+} from './biological-constants.js';
 
 /**
  * Returns a new {@link MRNA} marked as carrying a 5' methylguanosine cap.

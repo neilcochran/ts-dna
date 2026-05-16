@@ -1,102 +1,58 @@
 import { RNA, parseRNA } from '../../src/sequence';
-import { InvalidSequenceError } from '../../src/model/errors/InvalidSequenceError';
-import { isFailure } from '../../src/result/Result';
+
+function rna(sequence: string): RNA {
+  return parseRNA(sequence).unwrap();
+}
 
 describe('RNA', () => {
-  describe('constructor', () => {
-    test('creates RNA from a valid sequence', () => {
-      const rna = new RNA('AUCG');
-      expect(rna.getSequence()).toBe('AUCG');
-      expect(rna.nucleicAcidType).toBe('RNA');
+  describe('basic shape', () => {
+    test('nucleicAcidType is the RNA literal', () => {
+      expect(rna('AUCG').nucleicAcidType).toBe('RNA');
     });
 
-    test('normalizes lowercase to uppercase', () => {
-      expect(new RNA('aucg').getSequence()).toBe('AUCG');
+    test('getSequence returns the validated upper-case sequence', () => {
+      expect(rna('aucgaucgaucg').getSequence()).toBe('AUCGAUCGAUCG');
     });
 
-    test('handles mixed case sequences', () => {
-      expect(new RNA('AuCg').getSequence()).toBe('AUCG');
-    });
-
-    test('creates RNA with all valid nucleotides', () => {
-      expect(new RNA('AAUUCCGG').getSequence()).toBe('AAUUCCGG');
-    });
-
-    test('throws InvalidSequenceError for empty sequence', () => {
-      expect(() => new RNA('')).toThrow(InvalidSequenceError);
-    });
-
-    test('throws InvalidSequenceError for invalid characters', () => {
-      expect(() => new RNA('AUCX')).toThrow(InvalidSequenceError);
-      expect(() => new RNA('AUCG123')).toThrow(InvalidSequenceError);
-    });
-
-    test('throws InvalidSequenceError for DNA nucleotides in RNA input', () => {
-      expect(() => new RNA('ATCG')).toThrow(InvalidSequenceError);
-    });
-
-    test('error message names the offending character and tags the alphabet', () => {
-      try {
-        new RNA('AUCX');
-        fail('Should have thrown InvalidSequenceError');
-      } catch (error) {
-        expect(error).toBeInstanceOf(InvalidSequenceError);
-        if (error instanceof InvalidSequenceError) {
-          expect(error.message).toContain('X');
-          expect(error.nucleicAcidType).toBe('RNA');
-          expect(error.sequence).toBe('AUCX');
-        }
-      }
-    });
-
-    test('handles long sequences', () => {
-      const longSequence = 'AUCG'.repeat(1000);
-      const rna = new RNA(longSequence);
-      expect(rna.getSequence()).toBe(longSequence);
-      expect(rna.length()).toBe(4000);
-    });
-
-    test('handles single nucleotide', () => {
-      expect(new RNA('A').getSequence()).toBe('A');
-    });
-  });
-
-  describe('parseRNA equivalence', () => {
-    test('parseRNA failure aligns with constructor throwing for the same input', () => {
-      const result = parseRNA('AUCX');
-      expect(isFailure(result)).toBe(true);
-      expect(() => new RNA('AUCX')).toThrow(InvalidSequenceError);
+    test('getSequence is stable across calls', () => {
+      const sequence = rna('AUCG');
+      expect(sequence.getSequence()).toBe('AUCG');
+      expect(sequence.getSequence()).toBe('AUCG');
     });
   });
 
   describe('equality', () => {
     test('two RNAs with the same sequence are equal', () => {
-      expect(new RNA('AUCG').equals(new RNA('AUCG'))).toBe(true);
+      expect(rna('AUCG').equals(rna('AUCG'))).toBe(true);
     });
 
     test('two RNAs with different sequences are not equal', () => {
-      expect(new RNA('AUCG').equals(new RNA('GGCC'))).toBe(false);
+      expect(rna('AUCG').equals(rna('GGCC'))).toBe(false);
     });
   });
 
   describe('search and substring methods', () => {
-    const testRNA = new RNA('AUCGAUCG');
+    const testRNA = rna('AUCGAUCG');
 
     test('length returns correct length', () => {
       expect(testRNA.length()).toBe(8);
     });
 
+    test('length returns 4000 for a 1000-repeat AUCG sequence', () => {
+      expect(rna('AUCG'.repeat(1000)).length()).toBe(4000);
+    });
+
     test('contains finds existing subsequence', () => {
       expect(testRNA.contains('UCG')).toBe(true);
-      expect(testRNA.contains(new RNA('UCG'))).toBe(true);
+      expect(testRNA.contains(rna('UCG'))).toBe(true);
       expect(testRNA.contains('AAA')).toBe(false);
     });
 
     test('startsWith and endsWith handle strings and RNA', () => {
       expect(testRNA.startsWith('AUC')).toBe(true);
-      expect(testRNA.startsWith(new RNA('AUC'))).toBe(true);
+      expect(testRNA.startsWith(rna('AUC'))).toBe(true);
       expect(testRNA.endsWith('UCG')).toBe(true);
-      expect(testRNA.endsWith(new RNA('UCG'))).toBe(true);
+      expect(testRNA.endsWith(rna('UCG'))).toBe(true);
     });
 
     test('indexOf returns positions', () => {
@@ -113,7 +69,7 @@ describe('RNA', () => {
   });
 
   describe('complement transformations', () => {
-    const testRNA = new RNA('AUCGAUCG');
+    const testRNA = rna('AUCGAUCG');
 
     test('getComplement returns a new RNA carrying the complement', () => {
       const complement = testRNA.getComplement();
@@ -128,10 +84,10 @@ describe('RNA', () => {
     });
 
     test('handles single bases', () => {
-      expect(new RNA('A').getComplement().getSequence()).toBe('U');
-      expect(new RNA('U').getComplement().getSequence()).toBe('A');
-      expect(new RNA('C').getComplement().getSequence()).toBe('G');
-      expect(new RNA('G').getComplement().getSequence()).toBe('C');
+      expect(rna('A').getComplement().getSequence()).toBe('U');
+      expect(rna('U').getComplement().getSequence()).toBe('A');
+      expect(rna('C').getComplement().getSequence()).toBe('G');
+      expect(rna('G').getComplement().getSequence()).toBe('C');
     });
 
     test('double complement is identity', () => {

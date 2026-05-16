@@ -16,10 +16,12 @@ import { findPromoters, identifyTSS, type PromoterSearchOptions } from './promot
 import {
   DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE,
   DEFAULT_DOWNSTREAM_SEARCH_DISTANCE,
-  POLYA_SIGNAL_OFFSET,
   DEFAULT_MIN_PROMOTER_STRENGTH,
+} from './biological-constants.js';
+import {
+  POLYA_SIGNAL_OFFSET,
   CANONICAL_POLYA_SIGNAL_DNA,
-} from '../constants/biological-constants.js';
+} from '../processing/biological-constants.js';
 
 /**
  * Configuration options for {@link transcribe}.

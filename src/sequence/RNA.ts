@@ -1,7 +1,4 @@
 import { isDeepStrictEqual } from 'util';
-import { InvalidSequenceError } from '../model/errors/InvalidSequenceError.js';
-import { describeRNAError } from './errors.js';
-import { validateRNAString } from './internal-validation.js';
 import { UNSAFE_RNA_KEY } from './internal-keys.js';
 
 /**
@@ -10,14 +7,8 @@ import { UNSAFE_RNA_KEY } from './internal-keys.js';
  * Instances are immutable: the `sequence` field is `readonly` and every transformation
  * (`getSubsequence`, `getComplement`, `getReverseComplement`) returns a new `RNA`.
  *
- * The constructor validates and throws {@link InvalidSequenceError} on bad input. Prefer
- * {@link parseRNA} (which returns a `Result`) for untrusted input. The `MRNA` subclass calls
- * `super(sequence)` directly and benefits from the same validation.
- *
- * The constructor accepts an optional second parameter that is reserved for sequence-internal
- * trusted construction (the `unsafeRNA` factory). Public callers must not pass it; the key
- * is module-private and the parameter exists only to enable the bypass without an
- * `Object.create` hack.
+ * Public callers construct instances via {@link parseRNA}; the constructor is gated by a
+ * module-private sentinel.
  */
 export class RNA {
   /** Validated, normalized (upper-case) RNA sequence. */
@@ -30,26 +21,18 @@ export class RNA {
   public readonly nucleicAcidType = 'RNA' as const;
 
   /**
-   * Constructs an RNA instance with constructor-time validation.
+   * Constructs an `RNA`. Module-private; public callers must go through {@link parseRNA}.
    *
-   * @param sequence - The RNA sequence string (case-insensitive; normalized to upper-case)
-   * @param trustedKey - Sequence-internal construction key. Module-private; public callers
-   * must not pass this. When supplied with the matching key, `sequence` is stored verbatim
-   * with no validation. See {@link UNSAFE_RNA_KEY}.
+   * @param sequence - A pre-validated, normalized (upper-case) RNA sequence
+   * @param trustedKey - Sentinel proving the caller is `sequence/`-internal
    *
-   * @throws {@link InvalidSequenceError} when `sequence` is empty or contains characters
-   * outside the set A, C, G, U (case-insensitive)
+   * @internal
    */
-  constructor(sequence: string, trustedKey?: typeof UNSAFE_RNA_KEY) {
-    if (trustedKey === UNSAFE_RNA_KEY) {
-      this.sequence = sequence;
-      return;
+  constructor(sequence: string, trustedKey: typeof UNSAFE_RNA_KEY) {
+    if (trustedKey !== UNSAFE_RNA_KEY) {
+      throw new Error('RNA must be constructed via parseRNA');
     }
-    const outcome = validateRNAString(sequence);
-    if (!outcome.ok) {
-      throw new InvalidSequenceError(describeRNAError(outcome.error), sequence, 'RNA');
-    }
-    this.sequence = outcome.normalized;
+    this.sequence = sequence;
   }
 
   /**

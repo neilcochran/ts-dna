@@ -1,10 +1,10 @@
-import { transcribe, TranscriptionOptions } from '../../src/transcription';
-import { parseGene, Gene } from '../../src/gene';
-import { isSuccess, isFailure } from '../../src/result/Result';
 import {
+  transcribe,
+  TranscriptionOptions,
   MAX_PROMOTER_SEARCH_DISTANCE,
-  MIN_INTRON_SIZE,
-} from '../../src/constants/biological-constants';
+} from '../../src/transcription';
+import { parseGene, Gene, MIN_INTRON_SIZE } from '../../src/gene';
+import { isSuccess, isFailure } from '../../src/result/Result';
 import { COMPLEX_GENE } from '../test-genes';
 
 describe('transcribe', () => {

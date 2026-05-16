@@ -2,10 +2,7 @@ import { Result, success, failure, isFailure } from '../result/index.js';
 import { unsafeRNA } from '../sequence/parse.js';
 import type { PreMRNA } from '../transcription/index.js';
 import { START_CODON, CODON_LENGTH, isStopCodon } from '../sequence/index.js';
-import {
-  DEFAULT_POLY_A_TAIL_LENGTH,
-  DEFAULT_CLEAVAGE_OFFSET,
-} from '../constants/biological-constants.js';
+import { DEFAULT_POLY_A_TAIL_LENGTH, DEFAULT_CLEAVAGE_OFFSET } from './biological-constants.js';
 import type { MRNA } from './MRNA.js';
 import { unsafeMRNA } from './parse.js';
 import { spliceRNA } from './splicing.js';

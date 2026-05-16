@@ -1,9 +1,8 @@
 import type { DNA, RNA } from '../sequence/index.js';
-import { InvalidNucleotidePatternError } from '../model/errors/InvalidNucleotidePatternError.js';
 import { complementIUPACSymbol, isIUPACSymbol } from './iupac-symbols.js';
 import type { IUPACSymbol } from './iupac-symbols.js';
 import type { PatternError } from './errors.js';
-import { describePatternError } from './errors.js';
+import { UNSAFE_NUCLEOTIDE_PATTERN_KEY } from './internal-keys.js';
 
 /**
  * A single match of a {@link NucleotidePattern} against a nucleic-acid sequence.
@@ -30,9 +29,8 @@ export interface NucleotideMatch {
  *
  * Pattern methods operate on validated {@link DNA} or {@link RNA} sequences only; consumers
  * with raw strings should call `parseDNA(str).map(seq => pattern.matches(seq))` or use a native
- * `RegExp` directly. The constructor validates and throws
- * {@link InvalidNucleotidePatternError}; prefer {@link parseNucleotidePattern} (returns a
- * `Result`) for untrusted input.
+ * `RegExp` directly. Public callers construct instances via {@link parseNucleotidePattern}; the
+ * constructor is gated by a module-private sentinel.
  *
  * @see {@link NucleotidePatternSymbol}
  * @see {@link https://en.wikipedia.org/wiki/Nucleic_acid_notation#IUPAC_notation|IUPAC notation}
@@ -48,34 +46,28 @@ export class NucleotidePattern {
   private readonly patternRegexGlobal: RegExp;
 
   /**
-   * Constructs a `NucleotidePattern` with constructor-time validation.
+   * Constructs a `NucleotidePattern`. Module-private; public callers must go through
+   * {@link parseNucleotidePattern}.
    *
-   * @param pattern - A non-empty pattern string composed of IUPAC nucleotide symbols and
-   * optional regex meta-characters (`[]`, `{}`, `()`, `+`, `*`, `?`, `|`, `^`, `$`, `.`, `\`)
+   * @param pattern - A pattern string, pre-validated by the parser
+   * @param patternRegex - Compiled regex form (no flags)
+   * @param patternRegexGlobal - Compiled regex form (with `g` flag)
+   * @param trustedKey - Sentinel proving the caller is `pattern/`-internal
    *
-   * @throws {@link InvalidNucleotidePatternError} when `pattern` is empty, contains an
-   * unrecognized alpha character outside an escape sequence, or fails to compile as a regex
+   * @internal
    */
-  constructor(pattern: string) {
-    const outcome = compilePatternRegexSource(pattern);
-    if (!outcome.ok) {
-      throw new InvalidNucleotidePatternError(describePatternError(outcome.error), pattern);
-    }
-    let basicRegex: RegExp;
-    let globalRegex: RegExp;
-    try {
-      basicRegex = new RegExp(outcome.source);
-      globalRegex = new RegExp(outcome.source, 'g');
-    } catch (cause) {
-      const message = cause instanceof Error ? cause.message : String(cause);
-      throw new InvalidNucleotidePatternError(
-        describePatternError({ kind: 'invalid-regex-construction', pattern, cause: message }),
-        pattern,
-      );
+  constructor(
+    pattern: string,
+    patternRegex: RegExp,
+    patternRegexGlobal: RegExp,
+    trustedKey: typeof UNSAFE_NUCLEOTIDE_PATTERN_KEY,
+  ) {
+    if (trustedKey !== UNSAFE_NUCLEOTIDE_PATTERN_KEY) {
+      throw new Error('NucleotidePattern must be constructed via parseNucleotidePattern');
     }
     this.pattern = pattern;
-    this.patternRegex = basicRegex;
-    this.patternRegexGlobal = globalRegex;
+    this.patternRegex = patternRegex;
+    this.patternRegexGlobal = patternRegexGlobal;
   }
 
   /**
@@ -86,7 +78,7 @@ export class NucleotidePattern {
    *
    * @example
    * ```typescript
-   * const pattern = new NucleotidePattern('ANNT');
+   * const pattern = parseNucleotidePattern('ANNT').unwrap();
    * pattern.matches(parseDNA('AAAT').unwrap()); // true
    * pattern.matches(parseDNA('CCCC').unwrap()); // false
    * ```
@@ -104,7 +96,7 @@ export class NucleotidePattern {
    *
    * @example
    * ```typescript
-   * const pattern = new NucleotidePattern('RY');
+   * const pattern = parseNucleotidePattern('RY').unwrap();
    * pattern.findAll(parseDNA('ATGAGCGATC').unwrap());
    * // [{ start: 0, end: 2, matched: 'AT' }, { start: 4, end: 6, matched: 'GC' }, { start: 6, end: 8, matched: 'AT' }]
    * ```
@@ -147,7 +139,7 @@ export class NucleotidePattern {
    *
    * @example
    * ```typescript
-   * const ecoRI = new NucleotidePattern('GAATTC');
+   * const ecoRI = parseNucleotidePattern('GAATTC').unwrap();
    * ecoRI.matchesEitherStrand(parseDNA('CTTAAG').unwrap()); // true (reverse complement of GAATTC)
    * ```
    */
@@ -177,12 +169,12 @@ export class NucleotidePattern {
    *
    * @example
    * ```typescript
-   * new NucleotidePattern('ATCG').complement().pattern; // 'TAGC'
-   * new NucleotidePattern('RY').complement().pattern;   // 'YR'
+   * parseNucleotidePattern('ATCG').unwrap().complement().pattern; // 'TAGC'
+   * parseNucleotidePattern('RY').unwrap().complement().pattern;   // 'YR'
    * ```
    */
   complement(): NucleotidePattern {
-    return new NucleotidePattern(complementPatternString(this.pattern));
+    return unsafeCompilePattern(complementPatternString(this.pattern));
   }
 
   /**
@@ -194,26 +186,33 @@ export class NucleotidePattern {
    *
    * @example
    * ```typescript
-   * new NucleotidePattern('ATCG').reverseComplement().pattern;     // 'CGAT'
-   * new NucleotidePattern('GAATTC').reverseComplement().pattern;   // 'GAATTC'
+   * parseNucleotidePattern('ATCG').unwrap().reverseComplement().pattern;     // 'CGAT'
+   * parseNucleotidePattern('GAATTC').unwrap().reverseComplement().pattern;   // 'GAATTC'
    * ```
    */
   reverseComplement(): NucleotidePattern {
-    return new NucleotidePattern(reverseComplementPatternString(this.pattern));
+    return unsafeCompilePattern(reverseComplementPatternString(this.pattern));
   }
 }
+
+/**
+ * Outcome shape used internally by {@link compilePatternRegexSource} so the parser and the
+ * internal `complement` / `reverseComplement` helpers can share validation.
+ *
+ * @internal
+ */
+export type CompiledPatternSource =
+  | { ok: true; source: string }
+  | { ok: false; error: PatternError };
 
 /**
  * Walks an IUPAC pattern string and produces the corresponding regex source. Non-alpha
  * characters (regex meta-characters, digits, escapes, whitespace) are preserved verbatim;
  * alpha characters must be IUPAC symbols (or part of a `\X` escape sequence).
  *
- * Returns a tagged outcome rather than throwing so that both the `Result`-returning parser
- * and the throwing constructor can share the validation logic.
+ * @internal
  */
-function compilePatternRegexSource(
-  pattern: string,
-): { ok: true; source: string } | { ok: false; error: PatternError } {
+export function compilePatternRegexSource(pattern: string): CompiledPatternSource {
   if (pattern === '') {
     return { ok: false, error: { kind: 'empty-pattern' } };
   }
@@ -239,6 +238,24 @@ function compilePatternRegexSource(
     }
   }
   return { ok: true, source };
+}
+
+/**
+ * Compiles a pre-validated pattern string into a `NucleotidePattern` without re-validating
+ * the IUPAC alphabet. Used by `complement` / `reverseComplement` and by the parser for the
+ * success path. Throws on regex-compile failure (the source was derived from an already-valid
+ * pattern and should not fail to compile).
+ *
+ * @internal
+ */
+export function unsafeCompilePattern(pattern: string): NucleotidePattern {
+  const outcome = compilePatternRegexSource(pattern);
+  if (!outcome.ok) {
+    throw new Error(`unsafeCompilePattern called on invalid pattern '${pattern}'`);
+  }
+  const basicRegex = new RegExp(outcome.source);
+  const globalRegex = new RegExp(outcome.source, 'g');
+  return new NucleotidePattern(pattern, basicRegex, globalRegex, UNSAFE_NUCLEOTIDE_PATTERN_KEY);
 }
 
 /** Case-insensitive regex character class for a single IUPAC symbol. */

@@ -6,8 +6,7 @@
  */
 
 import { parseGene } from '../../src/gene';
-import { DNA } from '../../src/sequence';
-import { RNA } from '../../src/sequence';
+import { parseDNA, parseRNA } from '../../src/sequence';
 import {
   parseMRNA,
   processRNA,
@@ -25,14 +24,14 @@ describe('Comprehensive Pipeline Integration Tests', () => {
   describe('DNA → RNA → Protein Pipeline', () => {
     test('complete conversion pipeline maintains biological accuracy', () => {
       // Test the full conversion chain: DNA → RNA → back to DNA
-      const originalDNA = new DNA('ATGAAAGCCTTTGTGAACCAACACCTTGTAAGTAG');
+      const originalDNA = parseDNA('ATGAAAGCCTTTGTGAACCAACACCTTGTAAGTAG').unwrap();
 
       // Step 1: DNA → RNA
-      const rna = new RNA(originalDNA.getSequence().replace(/T/g, 'U'));
+      const rna = parseRNA(originalDNA.getSequence().replace(/T/g, 'U')).unwrap();
       expect(rna.getSequence()).toBe('AUGAAAGCCUUUGUGAACCAACACCUUGUAAGUAG');
 
       // Step 2: RNA → DNA
-      const backToDNA = new DNA(rna.getSequence().replace(/U/g, 'T'));
+      const backToDNA = parseDNA(rna.getSequence().replace(/U/g, 'T')).unwrap();
       expect(backToDNA.getSequence()).toBe(originalDNA.getSequence());
 
       // Step 3: Validate complement operations work consistently
@@ -40,15 +39,17 @@ describe('Comprehensive Pipeline Integration Tests', () => {
       const rnaComplement = rna.getComplement();
 
       // DNA complement converted to RNA should equal RNA complement
-      const convertedDNAComplement = new RNA(dnaComplement.getSequence().replace(/T/g, 'U'));
+      const convertedDNAComplement = parseRNA(
+        dnaComplement.getSequence().replace(/T/g, 'U'),
+      ).unwrap();
       expect(convertedDNAComplement.getSequence()).toBe(rnaComplement.getSequence());
     });
 
     test('amino acid translation preserves reading frame across conversions', () => {
       // Test that translation works correctly after DNA/RNA conversions
       const codingSequence = 'ATGAAAGCCTTTGTGAACCAACACCTTCTGGTGGAGTAG';
-      const dna = new DNA(codingSequence);
-      const rna = new RNA(dna.getSequence().replace(/T/g, 'U'));
+      const dna = parseDNA(codingSequence).unwrap();
+      const rna = parseRNA(dna.getSequence().replace(/T/g, 'U')).unwrap();
 
       // Create mRNA for translation (using the RNA as both sequence and coding sequence)
       const rnaSeq = rna.getSequence();
@@ -130,7 +131,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
       // Test that errors propagate correctly through the pipeline without crashing
 
       // Invalid sequence should fail early
-      expect(() => new DNA('INVALID')).toThrow();
+      expect(isFailure(parseDNA('INVALID'))).toBe(true);
 
       // Invalid gene structure should fail gracefully
       const validSequence = 'ATGAAAGCCTTTGTGAACCAACACCTTGTAAGTAG';
@@ -416,7 +417,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
     test('memory efficiency with repeated sequences', () => {
       // Test that the library handles repetitive sequences efficiently
       const repeatedSequence = 'ATGAAACCCAAATAA'.repeat(500); // ~7.5kb
-      const dna = new DNA(repeatedSequence);
+      const dna = parseDNA(repeatedSequence).unwrap();
 
       // Should handle large sequences without memory issues
       expect(dna.length()).toBe(repeatedSequence.length);

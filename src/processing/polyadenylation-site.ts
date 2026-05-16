@@ -5,7 +5,7 @@ import {
   DEFAULT_DOWNSTREAM_DSE_PATTERN,
   DEFAULT_CLEAVAGE_PREFERENCE,
   DEFAULT_CLEAVAGE_DISTANCE_RANGE,
-} from '../constants/biological-constants.js';
+} from './biological-constants.js';
 
 /**
  * A detected polyadenylation site, with the signal sequence, its strength score, and any

@@ -7,7 +7,7 @@
 
 import { parseGene } from '../../src/gene';
 import { DNA, RNA, parseDNA, parseRNA, transcribeSequence } from '../../src/sequence';
-import { NucleotidePattern } from '../../src/pattern';
+import { parseNucleotidePattern } from '../../src/pattern';
 import { transcribe } from '../../src/transcription';
 import { processRNA } from '../../src/processing';
 import { parseMRNA } from '../../src/processing';
@@ -17,25 +17,20 @@ import { isSuccess, isFailure } from '../../src/result/Result';
 describe('Validation Scenarios Integration Tests', () => {
   describe('Sequence Validation Across Modules', () => {
     test('invalid nucleotide propagation', () => {
-      // Direct construction throws
-      expect(() => new DNA('ATGXYZ')).toThrow();
-      expect(() => new RNA('AUGXYZ')).toThrow();
-
-      // parseDNA/parseRNA return structured failure
       expect(isFailure(parseDNA('ATGXYZ'))).toBe(true);
       expect(isFailure(parseRNA('AUGXYZ'))).toBe(true);
     });
 
     test('edge case sequence lengths', () => {
-      expect(() => new DNA('')).toThrow();
-      expect(() => new RNA('')).toThrow();
+      expect(isFailure(parseDNA(''))).toBe(true);
+      expect(isFailure(parseRNA(''))).toBe(true);
 
-      const singleDNA = new DNA('A');
+      const singleDNA = parseDNA('A').unwrap();
       expect(singleDNA.getSequence()).toBe('A');
       expect(singleDNA.length()).toBe(1);
 
       const longSequence = 'ATGC'.repeat(10000); // 40kb
-      const longDNA = new DNA(longSequence);
+      const longDNA = parseDNA(longSequence).unwrap();
       expect(longDNA.length()).toBe(40000);
     });
   });
@@ -102,17 +97,17 @@ describe('Validation Scenarios Integration Tests', () => {
 
   describe('Pattern Matching Validation', () => {
     test('nucleotide pattern edge cases', () => {
-      const testSequence = new DNA('ATGAAAGCCTTTGTGAACCAACACCTT');
+      const testSequence = parseDNA('ATGAAAGCCTTTGTGAACCAACACCTT').unwrap();
 
-      const validPattern = new NucleotidePattern('ATGN{3}GCC');
+      const validPattern = parseNucleotidePattern('ATGN{3}GCC').unwrap();
       const matches = validPattern.findAll(testSequence);
       expect(matches.length).toBe(1);
 
-      expect(() => new NucleotidePattern('')).toThrow();
-      expect(() => new NucleotidePattern('ATGXYZ')).toThrow();
+      expect(isFailure(parseNucleotidePattern(''))).toBe(true);
+      expect(isFailure(parseNucleotidePattern('ATGXYZ'))).toBe(true);
 
       const longPattern = 'A'.repeat(1000);
-      const longPatternObj = new NucleotidePattern(longPattern);
+      const longPatternObj = parseNucleotidePattern(longPattern).unwrap();
       const longMatches = longPatternObj.findAll(testSequence);
       expect(longMatches).toHaveLength(0);
     });
@@ -148,18 +143,18 @@ describe('Validation Scenarios Integration Tests', () => {
 
   describe('Boundary Conditions', () => {
     test('minimum viable gene structures', () => {
-      const minDNA = new DNA('A');
+      const minDNA = parseDNA('A').unwrap();
       expect(minDNA.length()).toBe(1);
 
-      const minRNA = new RNA('A');
+      const minRNA = parseRNA('A').unwrap();
       expect(minRNA.length()).toBe(1);
 
-      const minCoding = new RNA('AUGUAG');
+      const minCoding = parseRNA('AUGUAG').unwrap();
       expect(minCoding.length()).toBe(6);
     });
 
     test('maximum reasonable sizes', () => {
-      const largeDNA = new DNA('ATGC'.repeat(25000)); // 100kb
+      const largeDNA = parseDNA('ATGC'.repeat(25000)).unwrap(); // 100kb
       expect(largeDNA.length()).toBe(100000);
 
       const startTime = Date.now();
@@ -186,7 +181,7 @@ describe('Validation Scenarios Integration Tests', () => {
 
   describe('Type Safety Validation', () => {
     test('type consistency across conversions', () => {
-      const dna = new DNA('ATGAAAGCC');
+      const dna = parseDNA('ATGAAAGCC').unwrap();
       const rna = transcribeSequence(dna);
 
       expect(dna).toBeInstanceOf(DNA);
@@ -308,9 +303,6 @@ describe('Validation Scenarios Integration Tests', () => {
     test('cross-system error handling consistency', () => {
       const invalidSequence = 'ATGXYZ';
       const invalidRNASequence = invalidSequence.replace('T', 'U');
-
-      expect(() => new DNA(invalidSequence)).toThrow();
-      expect(() => new RNA(invalidRNASequence)).toThrow();
 
       const dnaResult = parseDNA(invalidSequence);
       const rnaResult = parseRNA(invalidRNASequence);

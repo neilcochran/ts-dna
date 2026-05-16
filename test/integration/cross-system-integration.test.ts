@@ -13,7 +13,7 @@ import { processRNA, isFullyProcessed } from '../../src/processing';
 import { translate } from '../../src/translation';
 import { replicate } from '../../src/replication';
 import { isSuccess, isFailure } from '../../src/result/Result';
-import { DNA, doubleStrandedDNA } from '../../src/sequence';
+import { parseDNA, doubleStrandedDNA } from '../../src/sequence';
 
 describe('Cross-System Integration Tests', () => {
   describe('Basic Gene-to-Protein Pipeline', () => {
@@ -70,7 +70,7 @@ describe('Cross-System Integration Tests', () => {
     test('replication produces identical DNA strands', () => {
       // Simple test that replication works correctly
       const simpleSequence = 'ATGAAAGCCTTTGTGAACCAACACCTTCTGGTGGAGCGGCTCTACCTGGTGTGCGGCTCGCTGTAG';
-      const dna = new DNA(simpleSequence);
+      const dna = parseDNA(simpleSequence).unwrap();
       const parent = doubleStrandedDNA(dna);
 
       const replicationResult = replicate(parent);

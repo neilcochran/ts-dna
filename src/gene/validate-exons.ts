@@ -3,7 +3,7 @@ import {
   MAX_EXON_SIZE,
   MIN_INTRON_SIZE,
   MAX_INTRON_SIZE,
-} from '../constants/biological-constants.js';
+} from './biological-constants.js';
 import { type GenomicRegion, isValidGenomicRegion } from '../coordinates/index.js';
 import { Result, success, failure } from '../result/index.js';
 import type { GeneError } from './errors.js';

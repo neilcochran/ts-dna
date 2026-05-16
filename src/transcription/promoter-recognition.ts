@@ -6,12 +6,8 @@ import {
   STANDARD_PROMOTER_ELEMENTS,
   CORE_PROMOTER_ELEMENTS,
 } from '../gene/index.js';
-import {
-  MAX_PROMOTER_SEARCH_DISTANCE,
-  TATA_BOX_TYPICAL_POSITION,
-  DPE_TYPICAL_POSITION,
-  TSS_PROXIMITY_THRESHOLD,
-} from '../constants/biological-constants.js';
+import { MAX_PROMOTER_SEARCH_DISTANCE, TSS_PROXIMITY_THRESHOLD } from './biological-constants.js';
+import { TATA_BOX_TYPICAL_POSITION, DPE_TYPICAL_POSITION } from '../gene/biological-constants.js';
 
 /**
  * Configuration for {@link findPromoters}.
