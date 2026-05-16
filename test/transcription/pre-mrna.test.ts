@@ -49,9 +49,24 @@ describe('PreMRNA', () => {
       }
     });
 
-    test('rejects malformed RNA sequence', () => {
+    test('rejects malformed RNA sequence with the underlying RNA-parser error surfaced', () => {
       const result = parsePreMRNA('AUGXX', testGene, 0);
       expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-rna-sequence') {
+        expect(result.error.cause.kind).toBe('invalid-characters');
+        if (result.error.cause.kind === 'invalid-characters') {
+          expect(result.error.cause.chars).toEqual(['X']);
+          expect(result.error.cause.firstAt).toBe(3);
+        }
+      }
+    });
+
+    test('rejects empty RNA sequence with the underlying RNA-parser error surfaced', () => {
+      const result = parsePreMRNA('', testGene, 0);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-rna-sequence') {
+        expect(result.error.cause.kind).toBe('empty-sequence');
+      }
     });
   });
 

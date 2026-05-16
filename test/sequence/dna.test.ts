@@ -49,51 +49,41 @@ describe('DNA', () => {
     });
 
     describe('contains', () => {
-      test('finds existing subsequence (string)', () => {
-        expect(testDNA.contains('TCG')).toBe(true);
-        expect(testDNA.contains('ATCG')).toBe(true);
+      test('finds existing subsequence', () => {
+        expect(testDNA.contains(dna('TCG'))).toBe(true);
+        expect(testDNA.contains(dna('ATCG'))).toBe(true);
       });
 
       test('returns false for missing subsequence', () => {
-        expect(testDNA.contains('AAA')).toBe(false);
-        expect(testDNA.contains('TTT')).toBe(false);
-      });
-
-      test('finds subsequence (DNA argument)', () => {
-        expect(testDNA.contains(dna('TCG'))).toBe(true);
+        expect(testDNA.contains(dna('AAA'))).toBe(false);
+        expect(testDNA.contains(dna('TTT'))).toBe(false);
       });
     });
 
     describe('startsWith / endsWith', () => {
-      test('startsWith handles strings and DNA', () => {
-        expect(testDNA.startsWith('ATC')).toBe(true);
+      test('startsWith accepts DNA', () => {
         expect(testDNA.startsWith(dna('ATC'))).toBe(true);
-        expect(testDNA.startsWith('GTC')).toBe(false);
+        expect(testDNA.startsWith(dna('GTC'))).toBe(false);
       });
 
-      test('endsWith handles strings and DNA', () => {
-        expect(testDNA.endsWith('TCG')).toBe(true);
+      test('endsWith accepts DNA', () => {
         expect(testDNA.endsWith(dna('TCG'))).toBe(true);
-        expect(testDNA.endsWith('ATC')).toBe(false);
+        expect(testDNA.endsWith(dna('ATC'))).toBe(false);
       });
     });
 
     describe('indexOf', () => {
       test('returns first occurrence', () => {
-        expect(testDNA.indexOf('TCG')).toBe(1);
-        expect(testDNA.indexOf('ATC')).toBe(0);
+        expect(testDNA.indexOf(dna('TCG'))).toBe(1);
+        expect(testDNA.indexOf(dna('ATC'))).toBe(0);
       });
 
       test('respects start position', () => {
-        expect(testDNA.indexOf('TCG', 2)).toBe(5);
+        expect(testDNA.indexOf(dna('TCG'), 2)).toBe(5);
       });
 
       test('returns -1 when missing', () => {
-        expect(testDNA.indexOf('AAA')).toBe(-1);
-      });
-
-      test('accepts DNA argument', () => {
-        expect(testDNA.indexOf(dna('TCG'))).toBe(1);
+        expect(testDNA.indexOf(dna('AAA'))).toBe(-1);
       });
     });
 

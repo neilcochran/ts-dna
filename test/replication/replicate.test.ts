@@ -69,6 +69,24 @@ describe('replicate', () => {
       expect(output.daughters[0].forward.sequence.length).toBe(sequence.length);
       expect(output.daughters[0].forward.sequence).toBe(sequence);
     });
+
+    test('daughter[0] keeps parental forward strand by reference; reverse is freshly synthesized', () => {
+      const parent = parentOf('ATGCGATCGTAGCTACGTATCG');
+      const output = expectSuccess(replicate(parent));
+      const [d1] = output.daughters;
+      expect(d1.forward).toBe(parent.forward);
+      expect(d1.reverse).not.toBe(parent.reverse);
+      expect(d1.reverse.sequence).toBe(parent.reverse.sequence);
+    });
+
+    test('daughter[1] keeps parental reverse strand by reference; forward is freshly synthesized', () => {
+      const parent = parentOf('ATGCGATCGTAGCTACGTATCG');
+      const output = expectSuccess(replicate(parent));
+      const [, d2] = output.daughters;
+      expect(d2.reverse).toBe(parent.reverse);
+      expect(d2.forward).not.toBe(parent.forward);
+      expect(d2.forward.sequence).toBe(parent.forward.sequence);
+    });
   });
 
   describe('template-too-short failures', () => {

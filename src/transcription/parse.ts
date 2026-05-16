@@ -49,11 +49,7 @@ export function parsePreMRNA(
 ): Result<PreMRNA, TranscriptionError> {
   const rnaResult = parseRNA(sequence);
   if (isFailure(rnaResult)) {
-    return failure({
-      kind: 'tss-out-of-bounds',
-      tss: transcriptionStartSite,
-      sequenceLength: 0,
-    });
+    return failure({ kind: 'invalid-rna-sequence', cause: rnaResult.error });
   }
   const rna = rnaResult.data;
 

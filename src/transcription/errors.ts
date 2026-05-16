@@ -7,10 +7,14 @@
  */
 
 import type { GeneCoord, GenomicRegion } from '../coordinates/index.js';
+import type { RNAError } from '../sequence/index.js';
+import { describeRNAError } from '../sequence/index.js';
 
 /**
- * Error variants produced by `transcribe`.
+ * Error variants produced by `transcribe` and `parsePreMRNA`.
  *
+ * - `invalid-rna-sequence`: the supplied RNA-sequence string failed RNA-alphabet parsing
+ *   (produced by `parsePreMRNA`).
  * - `gene-has-no-exons`: the gene supplied no exons, so a TSS / transcript region cannot be
  *   bracketed.
  * - `no-promoter-found`: no promoter passed the `minPromoterStrength` threshold within the
@@ -23,6 +27,12 @@ import type { GeneCoord, GenomicRegion } from '../coordinates/index.js';
  *   exon starts, so the transformed exon coordinates would be negative.
  */
 export type TranscriptionError =
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'invalid-rna-sequence';
+      /** Underlying RNA-parser failure. */
+      readonly cause: RNAError;
+    }
   | {
       /** Discriminator naming the failure mode. */
       readonly kind: 'gene-has-no-exons';
@@ -64,6 +74,8 @@ export type TranscriptionError =
  */
 export function describeTranscriptionError(error: TranscriptionError): string {
   switch (error.kind) {
+    case 'invalid-rna-sequence':
+      return `Invalid pre-mRNA sequence: ${describeRNAError(error.cause)}`;
     case 'gene-has-no-exons':
       return 'Gene has no exons; cannot determine transcript bounds';
     case 'no-promoter-found':

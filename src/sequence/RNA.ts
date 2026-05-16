@@ -1,4 +1,3 @@
-import { isDeepStrictEqual } from 'util';
 import { UNSAFE_RNA_KEY } from './internal-keys.js';
 
 /**
@@ -87,60 +86,53 @@ export class RNA {
   /**
    * Reports whether this RNA sequence contains a given subsequence.
    *
-   * @param subsequence - Subsequence to search for, as a string or RNA instance
+   * @param subsequence - Subsequence to search for
    * @returns `true` if the subsequence appears anywhere in this sequence
    */
-  contains(subsequence: string | RNA): boolean {
-    const search = typeof subsequence === 'string' ? subsequence : subsequence.sequence;
-    return this.sequence.includes(search);
+  contains(subsequence: RNA): boolean {
+    return this.sequence.includes(subsequence.sequence);
   }
 
   /**
    * Reports whether this RNA sequence starts with a given prefix.
    *
-   * @param prefix - Prefix to test, as a string or RNA instance
+   * @param prefix - Prefix to test
    * @returns `true` if the sequence starts with `prefix`
    */
-  startsWith(prefix: string | RNA): boolean {
-    const value = typeof prefix === 'string' ? prefix : prefix.sequence;
-    return this.sequence.startsWith(value);
+  startsWith(prefix: RNA): boolean {
+    return this.sequence.startsWith(prefix.sequence);
   }
 
   /**
    * Reports whether this RNA sequence ends with a given suffix.
    *
-   * @param suffix - Suffix to test, as a string or RNA instance
+   * @param suffix - Suffix to test
    * @returns `true` if the sequence ends with `suffix`
    */
-  endsWith(suffix: string | RNA): boolean {
-    const value = typeof suffix === 'string' ? suffix : suffix.sequence;
-    return this.sequence.endsWith(value);
+  endsWith(suffix: RNA): boolean {
+    return this.sequence.endsWith(suffix.sequence);
   }
 
   /**
    * Returns the first index of a subsequence in this RNA, or `-1` if not present.
    *
-   * @param subsequence - Subsequence to search for, as a string or RNA instance
+   * @param subsequence - Subsequence to search for
    * @param startPosition - Position to start the search from (default `0`)
    * @returns Index of the first match, or `-1`
    */
-  indexOf(subsequence: string | RNA, startPosition: number = 0): number {
-    const search = typeof subsequence === 'string' ? subsequence : subsequence.sequence;
-    return this.sequence.indexOf(search, startPosition);
+  indexOf(subsequence: RNA, startPosition: number = 0): number {
+    return this.sequence.indexOf(subsequence.sequence, startPosition);
   }
 
   /**
-   * Reports structural equality with another RNA instance.
-   *
-   * Compares all enumerable fields (currently `sequence` and `nucleicAcidType`). Two
-   * instances with identical sequences are equal even if they are different object
-   * references.
+   * Reports structural equality with another RNA instance. Two RNAs are equal when their
+   * sequence strings match.
    *
    * @param other - The RNA to compare against
-   * @returns `true` if the two instances are structurally equal
+   * @returns `true` if both sequences are identical
    */
   equals(other: RNA): boolean {
-    return isDeepStrictEqual(this, other);
+    return this.sequence === other.sequence;
   }
 }
 

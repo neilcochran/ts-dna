@@ -43,22 +43,19 @@ describe('RNA', () => {
     });
 
     test('contains finds existing subsequence', () => {
-      expect(testRNA.contains('UCG')).toBe(true);
       expect(testRNA.contains(rna('UCG'))).toBe(true);
-      expect(testRNA.contains('AAA')).toBe(false);
+      expect(testRNA.contains(rna('AAA'))).toBe(false);
     });
 
-    test('startsWith and endsWith handle strings and RNA', () => {
-      expect(testRNA.startsWith('AUC')).toBe(true);
+    test('startsWith and endsWith accept RNA', () => {
       expect(testRNA.startsWith(rna('AUC'))).toBe(true);
-      expect(testRNA.endsWith('UCG')).toBe(true);
       expect(testRNA.endsWith(rna('UCG'))).toBe(true);
     });
 
     test('indexOf returns positions', () => {
-      expect(testRNA.indexOf('UCG')).toBe(1);
-      expect(testRNA.indexOf('UCG', 2)).toBe(5);
-      expect(testRNA.indexOf('AAA')).toBe(-1);
+      expect(testRNA.indexOf(rna('UCG'))).toBe(1);
+      expect(testRNA.indexOf(rna('UCG'), 2)).toBe(5);
+      expect(testRNA.indexOf(rna('AAA'))).toBe(-1);
     });
 
     test('getSubsequence extracts inclusive-exclusive range', () => {

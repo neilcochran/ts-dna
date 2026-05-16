@@ -45,9 +45,11 @@ const RNA_BASES = ['A', 'U', 'G', 'C'] as const;
  * of a length drawn from the organism's `primerLength` range; the primer is later excised by
  * exonuclease and the gap sealed by ligase.
  *
- * The two daughters are sequence-equal to the parent. The event log narrates which strand
- * each was synthesized from semiconservatively (one parental strand + one newly synthesized
- * strand).
+ * Output follows the semiconservative model: each daughter duplex retains one of the
+ * parental strands by reference and pairs it with a freshly-allocated complementary strand
+ * representing the newly synthesized DNA. {@link ReplicationOutput.daughters | daughters[0]}
+ * keeps the parental forward strand; {@link ReplicationOutput.daughters | daughters[1]} keeps
+ * the parental reverse strand. The event log narrates how each new strand was built.
  *
  * @param template - The parental duplex to replicate
  * @param options - Optional organism profile and RNG
@@ -395,8 +397,10 @@ function buildPlan(
 function buildDaughters(
   template: DoubleStrandedDNA,
 ): readonly [DoubleStrandedDNA, DoubleStrandedDNA] {
-  const daughter1 = unsafeDoubleStrandedDNA(template.forward, template.reverse);
-  const daughter2 = unsafeDoubleStrandedDNA(template.forward, template.reverse);
+  const newReverseStrand = unsafeDNA(template.reverse.sequence);
+  const newForwardStrand = unsafeDNA(template.forward.sequence);
+  const daughter1 = unsafeDoubleStrandedDNA(template.forward, newReverseStrand);
+  const daughter2 = unsafeDoubleStrandedDNA(newForwardStrand, template.reverse);
   return [daughter1, daughter2];
 }
 

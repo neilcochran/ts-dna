@@ -93,15 +93,19 @@ export interface ReplicationSnapshot {
 /**
  * Final output of a successful {@link replicate} run.
  *
- * The two {@link daughters} are semiconservative products of the parental duplex: each
- * carries one parental strand and one newly synthesized strand. At the sequence level both
- * daughters are equal to the parent; the {@link events} log narrates which strand was
- * synthesized as the leading vs lagging copy.
+ * The two {@link ReplicationOutput.daughters | daughters} are semiconservative products of the
+ * parental duplex. {@link ReplicationOutput.daughters | daughters[0]} retains the parental
+ * forward strand by reference and pairs it with a freshly-allocated reverse strand;
+ * {@link ReplicationOutput.daughters | daughters[1]} retains the parental reverse strand by
+ * reference and pairs it with a freshly-allocated forward strand. At the sequence level both
+ * daughters are equal to the parent; the {@link ReplicationOutput.events | events} log
+ * narrates how each new strand was built.
  */
 export interface ReplicationOutput {
   /**
    * The two daughter duplexes produced by replication. Both are sequence-equal to the
-   * parental duplex.
+   * parental duplex; they differ in which parental strand each retains by reference (the
+   * other strand of each daughter is freshly allocated).
    */
   readonly daughters: readonly [DoubleStrandedDNA, DoubleStrandedDNA];
 
