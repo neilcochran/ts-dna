@@ -1,0 +1,368 @@
+import { parseGene, Gene } from '../../src/gene';
+import type { GeneError } from '../../src/gene';
+import { isFailure, isSuccess } from '../../src/result';
+import type { GenomicRegion } from '../../src/coordinates';
+import { SIMPLE_TWO_EXON_GENE, THREE_EXON_GENE, SINGLE_EXON_GENE } from '../test-genes';
+
+function unwrapGene(
+  sequence: string,
+  exons: GenomicRegion[],
+  name?: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  splicingProfile?: any,
+): Gene {
+  const result = parseGene(sequence, exons, name, splicingProfile);
+  if (!isSuccess(result)) {
+    throw new Error(`parseGene unexpectedly failed: ${JSON.stringify(result.error)}`);
+  }
+  return result.data;
+}
+
+describe('Gene', () => {
+  describe('parseGene success cases', () => {
+    test('creates valid gene with single exon', () => {
+      const sequence = 'ATGCCCGGG';
+      const exons: GenomicRegion[] = [{ start: 0, end: 9 }];
+      const gene = unwrapGene(sequence, exons);
+
+      expect(gene.sequence.getSequence()).toBe(sequence);
+      expect(gene.exons).toHaveLength(1);
+      expect(gene.introns).toHaveLength(0);
+      expect(gene.getMatureSequence()).toBe(sequence);
+    });
+
+    test('creates valid gene with multiple exons and derived intron', () => {
+      const sequence = 'ATGGTCCCAGTTTAAAGGGGGGGGGGGGGGGGGGGGCCCCCC';
+      const exons: GenomicRegion[] = [
+        { start: 0, end: 12, name: 'exon1' },
+        { start: 32, end: 40, name: 'exon2' },
+      ];
+      const gene = unwrapGene(sequence, exons);
+
+      expect(gene.exons).toHaveLength(2);
+      expect(gene.introns).toHaveLength(1);
+      expect(gene.introns[0]).toEqual({ start: 12, end: 32, name: 'intron1' });
+    });
+
+    test('creates valid gene with GT-AG splice sites', () => {
+      const sequence = 'ATGGTCCCCCCCCCCCCCCCCCCCCAGTTTAAA';
+      const exons: GenomicRegion[] = [
+        { start: 0, end: 3 },
+        { start: 27, end: 32 },
+      ];
+      const gene = unwrapGene(sequence, exons);
+
+      expect(gene.getIntronSequence(0)).toBe('GTCCCCCCCCCCCCCCCCCCCCAG');
+    });
+
+    test('handles multiple non-adjacent exons correctly', () => {
+      const gene = unwrapGene(THREE_EXON_GENE.dnaSequence, [...THREE_EXON_GENE.exons]);
+
+      expect(gene.exons).toHaveLength(3);
+      expect(gene.introns).toHaveLength(2);
+      expect(gene.getMatureSequence()).toBe('ATGAAACCCGGGTAGAAA');
+      expect(gene.introns[0]).toEqual({ start: 6, end: 27, name: 'intron1' });
+      expect(gene.introns[1]).toEqual({ start: 33, end: 54, name: 'intron2' });
+    });
+
+    test('handles single exon gene (no introns)', () => {
+      const gene = unwrapGene(SINGLE_EXON_GENE.dnaSequence, [...SINGLE_EXON_GENE.exons]);
+
+      expect(gene.exons).toHaveLength(1);
+      expect(gene.introns).toHaveLength(0);
+      expect(gene.getMatureSequence()).toBe('ATGAAACCCGGGTAG');
+    });
+
+    test('exons can be provided in any order; introns derive from sorted positions', () => {
+      const exons: GenomicRegion[] = [
+        { start: 26, end: 34, name: 'exon2' },
+        { start: 0, end: 6, name: 'exon1' },
+      ];
+      const gene = unwrapGene(SIMPLE_TWO_EXON_GENE.dnaSequence, exons);
+
+      expect(gene.introns[0]).toEqual({ start: 6, end: 26, name: 'intron1' });
+      expect(gene.getMatureSequence()).toBe('ATGAAATTCTAGGG');
+    });
+  });
+
+  describe('parseGene failure cases', () => {
+    test('rejects empty exon list with kind=no-exons', () => {
+      const result = parseGene('ATGCCCGGG', []);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('no-exons');
+      }
+    });
+
+    test('rejects overlapping exons with kind=exons-overlap', () => {
+      const sequence = 'ATGCCCGGGAAATTTGGGAAATTTGGGGGGCCCCC';
+      const exons: GenomicRegion[] = [
+        { start: 0, end: 12 },
+        { start: 6, end: 18 },
+      ];
+      const result = parseGene(sequence, exons);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('exons-overlap');
+      }
+    });
+
+    test('rejects exon extending beyond sequence with kind=exon-out-of-bounds', () => {
+      const result = parseGene('ATGCCCGGG', [{ start: 0, end: 15 }]);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'exon-out-of-bounds') {
+        expect(result.error.exonEnd).toBe(15);
+        expect(result.error.sequenceLength).toBe(9);
+      } else {
+        throw new Error(`expected exon-out-of-bounds, got ${JSON.stringify(result)}`);
+      }
+    });
+
+    test('rejects invalid coordinate ordering with kind=exon-invalid-coordinates', () => {
+      const result = parseGene('ATGCCCGGG', [{ start: 5, end: 3 }]);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('exon-invalid-coordinates');
+      }
+    });
+
+    test('rejects negative coordinates with kind=exon-invalid-coordinates', () => {
+      const result = parseGene('ATGCCCGGG', [{ start: -1, end: 3 }]);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('exon-invalid-coordinates');
+      }
+    });
+
+    test('rejects invalid DNA sequence with kind=invalid-sequence', () => {
+      const result = parseGene('ATXCCCGGG', [{ start: 0, end: 9 }]);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('invalid-sequence');
+      }
+    });
+  });
+
+  describe('exon getters', () => {
+    const sequence = 'ATGGTCCCAGTTTAAAGGGGGGGGGGGGGGGGCCCCCCCC';
+    const exons: GenomicRegion[] = [
+      { start: 0, end: 12, name: 'exon1' },
+      { start: 32, end: 40, name: 'exon2' },
+    ];
+    let gene: Gene;
+
+    beforeEach(() => {
+      gene = unwrapGene(sequence, exons);
+    });
+
+    test('exons array is immutable', () => {
+      const arr = gene.exons;
+      expect(arr).toHaveLength(2);
+      expect(arr[0]).toEqual({ start: 0, end: 12, name: 'exon1' });
+      expect(arr[1]).toEqual({ start: 32, end: 40, name: 'exon2' });
+      expect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (arr as any).push({ start: 20, end: 25 });
+      }).toThrow();
+    });
+
+    test('getExonSequence returns the correct substring', () => {
+      expect(gene.getExonSequence(0)).toBe('ATGGTCCCAGTT');
+      expect(gene.getExonSequence(1)).toBe('CCCCCCCC');
+    });
+
+    test('getExonSequence throws RangeError for out-of-bounds index', () => {
+      expect(() => gene.getExonSequence(-1)).toThrow(RangeError);
+      expect(() => gene.getExonSequence(2)).toThrow(RangeError);
+    });
+
+    test('getMatureSequence concatenates exons in gene-position order', () => {
+      expect(gene.getMatureSequence()).toBe('ATGGTCCCAGTTCCCCCCCC');
+    });
+  });
+
+  describe('intron getters', () => {
+    let gene: Gene;
+
+    beforeEach(() => {
+      gene = unwrapGene(THREE_EXON_GENE.dnaSequence, [...THREE_EXON_GENE.exons]);
+    });
+
+    test('introns are calculated and named', () => {
+      expect(gene.introns).toHaveLength(2);
+      expect(gene.introns[0]).toEqual({ start: 6, end: 27, name: 'intron1' });
+      expect(gene.introns[1]).toEqual({ start: 33, end: 54, name: 'intron2' });
+    });
+
+    test('getIntronSequence returns the correct substring', () => {
+      expect(gene.getIntronSequence(0)).toBe('GTAAGGGGGGGGGGGGGGGAG');
+      expect(gene.getIntronSequence(1)).toBe('GTAAGGGGGGGGGGGGGGGAG');
+    });
+
+    test('getIntronSequence throws RangeError for out-of-bounds index', () => {
+      expect(() => gene.getIntronSequence(-1)).toThrow(RangeError);
+      expect(() => gene.getIntronSequence(2)).toThrow(RangeError);
+    });
+  });
+
+  describe('gene name', () => {
+    test('preserves a supplied name', () => {
+      const gene = unwrapGene('ATGCCCGGG', [{ start: 0, end: 9 }], 'BRCA1');
+      expect(gene.name).toBe('BRCA1');
+    });
+
+    test('defaults to undefined when no name is supplied', () => {
+      const gene = unwrapGene('ATGCCCGGG', [{ start: 0, end: 9 }]);
+      expect(gene.name).toBeUndefined();
+    });
+
+    test('preserves the empty string when explicitly supplied', () => {
+      const gene = unwrapGene('ATGCCCGGG', [{ start: 0, end: 9 }], '');
+      expect(gene.name).toBe('');
+    });
+
+    test('handles special-character names', () => {
+      for (const name of ['α-globin', 'IL-1β', 'HLA-DQB1', 'Gene Name 1']) {
+        const gene = unwrapGene('ATGCCCGGG', [{ start: 0, end: 9 }], name);
+        expect(gene.name).toBe(name);
+      }
+    });
+  });
+
+  describe('alternative splicing profile validation', () => {
+    test('rejects profile with no variants', () => {
+      const result = parseGene(
+        SIMPLE_TWO_EXON_GENE.dnaSequence,
+        [...SIMPLE_TWO_EXON_GENE.exons],
+        'Test',
+        {
+          geneId: 'Test',
+          defaultVariant: 'default',
+          variants: [],
+        },
+      );
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-splicing-profile') {
+        expect(result.error.reason).toBe('Splicing profile must contain at least one variant');
+      } else {
+        throw new Error(`expected invalid-splicing-profile, got ${JSON.stringify(result)}`);
+      }
+    });
+
+    test('rejects variant with no exons', () => {
+      const result = parseGene(
+        SIMPLE_TWO_EXON_GENE.dnaSequence,
+        [...SIMPLE_TWO_EXON_GENE.exons],
+        'Test',
+        {
+          geneId: 'Test',
+          defaultVariant: 'empty',
+          variants: [{ name: 'empty', includedExons: [] }],
+        },
+      );
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-splicing-profile') {
+        expect(result.error.reason).toBe("Variant 'empty' must include at least one exon");
+      }
+    });
+
+    test('rejects variant with invalid exon index', () => {
+      const result = parseGene(
+        SIMPLE_TWO_EXON_GENE.dnaSequence,
+        [...SIMPLE_TWO_EXON_GENE.exons],
+        'Test',
+        {
+          geneId: 'Test',
+          defaultVariant: 'invalid',
+          variants: [{ name: 'invalid', includedExons: [0, 5] }],
+        },
+      );
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-splicing-profile') {
+        expect(result.error.reason).toBe(
+          "Variant 'invalid' references invalid exon index 5. Gene has 2 exons.",
+        );
+      }
+    });
+
+    test('rejects variant with duplicate exon indices', () => {
+      const result = parseGene(
+        SIMPLE_TWO_EXON_GENE.dnaSequence,
+        [...SIMPLE_TWO_EXON_GENE.exons],
+        'Test',
+        {
+          geneId: 'Test',
+          defaultVariant: 'duplicate',
+          variants: [{ name: 'duplicate', includedExons: [0, 1, 0] }],
+        },
+      );
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-splicing-profile') {
+        expect(result.error.reason).toBe("Variant 'duplicate' contains duplicate exon indices");
+      }
+    });
+
+    test('rejects profile with duplicate variant names', () => {
+      const result = parseGene(
+        SIMPLE_TWO_EXON_GENE.dnaSequence,
+        [...SIMPLE_TWO_EXON_GENE.exons],
+        'Test',
+        {
+          geneId: 'Test',
+          defaultVariant: 'variant1',
+          variants: [
+            { name: 'variant1', includedExons: [0, 1] },
+            { name: 'variant1', includedExons: [0] },
+          ],
+        },
+      );
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-splicing-profile') {
+        expect(result.error.reason).toBe('Splicing profile contains duplicate variant names');
+      }
+    });
+
+    test('rejects profile whose default variant is not in the list', () => {
+      const result = parseGene(
+        SIMPLE_TWO_EXON_GENE.dnaSequence,
+        [...SIMPLE_TWO_EXON_GENE.exons],
+        'Test',
+        {
+          geneId: 'Test',
+          defaultVariant: 'missing',
+          variants: [{ name: 'variant1', includedExons: [0, 1] }],
+        },
+      );
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-splicing-profile') {
+        expect(result.error.reason).toContain('Default variant');
+      }
+    });
+  });
+
+  describe('getVariantSequence', () => {
+    test('returns concatenation of included exons in gene-position order', () => {
+      const gene = unwrapGene(SIMPLE_TWO_EXON_GENE.dnaSequence, [...SIMPLE_TWO_EXON_GENE.exons]);
+      const sequence = gene.getVariantSequence({ name: 'v', includedExons: [1, 0] });
+      expect(sequence).toBe(gene.getMatureSequence());
+    });
+
+    test('throws RangeError when the variant references an invalid exon index', () => {
+      const gene = unwrapGene(SIMPLE_TWO_EXON_GENE.dnaSequence, [...SIMPLE_TWO_EXON_GENE.exons]);
+      expect(() => gene.getVariantSequence({ name: 'bad', includedExons: [0, 5] })).toThrow(
+        RangeError,
+      );
+    });
+  });
+
+  describe('GeneError types are exported', () => {
+    test('failure branch carries a GeneError', () => {
+      const result = parseGene('ATGCCCGGG', []);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        const error: GeneError = result.error;
+        expect(error.kind).toBe('no-exons');
+      }
+    });
+  });
+});

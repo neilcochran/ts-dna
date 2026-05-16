@@ -7,7 +7,7 @@
  * - Error propagation across system boundaries
  */
 
-import { Gene } from '../../src/model/nucleic-acids/Gene';
+import { parseGene } from '../../src/gene';
 import { transcribe } from '../../src/utils/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { Polypeptide } from '../../src/model/Polypeptide';
@@ -27,7 +27,7 @@ describe('Cross-System Integration Tests', () => {
         'AATAAAGCTAATTCAACCCCAAAAAAAAA'; // 3'UTR
 
       const exons = [{ start: 29, end: 92, name: 'single-exon' }];
-      const gene = new Gene(geneSequence, exons, 'simple-test');
+      const gene = parseGene(geneSequence, exons, 'simple-test').unwrap();
 
       // Step 1: Transcription
       const transcriptionResult = transcribe(gene);
@@ -96,7 +96,7 @@ describe('Cross-System Integration Tests', () => {
         'ATGAAAGCCTTTGTGAACCAACACCTTCTGGTGGAGCGGCTCTACCTGGTGTGCGGCTCGCTGTAG'; // Single exon
 
       const exons = [{ start: 29, end: 92, name: 'test-exon' }];
-      const gene = new Gene(geneSequence, exons, 'integration-test');
+      const gene = parseGene(geneSequence, exons, 'integration-test').unwrap();
 
       // Test transcription works
       const transcriptionResult = transcribe(gene);
@@ -141,7 +141,7 @@ describe('Cross-System Integration Tests', () => {
         { start: 135, end: 158, name: 'exon3' }, // Missing stop codon
       ];
 
-      const gene = new Gene(problematicSequence, exons, 'error-test');
+      const gene = parseGene(problematicSequence, exons, 'error-test').unwrap();
 
       // Transcription should succeed
       const transcriptionResult = transcribe(gene);
@@ -193,7 +193,7 @@ describe('Cross-System Integration Tests', () => {
       ];
 
       // Gene construction should fail with validation error
-      expect(() => new Gene(validSequence, invalidExons, 'invalid-gene')).toThrow(); // Should throw during construction
+      expect(isFailure(parseGene(validSequence, invalidExons, 'invalid-gene'))).toBe(true); // parseGene must reject overlapping exons
 
       // Alternatively, if using Result pattern:
       // const geneResult = Gene.create(validSequence, invalidExons, 'invalid-gene');

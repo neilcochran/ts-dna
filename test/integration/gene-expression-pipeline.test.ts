@@ -8,7 +8,7 @@
  * coordinate transformation bugs between transcription and RNA processing.
  */
 
-import { Gene } from '../../src/model/nucleic-acids/Gene';
+import { parseGene } from '../../src/gene';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { transcribe } from '../../src/utils/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
@@ -37,9 +37,9 @@ describe('Gene Expression Pipeline Integration', () => {
       ];
 
       // Step 1: Create gene
-      const gene = new Gene(geneSequence, exons, 'test-insulin-like');
-      expect(gene.getSequence().length).toBe(164);
-      expect(gene.getExons().length).toBe(3);
+      const gene = parseGene(geneSequence, exons, 'test-insulin-like').unwrap();
+      expect(gene.sequence.getSequence().length).toBe(164);
+      expect(gene.exons.length).toBe(3);
 
       // Step 2: Transcription
       const transcriptionResult = transcribe(gene);
@@ -79,7 +79,7 @@ describe('Gene Expression Pipeline Integration', () => {
         { start: 66, end: 91, name: 'exon2' },
       ];
 
-      const gene = new Gene(geneSequence, exons, 'no-promoter-gene');
+      const gene = parseGene(geneSequence, exons, 'no-promoter-gene').unwrap();
       const transcriptionResult = transcribe(gene);
 
       // Should fail transcription (either no promoter found or TSS/exon conflict)
@@ -106,7 +106,7 @@ describe('Gene Expression Pipeline Integration', () => {
         { start: 68, end: 93, name: 'exon2' }, // 25bp: 68-92 inclusive, 68-93 exclusive
       ];
 
-      const gene = new Gene(geneSequence, exons, 'forced-tss-gene');
+      const gene = parseGene(geneSequence, exons, 'forced-tss-gene').unwrap();
 
       // Force transcription to start at beginning of exon 1
       const transcriptionResult = transcribe(gene, {
@@ -140,7 +140,7 @@ describe('Gene Expression Pipeline Integration', () => {
 
       const exons = [{ start: 29, end: 45, name: 'exon1' }]; // Start at TSS, include ATG start codon, end-exclusive
 
-      const gene = new Gene(geneSequence, exons, 'single-exon-gene');
+      const gene = parseGene(geneSequence, exons, 'single-exon-gene').unwrap();
 
       // Full pipeline
       const transcriptionResult = transcribe(gene);
@@ -181,7 +181,7 @@ describe('Gene Expression Pipeline Integration', () => {
         { start: 145, end: 172, name: 'exon3' }, // 27bp: 145-171 inclusive, 145-172 exclusive
       ];
 
-      const gene = new Gene(geneSequence, exons, 'coord-test-gene');
+      const gene = parseGene(geneSequence, exons, 'coord-test-gene').unwrap();
 
       const transcriptionResult = transcribe(gene);
       expect(isSuccess(transcriptionResult)).toBe(true);
@@ -191,7 +191,7 @@ describe('Gene Expression Pipeline Integration', () => {
         const tss = preMRNA.getTranscriptionStartSite();
 
         // Verify exon transformation math
-        const originalExons = gene.getExons();
+        const originalExons = gene.exons;
         const transformedExons = preMRNA.getExonRegions();
 
         originalExons.forEach((originalExon, i) => {
@@ -224,7 +224,7 @@ describe('Gene Expression Pipeline Integration', () => {
       ];
 
       // Test normal splicing (all exons included)
-      const gene = new Gene(geneSequence, allExons, 'alternatively-spliced-gene');
+      const gene = parseGene(geneSequence, allExons, 'alternatively-spliced-gene').unwrap();
       const transcriptionResult = transcribe(gene);
       expect(isSuccess(transcriptionResult)).toBe(true);
 
@@ -258,7 +258,11 @@ describe('Gene Expression Pipeline Integration', () => {
         { start: 105, end: 111, name: 'exon3' }, // Skip exon2
       ];
 
-      const alternativeGene = new Gene(geneSequence, alternativeExons, 'alternative-isoform');
+      const alternativeGene = parseGene(
+        geneSequence,
+        alternativeExons,
+        'alternative-isoform',
+      ).unwrap();
       const altTranscriptionResult = transcribe(alternativeGene);
       expect(isSuccess(altTranscriptionResult)).toBe(true);
 
@@ -309,7 +313,7 @@ describe('Gene Expression Pipeline Integration', () => {
         { start: 113, end: 119, name: 'exon3' },
       ];
 
-      const gene1 = new Gene(complexGeneSeq, isoform1Exons, 'isoform1');
+      const gene1 = parseGene(complexGeneSeq, isoform1Exons, 'isoform1').unwrap();
       const result1 = transcribe(gene1);
       expect(isSuccess(result1)).toBe(true);
 
@@ -320,7 +324,7 @@ describe('Gene Expression Pipeline Integration', () => {
         { start: 113, end: 119, name: 'exon3' },
       ];
 
-      const gene2 = new Gene(complexGeneSeq, isoform2Exons, 'isoform2');
+      const gene2 = parseGene(complexGeneSeq, isoform2Exons, 'isoform2').unwrap();
       const result2 = transcribe(gene2);
       expect(isSuccess(result2)).toBe(true);
 
@@ -367,8 +371,8 @@ describe('Gene Expression Pipeline Integration', () => {
         expect(strand2.getSequence()).toBe(originalDNA.getSequence());
 
         // Step 2: Create genes from both replicated strands
-        const gene1 = new Gene(strand1, exons, 'replicated-gene-1');
-        const gene2 = new Gene(strand2, exons, 'replicated-gene-2');
+        const gene1 = parseGene(strand1, exons, 'replicated-gene-1').unwrap();
+        const gene2 = parseGene(strand2, exons, 'replicated-gene-2').unwrap();
 
         // Step 3: Transcribe both genes
         const transcription1 = transcribe(gene1);
@@ -431,7 +435,7 @@ describe('Gene Expression Pipeline Integration', () => {
         const [replicatedStrand] = replicationResult.data.replicatedStrands;
 
         // Create gene from replicated DNA
-        const replicatedGene = new Gene(replicatedStrand, exons, 'replicated-multi-exon');
+        const replicatedGene = parseGene(replicatedStrand, exons, 'replicated-multi-exon').unwrap();
 
         // Full expression pipeline
         const transcriptionResult = transcribe(replicatedGene);

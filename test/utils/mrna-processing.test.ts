@@ -1,5 +1,5 @@
 import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
-import { Gene } from '../../src/model/nucleic-acids/Gene';
+import { parseGene } from '../../src/gene';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
 import {
   processRNA,
@@ -15,7 +15,9 @@ import { SIMPLE_TWO_EXON_GENE, SINGLE_EXON_GENE, INVALID_SPLICE_GENE } from '../
 describe('mrna-processing', () => {
   describe('processRNA', () => {
     test('processes simple two-exon gene to mature mRNA', () => {
-      const gene = new Gene(SIMPLE_TWO_EXON_GENE.dnaSequence, SIMPLE_TWO_EXON_GENE.exons);
+      const gene = parseGene(SIMPLE_TWO_EXON_GENE.dnaSequence, [
+        ...SIMPLE_TWO_EXON_GENE.exons,
+      ]).unwrap();
       const preMRNA = new PreMRNA(SIMPLE_TWO_EXON_GENE.rnaSequence, gene, 0);
 
       const result = processRNA(preMRNA);
@@ -32,7 +34,7 @@ describe('mrna-processing', () => {
     });
 
     test('processes single exon gene', () => {
-      const gene = new Gene(SINGLE_EXON_GENE.dnaSequence, SINGLE_EXON_GENE.exons);
+      const gene = parseGene(SINGLE_EXON_GENE.dnaSequence, [...SINGLE_EXON_GENE.exons]).unwrap();
       const preMRNA = new PreMRNA(SINGLE_EXON_GENE.rnaSequence, gene, 0);
 
       const result = processRNA(preMRNA);
@@ -50,7 +52,7 @@ describe('mrna-processing', () => {
       const geneSequence = 'ATGAAACCCGGGTAA';
       const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
 
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
       const preMRNA = new PreMRNA('AUGAAACCCGGGUAA', gene, 0);
 
       const options: RNAProcessingOptions = {
@@ -75,7 +77,7 @@ describe('mrna-processing', () => {
       const geneSequence = 'ATGAAACCCGGGTAAAATAAACCCC';
       const exons: GenomicRegion[] = [{ start: 0, end: 24, name: 'exon1' }];
 
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
       const preMRNA = new PreMRNA('AUGAAACCCGGGUAAAAUAAACCCC', gene, 0);
 
       const result = processRNA(preMRNA);
@@ -94,7 +96,7 @@ describe('mrna-processing', () => {
       const geneSequence = 'ATGAAACCCGGGTAAAATAAACCCC';
       const exons: GenomicRegion[] = [{ start: 0, end: 24, name: 'exon1' }];
 
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
       const preMRNA = new PreMRNA('AUGAAACCCGGGUAAAAUAAACCCC', gene, 0);
 
       const result = processRNA(preMRNA, {
@@ -115,7 +117,7 @@ describe('mrna-processing', () => {
       const geneSequence = 'ATGAAACCCGGGTAG'; // No poly-A signal
       const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
 
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
       const preMRNA = new PreMRNA('AUGAAACCCGGGUAG', gene, 0);
 
       const result = processRNA(preMRNA, {
@@ -138,7 +140,7 @@ describe('mrna-processing', () => {
       const geneSequence = 'ATGAAACCCGGGTAG';
       const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
 
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
       const preMRNA = new PreMRNA('AUGAAACCCGGGUAG', gene, 0);
 
       // Mock the polyadenylation functions to test the null case
@@ -175,7 +177,7 @@ describe('mrna-processing', () => {
       const geneSequence = 'ATGAAACCCGGGTAG';
       const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
 
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
       const testPreMRNA = new PreMRNA('AUGAAACCCGGGUAG', gene, 0);
 
       // Mock to return a polyadenylation site that requires cleavage
@@ -219,7 +221,7 @@ describe('mrna-processing', () => {
       const geneSequence = 'ATGAAACCCGGG'; // 12 bp
       const exons: GenomicRegion[] = [{ start: 0, end: 12, name: 'exon1' }];
 
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
       const testPreMRNA = new PreMRNA('AUGAAACCCGGG', gene, 0);
 
       // Mock to return a polyadenylation site with cleavage beyond sequence
@@ -283,7 +285,9 @@ describe('mrna-processing', () => {
 
     test('handles exception in main processing logic', () => {
       // Test line 119: direct exception in processRNA catch block
-      const testGene = new Gene(SIMPLE_TWO_EXON_GENE.dnaSequence, SIMPLE_TWO_EXON_GENE.exons);
+      const testGene = parseGene(SIMPLE_TWO_EXON_GENE.dnaSequence, [
+        ...SIMPLE_TWO_EXON_GENE.exons,
+      ]).unwrap();
       const mockPreMRNA = {
         getSourceGene: () => testGene,
         getSequence: () => {
@@ -306,7 +310,7 @@ describe('mrna-processing', () => {
       const geneSequence = 'AAACCCGGGTAA'; // no ATG start codon
       const exons: GenomicRegion[] = [{ start: 0, end: 12, name: 'exon1' }];
 
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
       const preMRNA = new PreMRNA('AAACCCGGGUAA', gene, 0);
 
       const result = processRNA(preMRNA);
@@ -321,7 +325,7 @@ describe('mrna-processing', () => {
       const geneSequence = 'ATGAAACCCGGGAAA'; // no stop codon
       const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
 
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
       const preMRNA = new PreMRNA('AUGAAACCCGGGAAA', gene, 0);
 
       const result = processRNA(preMRNA);
@@ -334,7 +338,9 @@ describe('mrna-processing', () => {
 
     test('fails when splicing fails', () => {
       // Use gene with invalid splice sites but proper intron size
-      const gene = new Gene(INVALID_SPLICE_GENE.dnaSequence, INVALID_SPLICE_GENE.exons);
+      const gene = parseGene(INVALID_SPLICE_GENE.dnaSequence, [
+        ...INVALID_SPLICE_GENE.exons,
+      ]).unwrap();
       const preMRNA = new PreMRNA(INVALID_SPLICE_GENE.rnaSequence, gene, 0);
 
       const result = processRNA(preMRNA);
@@ -347,7 +353,9 @@ describe('mrna-processing', () => {
 
     test('bypasses splice site validation when skipSpliceSiteValidation is true', () => {
       // Use the same INVALID_SPLICE_GENE that fails in the previous test
-      const gene = new Gene(INVALID_SPLICE_GENE.dnaSequence, INVALID_SPLICE_GENE.exons);
+      const gene = parseGene(INVALID_SPLICE_GENE.dnaSequence, [
+        ...INVALID_SPLICE_GENE.exons,
+      ]).unwrap();
       const preMRNA = new PreMRNA(INVALID_SPLICE_GENE.rnaSequence, gene, 0);
 
       // First verify it still fails with default processing
@@ -481,7 +489,9 @@ describe('mrna-processing', () => {
   describe('integration with complex gene structures', () => {
     test('processes multi-exon gene with realistic structure', () => {
       // Use our realistic two-exon gene (simpler and more reliable)
-      const gene = new Gene(SIMPLE_TWO_EXON_GENE.dnaSequence, SIMPLE_TWO_EXON_GENE.exons);
+      const gene = parseGene(SIMPLE_TWO_EXON_GENE.dnaSequence, [
+        ...SIMPLE_TWO_EXON_GENE.exons,
+      ]).unwrap();
       const preMRNA = new PreMRNA(SIMPLE_TWO_EXON_GENE.rnaSequence, gene, 0);
 
       const result = processRNA(preMRNA);

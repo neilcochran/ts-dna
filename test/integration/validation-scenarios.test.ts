@@ -5,7 +5,7 @@
  * and that errors are handled gracefully throughout the pipeline.
  */
 
-import { Gene } from '../../src/model/nucleic-acids/Gene';
+import { parseGene } from '../../src/gene';
 import { DNA, RNA, parseDNA, parseRNA, transcribeSequence } from '../../src/sequence';
 import { NucleotidePattern } from '../../src/pattern';
 import { transcribe } from '../../src/utils/transcription';
@@ -47,22 +47,22 @@ describe('Validation Scenarios Integration Tests', () => {
         { start: 0, end: 15, name: 'exon1' },
         { start: 35, end: 50, name: 'exon2' },
       ];
-      expect(() => new Gene(geneSequence, validExons, 'valid')).not.toThrow();
+      expect(isSuccess(parseGene(geneSequence, validExons, 'valid'))).toBe(true);
 
       const overlappingExons = [
         { start: 0, end: 20, name: 'exon1' },
         { start: 15, end: 35, name: 'exon2' },
       ];
-      expect(() => new Gene(geneSequence, overlappingExons, 'overlapping')).toThrow();
+      expect(isFailure(parseGene(geneSequence, overlappingExons, 'overlapping'))).toBe(true);
 
       const beyondExons = [{ start: 0, end: 60, name: 'exon1' }];
-      expect(() => new Gene(geneSequence, beyondExons, 'beyond')).toThrow();
+      expect(isFailure(parseGene(geneSequence, beyondExons, 'beyond'))).toBe(true);
 
       const negativeExons = [{ start: -5, end: 10, name: 'exon1' }];
-      expect(() => new Gene(geneSequence, negativeExons, 'negative')).toThrow();
+      expect(isFailure(parseGene(geneSequence, negativeExons, 'negative'))).toBe(true);
 
       const invalidOrderExons = [{ start: 20, end: 10, name: 'exon1' }];
-      expect(() => new Gene(geneSequence, invalidOrderExons, 'invalid-order')).toThrow();
+      expect(isFailure(parseGene(geneSequence, invalidOrderExons, 'invalid-order'))).toBe(true);
     });
 
     test('splice site validation integration', () => {
@@ -79,7 +79,7 @@ describe('Validation Scenarios Integration Tests', () => {
         { start: 83, end: 110, name: 'exon2' },
       ];
 
-      const gene = new Gene(badSpliceGene, exons, 'bad-splice');
+      const gene = parseGene(badSpliceGene, exons, 'bad-splice').unwrap();
       const transcriptionResult = transcribe(gene);
 
       expect(isSuccess(transcriptionResult)).toBe(true);
@@ -119,7 +119,7 @@ describe('Validation Scenarios Integration Tests', () => {
       const noPromoterGene = 'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT';
       const exons = [{ start: 0, end: 20, name: 'exon1' }];
 
-      const gene = new Gene(noPromoterGene, exons, 'no-promoter');
+      const gene = parseGene(noPromoterGene, exons, 'no-promoter').unwrap();
       const transcriptionResult = transcribe(gene);
       expect(isFailure(transcriptionResult)).toBe(true);
     });
@@ -129,7 +129,7 @@ describe('Validation Scenarios Integration Tests', () => {
         'GCGCTATAAAAGGCGC' + 'GGGGGGGGGGGG' + 'G' + 'ATGAAAGCCTTTGTGAACCAACACCTT';
       const exons = [{ start: 29, end: 56, name: 'exon1' }];
 
-      const gene = new Gene(problematicGene, exons, 'problematic');
+      const gene = parseGene(problematicGene, exons, 'problematic').unwrap();
       const transcriptionResult = transcribe(gene);
 
       if (isSuccess(transcriptionResult)) {
@@ -170,13 +170,13 @@ describe('Validation Scenarios Integration Tests', () => {
       const sequence = 'ATGAAAGCCTTTGTGAACCAACACCTTGTAAGTAG';
 
       const startExons = [{ start: 0, end: 10, name: 'start' }];
-      expect(() => new Gene(sequence, startExons, 'start')).not.toThrow();
+      expect(isSuccess(parseGene(sequence, startExons, 'start'))).toBe(true);
 
       const endExons = [{ start: 25, end: 35, name: 'end' }];
-      expect(() => new Gene(sequence, endExons, 'end')).not.toThrow();
+      expect(isSuccess(parseGene(sequence, endExons, 'end'))).toBe(true);
 
       const minExons = [{ start: 10, end: 13, name: 'minimum' }];
-      expect(() => new Gene(sequence, minExons, 'minimum')).not.toThrow();
+      expect(isSuccess(parseGene(sequence, minExons, 'minimum'))).toBe(true);
     });
   });
 
@@ -201,9 +201,9 @@ describe('Validation Scenarios Integration Tests', () => {
       expect(isSuccess(dnaResult)).toBe(true);
 
       if (isSuccess(dnaResult)) {
-        const gene = new Gene(dnaResult.data.getSequence(), [
+        const gene = parseGene(dnaResult.data.getSequence(), [
           { start: 20, end: 35, name: 'single-exon' },
-        ]);
+        ]).unwrap();
         const transcriptionResult = transcribe(gene);
 
         if (isSuccess(transcriptionResult)) {
@@ -281,7 +281,9 @@ describe('Validation Scenarios Integration Tests', () => {
 
     test('validation errors bubble up through processing pipeline', () => {
       const problematicDNA = 'GCGCTATAAAAGGCGCGGGGATGAAA';
-      const gene = new Gene(problematicDNA, [{ start: 18, end: 26, name: 'single-exon' }]);
+      const gene = parseGene(problematicDNA, [
+        { start: 18, end: 26, name: 'single-exon' },
+      ]).unwrap();
 
       const transcriptionResult = transcribe(gene);
 

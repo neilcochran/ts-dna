@@ -1,0 +1,142 @@
+import { validateExons } from '../../src/gene';
+import { isFailure, isSuccess } from '../../src/result';
+import type { GenomicRegion } from '../../src/coordinates';
+import { MIN_INTRON_SIZE } from '../../src/constants/biological-constants';
+
+describe('validateExons', () => {
+  test('validates a single exon successfully', () => {
+    const exons: GenomicRegion[] = [{ start: 0, end: 100, name: 'exon1' }];
+    const result = validateExons(exons, 200);
+    expect(isSuccess(result)).toBe(true);
+  });
+
+  test('validates multiple non-overlapping exons', () => {
+    const exons: GenomicRegion[] = [
+      { start: 0, end: 50, name: 'exon1' },
+      { start: 100, end: 150, name: 'exon2' },
+      { start: 200, end: 250, name: 'exon3' },
+    ];
+    const result = validateExons(exons, 300);
+    expect(isSuccess(result)).toBe(true);
+  });
+
+  test('rejects empty exon list with kind=no-exons', () => {
+    const result = validateExons([], 100);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error.kind).toBe('no-exons');
+    }
+  });
+
+  test('detects overlapping exons with kind=exons-overlap', () => {
+    const exons: GenomicRegion[] = [
+      { start: 0, end: 50, name: 'exon1' },
+      { start: 40, end: 90, name: 'exon2' },
+      { start: 100, end: 150, name: 'exon3' },
+    ];
+    const result = validateExons(exons, 200);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result) && result.error.kind === 'exons-overlap') {
+      expect(result.error.at).toBe(40);
+    }
+  });
+
+  test('rejects exons extending beyond sequence length', () => {
+    const exons: GenomicRegion[] = [
+      { start: 0, end: 50 },
+      { start: 100, end: 250 },
+    ];
+    const result = validateExons(exons, 200);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error.kind).toBe('exon-out-of-bounds');
+    }
+  });
+
+  test('enforces minimum exon size constraint', () => {
+    const exons: GenomicRegion[] = [
+      { start: 0, end: 2 },
+      { start: 50, end: 100 },
+    ];
+    const result = validateExons(exons, 150);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result) && result.error.kind === 'exon-too-small') {
+      expect(result.error.length).toBe(2);
+      expect(result.error.min).toBe(3);
+    } else {
+      throw new Error(`expected exon-too-small, got ${JSON.stringify(result)}`);
+    }
+  });
+
+  test('enforces maximum exon size constraint', () => {
+    const exons: GenomicRegion[] = [{ start: 0, end: 60000 }];
+    const result = validateExons(exons, 70000);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result) && result.error.kind === 'exon-too-large') {
+      expect(result.error.length).toBe(60000);
+      expect(result.error.max).toBe(50000);
+    } else {
+      throw new Error(`expected exon-too-large, got ${JSON.stringify(result)}`);
+    }
+  });
+
+  test('enforces minimum intron size constraint', () => {
+    const exons: GenomicRegion[] = [
+      { start: 0, end: 50 },
+      { start: 65, end: 100 },
+    ];
+    const result = validateExons(exons, 150);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result) && result.error.kind === 'intron-too-small') {
+      expect(result.error.length).toBe(15);
+      expect(result.error.min).toBe(MIN_INTRON_SIZE);
+    } else {
+      throw new Error(`expected intron-too-small, got ${JSON.stringify(result)}`);
+    }
+  });
+
+  test('enforces maximum intron size constraint', () => {
+    const exons: GenomicRegion[] = [
+      { start: 0, end: 50 },
+      { start: 1050100, end: 1050150 },
+    ];
+    const result = validateExons(exons, 1050200);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result) && result.error.kind === 'intron-too-large') {
+      expect(result.error.max).toBe(1000000);
+    } else {
+      throw new Error(`expected intron-too-large, got ${JSON.stringify(result)}`);
+    }
+  });
+
+  test('handles large numbers of exons efficiently', () => {
+    const exons: GenomicRegion[] = [];
+    for (let i = 0; i < 1000; i++) {
+      exons.push({ start: i * 100, end: i * 100 + 50, name: `exon${i}` });
+    }
+    const startTime = performance.now();
+    const result = validateExons(exons, 100000);
+    const endTime = performance.now();
+    expect(isSuccess(result)).toBe(true);
+    expect(endTime - startTime).toBeLessThan(100);
+  });
+
+  test('rejects invalid (negative-start) coordinates', () => {
+    const exons: GenomicRegion[] = [{ start: -5, end: 50 }];
+    const result = validateExons(exons, 100);
+    expect(isFailure(result)).toBe(true);
+    if (isFailure(result)) {
+      expect(result.error.kind).toBe('exon-invalid-coordinates');
+    }
+  });
+
+  test('allows adjacent exons where intron length is exactly MIN_INTRON_SIZE', () => {
+    const exons: GenomicRegion[] = [
+      { start: 0, end: 50 },
+      { start: 70, end: 120 },
+      { start: 140, end: 190 },
+    ];
+    const result = validateExons(exons, 200);
+    expect(isSuccess(result)).toBe(true);
+  });
+});

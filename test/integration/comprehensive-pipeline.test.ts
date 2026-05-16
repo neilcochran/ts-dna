@@ -5,7 +5,7 @@
  * integration issues between different parts of the system.
  */
 
-import { Gene } from '../../src/model/nucleic-acids/Gene';
+import { parseGene } from '../../src/gene';
 import { DNA } from '../../src/sequence';
 import { RNA } from '../../src/sequence';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
@@ -111,21 +111,21 @@ describe('Comprehensive Pipeline Integration Tests', () => {
       ];
 
       // Test gene construction (transcription requires fixing utility functions)
-      const constitutiveGene = new Gene(geneSequence, constitutiveExons, 'constitutive');
-      expect(constitutiveGene.getExons().length).toBe(4);
-      expect(constitutiveGene.getSequence().length).toBe(200);
+      const constitutiveGene = parseGene(geneSequence, constitutiveExons, 'constitutive').unwrap();
+      expect(constitutiveGene.exons.length).toBe(4);
+      expect(constitutiveGene.sequence.getSequence().length).toBe(200);
 
-      const alternativeGene = new Gene(geneSequence, skippedExonVariant, 'alternative');
-      expect(alternativeGene.getExons().length).toBe(3);
+      const alternativeGene = parseGene(geneSequence, skippedExonVariant, 'alternative').unwrap();
+      expect(alternativeGene.exons.length).toBe(3);
 
       // Verify genes have different exon structures (constitutive: 4 exons, alternative: 3 exons)
-      expect(constitutiveGene.getExons().length - alternativeGene.getExons().length).toBe(1);
+      expect(constitutiveGene.exons.length - alternativeGene.exons.length).toBe(1);
 
       // Verify gene coordinate validation works
-      expect(constitutiveGene.getExons()[0].start).toBe(29);
-      expect(alternativeGene.getExons()[0].start).toBe(29);
-      expect(constitutiveGene.getExons()[1].start).toBe(83);
-      expect(alternativeGene.getExons()[1].start).toBe(137); // Skipped exon 2
+      expect(constitutiveGene.exons[0].start).toBe(29);
+      expect(alternativeGene.exons[0].start).toBe(29);
+      expect(constitutiveGene.exons[1].start).toBe(83);
+      expect(alternativeGene.exons[1].start).toBe(137); // Skipped exon 2
 
       // Test validates gene construction and coordinate validation
       // Full transcription pipeline testing would require fixing utility function imports
@@ -146,7 +146,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
         { start: 100, end: 150, name: 'invalid' }, // Beyond sequence length
       ];
 
-      expect(() => new Gene(validSequence, invalidExons, 'invalid-gene')).toThrow();
+      expect(isFailure(parseGene(validSequence, invalidExons, 'invalid-gene'))).toBe(true);
     });
 
     test('TSS validation prevents downstream failures', () => {
@@ -161,7 +161,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
         { start: 10, end: 50, name: 'conflicting-exon' }, // Starts at position 10, TSS likely ~29
       ];
 
-      const gene = new Gene(geneSequence, conflictingExons, 'conflict-gene');
+      const gene = parseGene(geneSequence, conflictingExons, 'conflict-gene').unwrap();
       const transcriptionResult = transcribe(gene);
 
       // Should fail due to TSS/exon conflict
@@ -188,7 +188,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
         { start: 83, end: 110, name: 'exon2' },
       ];
 
-      const gene = new Gene(geneSequence, exons, 'coord-test');
+      const gene = parseGene(geneSequence, exons, 'coord-test').unwrap();
 
       // Step 1: Transcription
       const transcriptionResult = transcribe(gene);
@@ -243,7 +243,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
         { start: 29, end: 110, name: 'single-exon' }, // One large exon
       ];
 
-      const gene = new Gene(geneSequence, exons, 'protein-test');
+      const gene = parseGene(geneSequence, exons, 'protein-test').unwrap();
 
       // Full pipeline
       const transcriptionResult = transcribe(gene);
@@ -293,7 +293,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
 
       const startTime = Date.now();
 
-      const gene = new Gene(largeGeneSequence, exons, 'large-gene');
+      const gene = parseGene(largeGeneSequence, exons, 'large-gene').unwrap();
       const transcriptionResult = transcribe(gene);
 
       expect(isSuccess(transcriptionResult)).toBe(true);
@@ -331,7 +331,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
 
       const exons = [{ start: 29, end: 35, name: 'minimal-exon' }];
 
-      const gene = new Gene(minimalGene, exons, 'minimal-gene');
+      const gene = parseGene(minimalGene, exons, 'minimal-gene').unwrap();
       const transcriptionResult = transcribe(gene);
 
       expect(isSuccess(transcriptionResult)).toBe(true);
@@ -383,7 +383,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
 
       const startTime = Date.now();
 
-      const gene = new Gene(largeGeneSequence, exons, 'large-gene-10kb');
+      const gene = parseGene(largeGeneSequence, exons, 'large-gene-10kb').unwrap();
       const transcriptionResult = transcribe(gene);
 
       expect(isSuccess(transcriptionResult)).toBe(true);
@@ -467,7 +467,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
         { start: 78, end: 84, name: 'exon4' }, // TAGTAG
       ];
 
-      const gene = new Gene(fullSequence, exons, 'multi-exon-test');
+      const gene = parseGene(fullSequence, exons, 'multi-exon-test').unwrap();
 
       // Step 1: Generate all possible splice variants
       const variantOptions = {
@@ -503,7 +503,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
 
         keyVariants.forEach(variant => {
           // Create PreMRNA for processing
-          const preMRNA = new PreMRNA(gene.getSequence().replace(/T/g, 'U'), gene, 0);
+          const preMRNA = new PreMRNA(gene.sequence.getSequence().replace(/T/g, 'U'), gene, 0);
 
           // Process variant to mRNA
           const splicingResult = spliceRNAWithVariant(preMRNA, variant);
@@ -542,7 +542,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
         { start: 58, end: 67, name: 'exon3' }, // TTTAAAAAG (9bp, divisible by 3)
       ];
 
-      const biologyGene = new Gene(biologySequence, biologyExons);
+      const biologyGene = parseGene(biologySequence, biologyExons).unwrap();
 
       // Generate variants with strict biological validation
       const strictOptions = {

@@ -7,7 +7,7 @@ import {
   isStopCodon,
   transcribeSequence,
 } from '../sequence/index.js';
-import { Gene } from '../model/nucleic-acids/Gene.js';
+import { Gene } from '../gene/index.js';
 import { Result, success, failure } from '../result/index.js';
 import {
   SpliceVariant,
@@ -96,7 +96,7 @@ export function processAllSplicingVariants(
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): Result<SplicingOutcome[]> {
   const sourceGene = preMRNA.getSourceGene();
-  const splicingProfile = sourceGene.getSplicingProfile();
+  const splicingProfile = sourceGene.splicingProfile;
 
   if (!splicingProfile) {
     return failure('Gene does not have an alternative splicing profile');
@@ -162,7 +162,7 @@ export function validateSpliceVariant(
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): Result<boolean> {
   const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
-  const exons = gene.getExons();
+  const exons = gene.exons;
 
   // Check minimum exon requirement
   if (opts.requireMinimumExons && variant.includedExons.length < (opts.minimumExonCount ?? 1)) {
@@ -291,7 +291,7 @@ export function generateAllSpliceVariants(
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): Result<SpliceVariant[]> {
   const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
-  const exons = gene.getExons();
+  const exons = gene.exons;
 
   if (exons.length === 0) {
     return failure('Gene has no exons to generate variants from');

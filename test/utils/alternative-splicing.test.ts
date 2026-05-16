@@ -1,4 +1,4 @@
-import { Gene } from '../../src/model/nucleic-acids/Gene';
+import { parseGene } from '../../src/gene';
 import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
 import { GenomicRegion } from '../../src/coordinates';
@@ -28,7 +28,7 @@ describe('Alternative Splicing Functions', () => {
 
   describe('spliceRNAWithVariant', () => {
     test('processes simple exon skipping variant', () => {
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE');
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       const variant: SpliceVariant = {
@@ -48,7 +48,7 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('processes full-length variant', () => {
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE');
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       const variant: SpliceVariant = {
@@ -66,7 +66,7 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('fails with invalid exon index', () => {
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE');
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       const variant: SpliceVariant = {
@@ -84,7 +84,7 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('validates reading frame when enabled', () => {
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE');
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       // This variant will break reading frame (6 + 6 + 6 = 18, which is divisible by 3)
@@ -108,7 +108,7 @@ describe('Alternative Splicing Functions', () => {
       // Create a mock preMRNA that will cause an error during processing
       // Need to use a valid variant that passes validation but fails during processing
       const mockGene = {
-        getExons: () => testExons,
+        exons: testExons,
         getVariantSequence: () => {
           throw new Error('Mock variant sequence error');
         },
@@ -152,7 +152,7 @@ describe('Alternative Splicing Functions', () => {
         ],
       };
 
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE', splicingProfile);
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE', splicingProfile).unwrap();
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       const result = processAllSplicingVariants(preMRNA, {
@@ -182,7 +182,7 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('fails when gene has no splicing profile', () => {
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE'); // No splicing profile
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap(); // No splicing profile
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       const result = processAllSplicingVariants(preMRNA);
@@ -195,7 +195,7 @@ describe('Alternative Splicing Functions', () => {
 
     test('handles mixed success and failure variants with warning', () => {
       // Create a valid gene first
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE');
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       // Mock the processAllSplicingVariants to test the mixed success path
@@ -212,8 +212,8 @@ describe('Alternative Splicing Functions', () => {
       // Override the preMRNA's getSourceGene to return a gene with our mock profile
       const mockGene = {
         ...gene,
-        getSplicingProfile: () => mockProfile,
-        getExons: () => testExons,
+        splicingProfile: mockProfile,
+        exons: testExons,
         getVariantSequence: (variant: any) => {
           if (variant.name === 'valid-variant') {
             return testSequence; // Valid sequence
@@ -250,7 +250,7 @@ describe('Alternative Splicing Functions', () => {
 
     test('fails when all variants fail', () => {
       // Create a valid gene first
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE');
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       // Mock profile with all invalid variants
@@ -266,8 +266,8 @@ describe('Alternative Splicing Functions', () => {
       // Override gene to make all variants fail
       const mockGene = {
         ...gene,
-        getSplicingProfile: () => mockProfile,
-        getExons: () => testExons,
+        splicingProfile: mockProfile,
+        exons: testExons,
         getVariantSequence: () => {
           throw new Error('All variants fail');
         },
@@ -288,7 +288,7 @@ describe('Alternative Splicing Functions', () => {
   });
 
   describe('validateSpliceVariant', () => {
-    const gene = new Gene(testSequence, testExons, 'TEST_GENE');
+    const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
 
     test('validates correct variant', () => {
       const variant: SpliceVariant = {
@@ -390,7 +390,7 @@ describe('Alternative Splicing Functions', () => {
     test('fails reading frame validation with invalid sequence', () => {
       // Create a mock gene that will throw an error when getVariantSequence is called
       const mockGene = {
-        getExons: () => testExons,
+        exons: testExons,
         getVariantSequence: () => {
           throw new Error('Mock getVariantSequence error');
         },
@@ -419,7 +419,7 @@ describe('Alternative Splicing Functions', () => {
       // but only when we're in the codon validation section, not reading frame
       let callCount = 0;
       const mockGene = {
-        getExons: () => testExons,
+        exons: testExons,
         getVariantSequence: () => {
           callCount++;
           if (callCount === 1) {
@@ -518,7 +518,7 @@ describe('Alternative Splicing Functions', () => {
         ],
       };
 
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE', splicingProfile);
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE', splicingProfile).unwrap();
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       const result = processDefaultSpliceVariant(preMRNA);
@@ -530,7 +530,7 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('fails when no default variant exists', () => {
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE'); // No splicing profile
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap(); // No splicing profile
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       const result = processDefaultSpliceVariant(preMRNA);
@@ -554,7 +554,7 @@ describe('Alternative Splicing Functions', () => {
         ],
       };
 
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE', splicingProfile);
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE', splicingProfile).unwrap();
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       // Look for variants producing 5-6 amino acids (excludes full-length with 7)
@@ -583,7 +583,7 @@ describe('Alternative Splicing Functions', () => {
         ],
       };
 
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE', splicingProfile);
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE', splicingProfile).unwrap();
       const preMRNA = new PreMRNA(testSequence.replace(/T/g, 'U'), gene, 0);
 
       // Look for variants producing 10-20 amino acids (none match)
@@ -651,9 +651,11 @@ describe('Alternative Splicing Functions', () => {
         variants: [{ name: 'valid', includedExons: [0, 1], description: 'Valid variant' }],
       };
 
-      expect(() => {
-        new Gene(testSequence, testExons, 'TEST_GENE', invalidProfile);
-      }).toThrow("Default variant 'nonexistent' not found");
+      const result = parseGene(testSequence, testExons, 'TEST_GENE', invalidProfile);
+      expect(result.success).toBe(false);
+      if (!result.success && result.error.kind === 'invalid-splicing-profile') {
+        expect(result.error.reason).toContain("Default variant 'nonexistent' not found");
+      }
     });
 
     test('gene provides splice variant access methods', () => {
@@ -666,9 +668,9 @@ describe('Alternative Splicing Functions', () => {
         ],
       };
 
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE', splicingProfile);
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE', splicingProfile).unwrap();
 
-      expect(gene.getSplicingProfile()).toBeDefined();
+      expect(gene.splicingProfile).toBeDefined();
       expect(gene.getSplicingVariants()).toHaveLength(2);
       expect(gene.getDefaultSplicingVariant()?.name).toBe('full-length');
       expect(gene.getSplicingVariantByName('skip-exon2')).toBeDefined();
@@ -676,7 +678,7 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('gene generates correct variant sequences', () => {
-      const gene = new Gene(testSequence, testExons, 'TEST_GENE');
+      const gene = parseGene(testSequence, testExons, 'TEST_GENE').unwrap();
       const variant: SpliceVariant = {
         name: 'test',
         includedExons: [0, 2, 3],
@@ -697,7 +699,7 @@ describe('Alternative Splicing Functions', () => {
         { start: 0, end: 6, name: 'exon1' }, // ATGAAA
         { start: 26, end: 32, name: 'exon2' }, // TTTAGG (20bp intron)
       ];
-      const simpleGene = new Gene(simpleSequence, simpleExons);
+      const simpleGene = parseGene(simpleSequence, simpleExons).unwrap();
 
       const options: AlternativeSplicingOptions = {
         validateReadingFrames: false,
@@ -735,7 +737,7 @@ describe('Alternative Splicing Functions', () => {
       // Four-exon gene with default settings (allowSkipFirstExon = false, allowSkipLastExon = false)
       // Only variants that include both first (0) and last (3) exons are allowed
       // Possible variants: [0,3], [0,1,3], [0,2,3], [0,1,2,3] = exactly 4 variants
-      const gene = new Gene(testSequence, testExons);
+      const gene = parseGene(testSequence, testExons).unwrap();
 
       const result = generateAllSpliceVariants(gene);
 
@@ -758,7 +760,7 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('respects allowSkipFirstExon option', () => {
-      const gene = new Gene(testSequence, testExons);
+      const gene = parseGene(testSequence, testExons).unwrap();
       const options: AlternativeSplicingOptions = {
         ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
         allowSkipFirstExon: false,
@@ -780,7 +782,7 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('respects allowSkipLastExon option', () => {
-      const gene = new Gene(testSequence, testExons);
+      const gene = parseGene(testSequence, testExons).unwrap();
       const options: AlternativeSplicingOptions = {
         ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
         allowSkipLastExon: false,
@@ -802,7 +804,7 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('respects minimum exon count requirement', () => {
-      const gene = new Gene(testSequence, testExons);
+      const gene = parseGene(testSequence, testExons).unwrap();
       const options: AlternativeSplicingOptions = {
         ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
         requireMinimumExons: true,
@@ -835,7 +837,7 @@ describe('Alternative Splicing Functions', () => {
         { start: 26, end: 32, name: 'exon2' }, // ATGCCC (6bp, divisible by 3) - 20bp intron
         { start: 52, end: 55, name: 'exon3' }, // TAG (3bp, divisible by 3) - 20bp intron
       ];
-      const gene = new Gene(validFrameSequence, validFrameExons);
+      const gene = parseGene(validFrameSequence, validFrameExons).unwrap();
 
       const options: AlternativeSplicingOptions = {
         ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
@@ -857,13 +859,15 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('fails with gene that has no exons', () => {
-      expect(() => {
-        new Gene('ATGAAATAG', []); // This should fail in Gene constructor
-      }).toThrow();
+      const result = parseGene('ATGAAATAG', []);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.kind).toBe('no-exons');
+      }
     });
 
     test('maintains exon order in generated variants', () => {
-      const gene = new Gene(testSequence, testExons);
+      const gene = parseGene(testSequence, testExons).unwrap();
 
       const result = generateAllSpliceVariants(gene);
 
@@ -879,7 +883,7 @@ describe('Alternative Splicing Functions', () => {
     });
 
     test('generates unique variant names', () => {
-      const gene = new Gene(testSequence, testExons);
+      const gene = parseGene(testSequence, testExons).unwrap();
 
       const result = generateAllSpliceVariants(gene);
 
@@ -893,7 +897,9 @@ describe('Alternative Splicing Functions', () => {
 
     test('works with single exon gene', () => {
       const singleExonSequence = 'ATGAAATAG';
-      const singleExonGene = new Gene(singleExonSequence, [{ start: 0, end: 9, name: 'exon1' }]);
+      const singleExonGene = parseGene(singleExonSequence, [
+        { start: 0, end: 9, name: 'exon1' },
+      ]).unwrap();
 
       const result = generateAllSpliceVariants(singleExonGene);
 

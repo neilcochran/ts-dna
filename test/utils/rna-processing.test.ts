@@ -1,6 +1,6 @@
 import { RNA, CODON_LENGTH, validateReadingFrame } from '../../src/sequence';
 import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
-import { Gene } from '../../src/model/nucleic-acids/Gene';
+import { parseGene } from '../../src/gene';
 import { spliceRNA } from '../../src/utils/rna-processing';
 import { transcribe } from '../../src/utils/transcription';
 import { GenomicRegion } from '../../src/coordinates';
@@ -15,7 +15,9 @@ import {
 describe('rna-processing', () => {
   describe('spliceRNA', () => {
     test('splices simple two-exon gene correctly', () => {
-      const gene = new Gene(SIMPLE_TWO_EXON_GENE.dnaSequence, SIMPLE_TWO_EXON_GENE.exons);
+      const gene = parseGene(SIMPLE_TWO_EXON_GENE.dnaSequence, [
+        ...SIMPLE_TWO_EXON_GENE.exons,
+      ]).unwrap();
       const preMRNA = new PreMRNA(SIMPLE_TWO_EXON_GENE.rnaSequence, gene, 0);
 
       const result = spliceRNA(preMRNA);
@@ -27,7 +29,7 @@ describe('rna-processing', () => {
     });
 
     test('splices three-exon gene correctly', () => {
-      const gene = new Gene(THREE_EXON_GENE.dnaSequence, THREE_EXON_GENE.exons);
+      const gene = parseGene(THREE_EXON_GENE.dnaSequence, [...THREE_EXON_GENE.exons]).unwrap();
       const preMRNA = new PreMRNA(THREE_EXON_GENE.rnaSequence, gene, 0);
 
       const result = spliceRNA(preMRNA);
@@ -39,7 +41,7 @@ describe('rna-processing', () => {
     });
 
     test('handles single exon gene (no splicing needed)', () => {
-      const gene = new Gene(SINGLE_EXON_GENE.dnaSequence, SINGLE_EXON_GENE.exons);
+      const gene = parseGene(SINGLE_EXON_GENE.dnaSequence, [...SINGLE_EXON_GENE.exons]).unwrap();
       const preMRNA = new PreMRNA(SINGLE_EXON_GENE.rnaSequence, gene, 0);
 
       const result = spliceRNA(preMRNA);
@@ -54,15 +56,17 @@ describe('rna-processing', () => {
       const geneSequence = 'ATGAAACCCGGGTTT';
 
       // Gene creation should fail when no exons provided
-      const geneResult = Gene.createGene(geneSequence, []);
+      const geneResult = parseGene(geneSequence, []);
       expect(isFailure(geneResult)).toBe(true);
       if (isFailure(geneResult)) {
-        expect(geneResult.error).toContain('must have at least one exon');
+        expect(geneResult.error.kind).toBe('no-exons');
       }
     });
 
     test('fails with invalid splice sites', () => {
-      const gene = new Gene(INVALID_SPLICE_GENE.dnaSequence, INVALID_SPLICE_GENE.exons);
+      const gene = parseGene(INVALID_SPLICE_GENE.dnaSequence, [
+        ...INVALID_SPLICE_GENE.exons,
+      ]).unwrap();
       const preMRNA = new PreMRNA(INVALID_SPLICE_GENE.rnaSequence, gene, 0);
 
       const result = spliceRNA(preMRNA);
@@ -81,10 +85,10 @@ describe('rna-processing', () => {
       ];
 
       // This should fail at gene creation, not splicing
-      const geneResult = Gene.createGene(geneSequence, exons);
+      const geneResult = parseGene(geneSequence, exons);
       expect(isFailure(geneResult)).toBe(true);
       if (isFailure(geneResult)) {
-        expect(geneResult.error).toContain('extends beyond sequence length');
+        expect(geneResult.error.kind).toBe('exon-out-of-bounds');
       }
     });
     test('validates splice sites using transcript coordinates (coordinate system fix)', () => {
@@ -103,7 +107,7 @@ describe('rna-processing', () => {
         { start: 86, end: 91, name: 'exon3' }, // TAGAA in gene coordinates
       ];
 
-      const gene = new Gene(geneSequence, exons, 'COORD_TEST');
+      const gene = parseGene(geneSequence, exons, 'COORD_TEST').unwrap();
 
       // Transcribe from TSS at position 32 (not position 0)
       const transcriptionResult = transcribe(gene, { forceTranscriptionStartSite: 32 });
@@ -127,7 +131,9 @@ describe('rna-processing', () => {
 
     test('bypasses splice site validation when skipSpliceSiteValidation is true', () => {
       // Use the same INVALID_SPLICE_GENE that fails in the previous test
-      const gene = new Gene(INVALID_SPLICE_GENE.dnaSequence, INVALID_SPLICE_GENE.exons);
+      const gene = parseGene(INVALID_SPLICE_GENE.dnaSequence, [
+        ...INVALID_SPLICE_GENE.exons,
+      ]).unwrap();
       const preMRNA = new PreMRNA(INVALID_SPLICE_GENE.rnaSequence, gene, 0);
 
       // First verify it still fails with default validation
@@ -150,7 +156,7 @@ describe('rna-processing', () => {
       // Create a PreMRNA with empty exon regions
       const geneSequence = 'ATGAAACCCGGGTTT';
       const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
 
       // Create PreMRNA but override getExonRegions to return empty array
       const mockPreMRNA = {
@@ -170,7 +176,7 @@ describe('rna-processing', () => {
       // Create a proper gene and PreMRNA but use a malformed exon that goes out of bounds
       const geneSequence = 'ATGAAACCCGGGTTT';
       const exons: GenomicRegion[] = [{ start: 0, end: 15, name: 'exon1' }];
-      const gene = new Gene(geneSequence, exons);
+      const gene = parseGene(geneSequence, exons).unwrap();
 
       // Create a PreMRNA with a very short sequence
       const shortRnaSequence = 'AUGAAACCC'; // Only 9 bp
@@ -219,7 +225,7 @@ describe('rna-processing', () => {
       ];
 
       // The intron would be from 6-27 (21bp) and end with CC, not AG
-      const gene = new Gene(invalidGeneSequence, invalidExons);
+      const gene = parseGene(invalidGeneSequence, invalidExons).unwrap();
       const rnaSequence = 'AUGAAACUGUCCCCCCCCCCCCCCCCCUGGG'; // RNA version
       const preMRNA = new PreMRNA(rnaSequence, gene, 0);
 
@@ -245,7 +251,7 @@ describe('rna-processing', () => {
       ];
 
       // The intron would be from 6-26 (20bp) and start with CC, not GT, end with AG
-      const gene = new Gene(invalidGeneSequence, invalidExons);
+      const gene = parseGene(invalidGeneSequence, invalidExons).unwrap();
       const rnaSequence = 'AUGAAACCCUCCCCCCCCCCCCCCCAGGGG'; // RNA version
       const preMRNA = new PreMRNA(rnaSequence, gene, 0);
 
@@ -269,7 +275,7 @@ describe('rna-processing', () => {
       ];
 
       // The intron would be from 6-26 (20bp) and start with GT (valid), end with CC (invalid)
-      const gene = new Gene(invalidGeneSequence, invalidExons);
+      const gene = parseGene(invalidGeneSequence, invalidExons).unwrap();
       const rnaSequence = 'AUGAAAGUUCCCCCCCCCCCCCCCCCCGGG'; // RNA version
       const preMRNA = new PreMRNA(rnaSequence, gene, 0);
 

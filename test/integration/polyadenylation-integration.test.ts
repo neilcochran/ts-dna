@@ -4,7 +4,7 @@
  * These tests validate basic polyadenylation integration with RNA processing.
  */
 
-import { Gene } from '../../src/model/nucleic-acids/Gene';
+import { parseGene } from '../../src/gene';
 import { transcribe } from '../../src/utils/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { findPolyadenylationSites } from '../../src/utils/polyadenylation';
@@ -21,7 +21,7 @@ describe('Polyadenylation Integration Tests', () => {
     const geneSequence = promoter + exon;
     const exons = [{ start: 29, end: 120, name: 'main-exon' }];
 
-    const gene = new Gene(geneSequence, exons, 'polya-test-gene');
+    const gene = parseGene(geneSequence, exons, 'polya-test-gene').unwrap();
     const transcriptionResult = transcribe(gene);
     expect(isSuccess(transcriptionResult)).toBe(true);
 
@@ -60,7 +60,7 @@ describe('Polyadenylation Integration Tests', () => {
     const geneSequence = promoter + exon;
     const exons = [{ start: 29, end: 120, name: 'main-exon' }];
 
-    const gene = new Gene(geneSequence, exons, 'site-detection-test');
+    const gene = parseGene(geneSequence, exons, 'site-detection-test').unwrap();
     const transcriptionResult = transcribe(gene);
     expect(isSuccess(transcriptionResult)).toBe(true);
 
@@ -106,7 +106,7 @@ describe('Polyadenylation Integration Tests', () => {
       const geneSequence = promoter + testCase.sequence;
       const exons = [{ start: 29, end: 29 + testCase.sequence.length, name: testCase.name }];
 
-      const gene = new Gene(geneSequence, exons, testCase.name);
+      const gene = parseGene(geneSequence, exons, testCase.name).unwrap();
       const transcriptionResult = transcribe(gene);
       expect(isSuccess(transcriptionResult)).toBe(true);
 

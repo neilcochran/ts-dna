@@ -1,7 +1,11 @@
 import { DNA } from '../sequence/index.js';
-import { Promoter } from '../model/Promoter.js';
-import { PromoterElement } from '../model/PromoterElement.js';
-import { STANDARD_PROMOTER_ELEMENTS, CORE_PROMOTER_ELEMENTS } from '../data/promoter-elements.js';
+import {
+  Promoter,
+  PromoterElement,
+  parsePromoter,
+  STANDARD_PROMOTER_ELEMENTS,
+  CORE_PROMOTER_ELEMENTS,
+} from '../gene/index.js';
 import {
   MAX_PROMOTER_SEARCH_DISTANCE,
   TATA_BOX_TYPICAL_POSITION,
@@ -76,11 +80,15 @@ export function findPromoters(dna: DNA, options: PromoterSearchOptions = {}): Pr
 
   // Convert candidates to Promoter objects and filter by strength
   for (const candidate of promoterCandidates) {
-    const promoter = new Promoter(
+    const promoterResult = parsePromoter(
       candidate.tss,
       candidate.elements.map(match => match.element),
       `promoter_${candidate.tss}`,
     );
+    if (!promoterResult.success) {
+      continue;
+    }
+    const promoter = promoterResult.data;
 
     if (promoter.getStrengthScore() >= opts.minStrengthScore) {
       promoters.push(promoter);

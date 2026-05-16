@@ -1,9 +1,25 @@
 import { findPromoters, identifyTSS } from '../../src/utils/promoter-recognition';
 import { DNA } from '../../src/sequence';
-import { Promoter } from '../../src/model/Promoter';
-import { PromoterElement } from '../../src/model/PromoterElement';
-import { NucleotidePattern } from '../../src/pattern';
+import { parsePromoter, parsePromoterElement, Promoter, PromoterElement } from '../../src/gene';
+import { parseNucleotidePattern, NucleotidePattern } from '../../src/pattern';
 import { MAX_PROMOTER_SEARCH_DISTANCE } from '../../src/constants/biological-constants';
+
+function mkPattern(input: string): NucleotidePattern {
+  return parseNucleotidePattern(input).unwrap();
+}
+
+function mkElement(
+  name: string,
+  patternString: string,
+  position: number,
+  scoreWeight = 0,
+): PromoterElement {
+  return parsePromoterElement(name, mkPattern(patternString), position, scoreWeight).unwrap();
+}
+
+function mkPromoter(tss: number, elements: PromoterElement[]): Promoter {
+  return parsePromoter(tss, elements).unwrap();
+}
 
 describe('promoter-recognition', () => {
   describe('findPromoters', () => {
@@ -98,8 +114,8 @@ describe('promoter-recognition', () => {
 
   describe('identifyTSS', () => {
     test('identifies TSS from Initiator element', () => {
-      const inrElement = new PromoterElement('Inr', new NucleotidePattern('BBCABW'), 0);
-      const promoter = new Promoter(100, [inrElement]);
+      const inrElement = mkElement('Inr', 'BBCABW', 0);
+      const promoter = mkPromoter(100, [inrElement]);
       const sequence = new DNA('A'.repeat(MAX_PROMOTER_SEARCH_DISTANCE));
 
       const tssPositions = identifyTSS(promoter, sequence);
@@ -108,8 +124,8 @@ describe('promoter-recognition', () => {
     });
 
     test('predicts TSS from TATA box', () => {
-      const tataElement = new PromoterElement('TATA', new NucleotidePattern('TATAWAWR'), -25);
-      const promoter = new Promoter(100, [tataElement]);
+      const tataElement = mkElement('TATA', 'TATAWAWR', -25);
+      const promoter = mkPromoter(100, [tataElement]);
       const sequence = new DNA('A'.repeat(MAX_PROMOTER_SEARCH_DISTANCE));
 
       const tssPositions = identifyTSS(promoter, sequence);
@@ -119,9 +135,9 @@ describe('promoter-recognition', () => {
     });
 
     test('handles promoter with multiple Initiators', () => {
-      const inr1 = new PromoterElement('Inr', new NucleotidePattern('BBCABW'), 0);
-      const inr2 = new PromoterElement('Inr', new NucleotidePattern('CCATCCC'), 10);
-      const promoter = new Promoter(100, [inr1, inr2]);
+      const inr1 = mkElement('Inr', 'BBCABW', 0);
+      const inr2 = mkElement('Inr', 'CCATCCC', 10);
+      const promoter = mkPromoter(100, [inr1, inr2]);
       const sequence = new DNA('A'.repeat(MAX_PROMOTER_SEARCH_DISTANCE));
 
       const tssPositions = identifyTSS(promoter, sequence);
@@ -132,9 +148,9 @@ describe('promoter-recognition', () => {
     });
 
     test('handles promoter with multiple TATA boxes', () => {
-      const tata1 = new PromoterElement('TATA', new NucleotidePattern('TATAWAWR'), -25);
-      const tata2 = new PromoterElement('TATA', new NucleotidePattern('TATAWAWR'), -30);
-      const promoter = new Promoter(100, [tata1, tata2]);
+      const tata1 = mkElement('TATA', 'TATAWAWR', -25);
+      const tata2 = mkElement('TATA', 'TATAWAWR', -30);
+      const promoter = mkPromoter(100, [tata1, tata2]);
       const sequence = new DNA('A'.repeat(MAX_PROMOTER_SEARCH_DISTANCE));
 
       const tssPositions = identifyTSS(promoter, sequence);
@@ -145,8 +161,8 @@ describe('promoter-recognition', () => {
     });
 
     test('falls back to promoter TSS for other elements', () => {
-      const gcElement = new PromoterElement('GC', new NucleotidePattern('GGGCGG'), -70);
-      const promoter = new Promoter(100, [gcElement]);
+      const gcElement = mkElement('GC', 'GGGCGG', -70);
+      const promoter = mkPromoter(100, [gcElement]);
       const sequence = new DNA('A'.repeat(MAX_PROMOTER_SEARCH_DISTANCE));
 
       const tssPositions = identifyTSS(promoter, sequence);
@@ -155,8 +171,8 @@ describe('promoter-recognition', () => {
     });
 
     test('filters out invalid TSS positions', () => {
-      const tataElement = new PromoterElement('TATA', new NucleotidePattern('TATAWAWR'), -25);
-      const promoter = new Promoter(10, [tataElement]); // TSS prediction would be at 35
+      const tataElement = mkElement('TATA', 'TATAWAWR', -25);
+      const promoter = mkPromoter(10, [tataElement]); // TSS prediction would be at 35
       const sequence = new DNA('ATCG'); // Only 4 bases long
 
       const tssPositions = identifyTSS(promoter, sequence);
@@ -166,8 +182,8 @@ describe('promoter-recognition', () => {
     });
 
     test('handles edge case with TSS at sequence boundary', () => {
-      const inrElement = new PromoterElement('Inr', new NucleotidePattern('BBCABW'), 0);
-      const promoter = new Promoter(0, [inrElement]); // TSS at very beginning
+      const inrElement = mkElement('Inr', 'BBCABW', 0);
+      const promoter = mkPromoter(0, [inrElement]); // TSS at very beginning
       const sequence = new DNA('ATCGATCG');
 
       const tssPositions = identifyTSS(promoter, sequence);

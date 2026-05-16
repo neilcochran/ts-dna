@@ -1,5 +1,5 @@
 import { RNA } from '../../sequence/index.js';
-import { Gene } from './Gene.js';
+import { Gene } from '../../gene/index.js';
 import { GenomicRegion } from '../../coordinates/index.js';
 
 /**
@@ -13,7 +13,7 @@ import { GenomicRegion } from '../../coordinates/index.js';
  *
  * @example
  * ```typescript
- * const gene = new Gene(dnaSequence, exons);
+ * const gene = parseGene(dnaSequence, exons).unwrap();
  * const preMRNA = new PreMRNA(transcriptSequence, gene, tss, polyASite);
  *
  * console.log(preMRNA.getExonRegions()); // Exon positions in transcript
@@ -41,10 +41,10 @@ export class PreMRNA extends RNA {
    *
    * @example
    * ```typescript
-   * const gene = new Gene('ATGAAACCCAAATTTGGG', [
+   * const gene = parseGene('ATGAAACCCAAATTTGGG', [
    *     { start: 0, end: 6 },   // First exon: ATGAAA
    *     { start: 12, end: 18 }  // Second exon: TTTGGG
-   * ]);
+   * ]).unwrap();
    *
    * const preMRNA = new PreMRNA(
    *     'AUGAAACCCAAAUUUGGG',  // Transcribed sequence (DNA -> RNA)
@@ -106,8 +106,7 @@ export class PreMRNA extends RNA {
     // Convert gene exon coordinates to transcript coordinates
     const transcriptLength = this.getSequence().length;
 
-    return this.sourceGene
-      .getExons()
+    return this.sourceGene.exons
       .map(exon => ({
         start: exon.start - this.transcriptionStartSite,
         end: exon.end - this.transcriptionStartSite,

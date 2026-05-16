@@ -1,5 +1,5 @@
 import { transcribe, TranscriptionOptions } from '../../src/utils/transcription';
-import { Gene } from '../../src/model/nucleic-acids/Gene';
+import { parseGene, Gene } from '../../src/gene';
 import { NucleotidePattern } from '../../src/pattern';
 import { isSuccess, isFailure } from '../../src/result/Result';
 import {
@@ -13,7 +13,7 @@ describe('transcription', () => {
 
   beforeEach(() => {
     // Use realistic gene with proper intron size and splice sites
-    testGene = new Gene(COMPLEX_GENE.dnaSequence, COMPLEX_GENE.exons);
+    testGene = parseGene(COMPLEX_GENE.dnaSequence, [...COMPLEX_GENE.exons]).unwrap();
   });
 
   describe('transcribe', () => {
@@ -74,10 +74,10 @@ describe('transcription', () => {
         'ATGAAAGT' +
         'A'.repeat(MIN_INTRON_SIZE) +
         'AGTTTGGGAATAAA';
-      const nopromoterGene = new Gene(nopromoterDNA, [
+      const nopromoterGene = parseGene(nopromoterDNA, [
         { start: MAX_PROMOTER_SEARCH_DISTANCE, end: 208 }, // ATGAAAGT (8bp)
         { start: 230, end: 236 }, // TTTGGG (6bp) - 20bp intron between them
-      ]);
+      ]).unwrap();
 
       const result = transcribe(nopromoterGene);
 
@@ -89,7 +89,7 @@ describe('transcription', () => {
 
     test('handles TSS outside gene bounds', () => {
       const options: TranscriptionOptions = {
-        forceTranscriptionStartSite: testGene.getSequence().length + 10,
+        forceTranscriptionStartSite: testGene.sequence.getSequence().length + 10,
       };
 
       const result = transcribe(testGene, options);
@@ -111,10 +111,10 @@ describe('transcription', () => {
 
     test('transcribes gene without polyadenylation signal', () => {
       // Gene without AATAAA signal
-      const simpleGene = new Gene(
+      const simpleGene = parseGene(
         'A'.repeat(100) + 'TATAAAAG' + 'A'.repeat(MIN_INTRON_SIZE) + 'ATGAAATTTGGG',
         [{ start: 128, end: 140 }],
-      );
+      ).unwrap();
 
       const result = transcribe(simpleGene);
 
@@ -139,7 +139,7 @@ describe('transcription', () => {
         // For COMPLEX_GENE, TSS should be at beginning of gene (no promoter detected)
         const tss = preMRNA.getTranscriptionStartSite();
         expect(tss).toBeGreaterThanOrEqual(0); // Valid TSS position
-        expect(tss).toBeLessThan(testGene.getSequence().length); // Within gene bounds
+        expect(tss).toBeLessThan(testGene.sequence.getSequence().length); // Within gene bounds
 
         // Should contain both exons and introns
         expect(preMRNA.getCodingSequence().length).toBeLessThan(preMRNA.getSequence().length);
@@ -187,7 +187,7 @@ describe('transcription', () => {
         const preMRNA = result.data;
 
         // Should have same number of exons as source gene
-        expect(preMRNA.getExonRegions().length).toBe(testGene.getExons().length);
+        expect(preMRNA.getExonRegions().length).toBe(testGene.exons.length);
 
         // Should have introns between exons
         expect(preMRNA.hasIntrons()).toBe(true);
@@ -220,10 +220,12 @@ describe('transcription', () => {
 
   describe('error handling', () => {
     test('handles gene with no exons', () => {
-      // Gene constructor should throw for no exons (biologically invalid)
-      expect(() => {
-        new Gene('ATGAAATTTGGG', []);
-      }).toThrow('Gene must have at least one exon');
+      // parseGene must reject an empty exon list with a kind=no-exons GeneError.
+      const result = parseGene('ATGAAATTTGGG', []);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('no-exons');
+      }
     });
 
     test('handles malformed gene structure', () => {
@@ -237,13 +239,15 @@ describe('transcription', () => {
     });
 
     test('handles exception during transcription', () => {
-      // Test line 133: exception handling - error caught by TSS search first
+      // Test exception handling - error caught by TSS search first
       const mockGene = {
-        getSequence: () => {
-          throw new Error('Mock gene error');
+        sequence: {
+          getSequence: (): string => {
+            throw new Error('Mock gene error');
+          },
         },
-        getExons: () => [{ start: 0, end: 12, name: 'exon1' }],
-      } as any;
+        exons: [{ start: 0, end: 12, name: 'exon1' }],
+      } as unknown as Gene;
 
       const result = transcribe(mockGene);
 
@@ -255,13 +259,13 @@ describe('transcription', () => {
     });
 
     test('handles exception during TSS search', () => {
-      // Test line 196: exception handling in findTranscriptionStartSite
+      // Test exception handling in findTranscriptionStartSite
       const mockGene = {
-        getSequence: () => 'ATGAAACCCGGG',
-        getExons: () => {
+        sequence: { getSequence: () => 'ATGAAACCCGGG' },
+        get exons(): { start: number; end: number; name: string }[] {
           throw new Error('TSS search error');
         },
-      } as any;
+      } as unknown as Gene;
 
       const result = transcribe(mockGene);
 
@@ -273,10 +277,8 @@ describe('transcription', () => {
     });
 
     test('handles exception during polyadenylation site search', () => {
-      // Test line 230: exception handling - error caught by TSS search first
-      const geneSequence = 'ATGAAACCCGGG';
-      const exons = [{ start: 0, end: 12, name: 'exon1' }];
-      const testGene = new Gene(geneSequence, exons);
+      // Exception handling - error caught by TSS search first
+      const testGene = parseGene('ATGAAACCCGGG', [{ start: 0, end: 12, name: 'exon1' }]).unwrap();
 
       // Mock to force exception in polyadenylation search
       const originalPattern = NucleotidePattern.prototype.findAll;
@@ -299,11 +301,14 @@ describe('transcription', () => {
     test('handles non-Error exception objects', () => {
       // Test error handling with non-Error objects - error caught by TSS search first
       const mockGene = {
-        getSequence: () => {
-          throw 'String error';
+        sequence: {
+          getSequence: (): string => {
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
+            throw 'String error';
+          },
         },
-        getExons: () => [{ start: 0, end: 12, name: 'exon1' }],
-      } as any;
+        exons: [{ start: 0, end: 12, name: 'exon1' }],
+      } as unknown as Gene;
 
       const result = transcribe(mockGene);
 

@@ -1,4 +1,4 @@
-import { Gene } from '../model/nucleic-acids/Gene.js';
+import { Gene, TATA_BOX } from '../gene/index.js';
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
 import { DNA, transcribeSequence } from '../sequence/index.js';
 import { NucleotidePattern } from '../pattern/index.js';
@@ -12,7 +12,6 @@ import {
   FORCE_TSS_DISABLED,
   CANONICAL_POLYA_SIGNAL_DNA,
 } from '../constants/biological-constants.js';
-import { TATA_BOX } from '../data/promoter-elements.js';
 
 /**
  * Compiled once at module load: searches for the canonical DNA polyadenylation signal
@@ -66,7 +65,7 @@ function getDefaultTranscriptionOptions(): Required<TranscriptionOptions> {
  *
  * @example
  * ```typescript
- * const gene = new Gene(dnaSequence, exons);
+ * const gene = parseGene(dnaSequence, exons).unwrap();
  * const result = transcribe(gene);
  *
  * if (isSuccess(result)) {
@@ -98,7 +97,10 @@ export function transcribe(gene: Gene, options: TranscriptionOptions = {}): Resu
     }
 
     // Step 2: Validate TSS is within reasonable bounds
-    if (transcriptionStartSite < 0 || transcriptionStartSite >= gene.getSequence().length) {
+    if (
+      transcriptionStartSite < 0 ||
+      transcriptionStartSite >= gene.sequence.getSequence().length
+    ) {
       return failure(`Transcription start site ${transcriptionStartSite} is outside gene bounds`);
     }
 
@@ -113,10 +115,10 @@ export function transcribe(gene: Gene, options: TranscriptionOptions = {}): Resu
     const polyadenylationSite = isSuccess(polyAResult) ? polyAResult.data : undefined;
 
     // Step 4: Determine transcript end position
-    const transcriptEnd = polyadenylationSite ?? gene.getSequence().length;
+    const transcriptEnd = polyadenylationSite ?? gene.sequence.getSequence().length;
 
     // Step 5: Extract and transcribe the sequence
-    const geneSequence = gene.getSequence();
+    const geneSequence = gene.sequence.getSequence();
     const transcriptDNA = geneSequence.substring(transcriptionStartSite, transcriptEnd);
 
     // Convert DNA to RNA
@@ -152,7 +154,7 @@ function findTranscriptionStartSite(
 ): Result<number> {
   try {
     // Create a DNA region upstream of the first exon to search for promoters
-    const firstExon = gene.getExons()[0];
+    const firstExon = gene.exons[0];
     if (!firstExon) {
       return failure('Gene has no exons');
     }
@@ -160,7 +162,7 @@ function findTranscriptionStartSite(
     const searchStart = Math.max(0, firstExon.start - options.maxPromoterSearchDistance);
     const searchEnd = firstExon.start + DEFAULT_DOWNSTREAM_SEARCH_DISTANCE; // Include some downstream region
 
-    const searchRegion = gene.getSequence().substring(searchStart, searchEnd);
+    const searchRegion = gene.sequence.getSequence().substring(searchStart, searchEnd);
     const searchDNA = new DNA(searchRegion);
 
     // Configure promoter search options
@@ -209,7 +211,7 @@ function findTranscriptionStartSite(
  */
 function findPolyadenylationSite(gene: Gene, tss: number): Result<number> {
   try {
-    const sequence = gene.getSequence();
+    const sequence = gene.sequence.getSequence();
     const searchStart = tss;
 
     // Search for DNA polyadenylation signal AATAAA (becomes AAUAAA in RNA)
@@ -246,7 +248,7 @@ function findPolyadenylationSite(gene: Gene, tss: number): Result<number> {
  * @returns Result indicating compatibility
  */
 function validateTSSExonCompatibility(gene: Gene, tss: number): Result<void> {
-  const exons = gene.getExons();
+  const exons = gene.exons;
 
   if (exons.length === 0) {
     return success(undefined);

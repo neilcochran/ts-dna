@@ -5,7 +5,7 @@
  * correctly with real-world input and maintains biological accuracy.
  */
 
-import { Gene } from '../../src/model/nucleic-acids/Gene';
+import { parseGene } from '../../src/gene';
 import { DNA } from '../../src/sequence';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
 import { transcribe } from '../../src/utils/transcription';
@@ -43,7 +43,7 @@ describe('Biological Scenarios Integration Tests', () => {
         { start: 181, end: 223, name: 'exon3' }, // 42bp: 181-222
       ];
 
-      const betaGlobin = new Gene(betaGlobinLike, exons, 'beta-globin-like');
+      const betaGlobin = parseGene(betaGlobinLike, exons, 'beta-globin-like').unwrap();
 
       // Test full processing pipeline
       const transcriptionResult = transcribe(betaGlobin);
@@ -113,7 +113,7 @@ describe('Biological Scenarios Integration Tests', () => {
         { start: 181, end: 223, name: 'a-chain-exon' }, // 42bp: 181-222
       ];
 
-      const insulin = new Gene(insulinLike, exons, 'insulin-like');
+      const insulin = parseGene(insulinLike, exons, 'insulin-like').unwrap();
 
       const transcriptionResult = transcribe(insulin);
       expect(isSuccess(transcriptionResult)).toBe(true);
@@ -166,7 +166,7 @@ describe('Biological Scenarios Integration Tests', () => {
         { start: 35, end: 98, name: 'bacterial-exon' }, // ATG starts at position 35
       ];
 
-      const bacterialGeneObj = new Gene(bacterialGene, exons, 'bacterial');
+      const bacterialGeneObj = parseGene(bacterialGene, exons, 'bacterial').unwrap();
 
       // Use forced TSS at the start of ATG codon
       const transcriptionResult = transcribe(bacterialGeneObj, {
@@ -227,7 +227,7 @@ describe('Biological Scenarios Integration Tests', () => {
         { start: promoterLength + 108, end: promoterLength + 135, name: 'euk-exon3' },
       ];
 
-      const eukGene = new Gene(eukaryoticGene, exons, 'eukaryotic');
+      const eukGene = parseGene(eukaryoticGene, exons, 'eukaryotic').unwrap();
 
       const transcriptionResult = transcribe(eukGene);
 
@@ -274,13 +274,13 @@ describe('Biological Scenarios Integration Tests', () => {
       ];
 
       // Test normal splicing
-      const normalGene = new Gene(alternativeSplicingGene, normalExons, 'normal');
+      const normalGene = parseGene(alternativeSplicingGene, normalExons, 'normal').unwrap();
       const normalResult = transcribe(normalGene);
 
       expect(isSuccess(normalResult)).toBe(true);
 
       // Test alternative splicing
-      const altGene = new Gene(alternativeSplicingGene, skippedExons, 'alternative');
+      const altGene = parseGene(alternativeSplicingGene, skippedExons, 'alternative').unwrap();
       const altResult = transcribe(altGene);
 
       expect(isSuccess(altResult)).toBe(true);
@@ -344,7 +344,7 @@ describe('Biological Scenarios Integration Tests', () => {
         { start: 181, end: 223, name: 'c-terminal' }, // 42bp: 181-222
       ];
 
-      const multiDomain = new Gene(multiDomainGene, exons, 'multi-domain');
+      const multiDomain = parseGene(multiDomainGene, exons, 'multi-domain').unwrap();
 
       const transcriptionResult = transcribe(multiDomain);
       expect(isSuccess(transcriptionResult)).toBe(true);
