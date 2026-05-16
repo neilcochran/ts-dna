@@ -17,7 +17,8 @@ import {
 import { translate } from '../../src/translation';
 import { parsePreMRNA } from '../../src/transcription';
 import { transcribe } from '../../src/transcription';
-import { replicateDNA } from '../../src/utils/replication/simple-replication';
+import { replicate } from '../../src/replication';
+import { doubleStrandedDNA } from '../../src/sequence';
 import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('Comprehensive Pipeline Integration Tests', () => {
@@ -428,16 +429,22 @@ describe('Comprehensive Pipeline Integration Tests', () => {
       expect(reverseComplement.length()).toBe(dna.length());
 
       // Test replication of large sequence
-      const replicationResult = replicateDNA(dna);
+      const parent = doubleStrandedDNA(dna);
+      const replicationResult = replicate(parent);
       expect(isSuccess(replicationResult)).toBe(true);
 
       if (isSuccess(replicationResult)) {
-        const [strand1, strand2] = replicationResult.data.replicatedStrands;
-        expect(strand1.getSequence().length).toBe(dna.getSequence().length);
-        expect(strand2.getSequence().length).toBe(dna.getSequence().length);
+        const [duplex1, duplex2] = replicationResult.data.daughters;
+        expect(duplex1.forward.sequence.length).toBe(dna.getSequence().length);
+        expect(duplex2.forward.sequence.length).toBe(dna.getSequence().length);
 
-        // Verify step count is accurate for large sequences
-        expect(replicationResult.data.steps).toBe(100); // stepSize = floor(2000/100) = 20, steps = ceil(2000/20) = 100
+        // Daughter duplexes should be sequence-equal to the parent
+        expect(duplex1.forward.sequence).toBe(parent.forward.sequence);
+        expect(duplex2.forward.sequence).toBe(parent.forward.sequence);
+
+        // Should have produced Okazaki fragments and a full event log
+        expect(replicationResult.data.statistics.okazakiFragmentCount).toBeGreaterThan(0);
+        expect(replicationResult.data.events.length).toBeGreaterThan(0);
       }
     });
   });

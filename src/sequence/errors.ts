@@ -114,3 +114,44 @@ export function describeReadingFrameError(error: ReadingFrameError): string {
       return `Expected start codon AUG at position ${error.position}, found ${error.found}`;
   }
 }
+
+/**
+ * Error variants raised by `parseDoubleStrandedDNA` when validating that two `DNA` strands
+ * form a valid double-stranded duplex.
+ *
+ * Returned in the failure branch of `Result<DoubleStrandedDNA, DoubleStrandedError>`.
+ */
+export type DoubleStrandedError =
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'length-mismatch';
+      /** Length of the forward strand (nucleotides). */
+      readonly forwardLength: number;
+      /** Length of the reverse strand (nucleotides). */
+      readonly reverseLength: number;
+    }
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'not-complementary';
+      /** 0-based index of the first mismatched position on the forward strand. */
+      readonly firstMismatchAt: number;
+      /** Base expected on the reverse strand at the mismatched position. */
+      readonly expected: string;
+      /** Base actually found on the reverse strand at the mismatched position. */
+      readonly actual: string;
+    };
+
+/**
+ * Renders a {@link DoubleStrandedError} as a human-readable message.
+ *
+ * @param error - The structured error payload
+ * @returns A short human-readable description, suitable for logs or developer-facing messages
+ */
+export function describeDoubleStrandedError(error: DoubleStrandedError): string {
+  switch (error.kind) {
+    case 'length-mismatch':
+      return `Double-stranded DNA requires equal-length strands; forward is ${error.forwardLength} nt, reverse is ${error.reverseLength} nt`;
+    case 'not-complementary':
+      return `Strands are not complementary: at forward index ${error.firstMismatchAt} the reverse strand has '${error.actual}' but expected '${error.expected}'`;
+  }
+}

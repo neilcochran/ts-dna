@@ -135,3 +135,9 @@ AUGUAG
 CCCUAG
 AUGAAAUAGCCC
 AUGAA
+ATCGATCGATCG
+DSDNA
+dsdna
+nucleosome
+semiconservative
+semiconservatively

@@ -11,9 +11,9 @@ import { parseGene } from '../../src/gene';
 import { transcribe } from '../../src/transcription';
 import { processRNA, isFullyProcessed } from '../../src/processing';
 import { translate } from '../../src/translation';
-import { replicateDNA } from '../../src/utils/replication/simple-replication';
+import { replicate } from '../../src/replication';
 import { isSuccess, isFailure } from '../../src/result/Result';
-import { DNA } from '../../src/sequence';
+import { DNA, doubleStrandedDNA } from '../../src/sequence';
 
 describe('Cross-System Integration Tests', () => {
   describe('Basic Gene-to-Protein Pipeline', () => {
@@ -71,19 +71,22 @@ describe('Cross-System Integration Tests', () => {
       // Simple test that replication works correctly
       const simpleSequence = 'ATGAAAGCCTTTGTGAACCAACACCTTCTGGTGGAGCGGCTCTACCTGGTGTGCGGCTCGCTGTAG';
       const dna = new DNA(simpleSequence);
+      const parent = doubleStrandedDNA(dna);
 
-      const replicationResult = replicateDNA(dna);
+      const replicationResult = replicate(parent);
       expect(isSuccess(replicationResult)).toBe(true);
 
       if (isSuccess(replicationResult)) {
-        const { replicatedStrands } = replicationResult.data;
-        const [strand1, strand2] = replicatedStrands;
+        const { daughters } = replicationResult.data;
+        const [duplex1, duplex2] = daughters;
 
-        // Both strands should be identical to original
-        expect(strand1.getSequence()).toBe(simpleSequence);
-        expect(strand2.getSequence()).toBe(simpleSequence);
-        expect(strand1.length()).toBe(dna.length());
-        expect(strand2.length()).toBe(dna.length());
+        // Both daughter duplexes should be sequence-equal to the parent
+        expect(duplex1.forward.sequence).toBe(simpleSequence);
+        expect(duplex2.forward.sequence).toBe(simpleSequence);
+        expect(duplex1.reverse.sequence).toBe(parent.reverse.sequence);
+        expect(duplex2.reverse.sequence).toBe(parent.reverse.sequence);
+        expect(duplex1.length()).toBe(dna.length());
+        expect(duplex2.length()).toBe(dna.length());
       }
     });
   });

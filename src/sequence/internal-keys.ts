@@ -20,3 +20,11 @@ export const UNSAFE_DNA_KEY: unique symbol = Symbol('unsafe-dna');
  * @internal
  */
 export const UNSAFE_RNA_KEY: unique symbol = Symbol('unsafe-rna');
+
+/**
+ * Sentinel used to bypass {@link DoubleStrandedDNA} constructor validation. See
+ * {@link UNSAFE_DNA_KEY} for context.
+ *
+ * @internal
+ */
+export const UNSAFE_DSDNA_KEY: unique symbol = Symbol('unsafe-dsdna');
