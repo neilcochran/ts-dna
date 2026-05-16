@@ -1,5 +1,5 @@
 import { RNA, DNA } from '../../src/sequence';
-import { AminoAcid } from '../../src/model';
+import { AminoAcid } from '../../src/translation';
 import { parseMRNA } from '../../src/processing';
 
 //ensure RNA and DNA sequences are the same (excluding base differences) since some tests rely it
@@ -68,30 +68,24 @@ export const NUCLEOTIDE_PATTERN_PASSING_SEQS = [
 
 export const isCorrectAminoAcid = (
   aminoAcid: AminoAcid,
-  correctAminoAcidData: { name: string; abbrv: string; singleLetterCode: string },
+  correctAminoAcidData: { name: string; threeLetterCode: string; singleLetterCode: string },
 ): boolean => {
-  const keysToCheck: (keyof { name: string; abbrv: string; singleLetterCode: string })[] = [
-    'name',
-    'abbrv',
-    'singleLetterCode',
-  ];
-  for (const k of keysToCheck) {
-    if (aminoAcid[k as keyof AminoAcid] !== correctAminoAcidData[k]) {
-      return false;
-    }
-  }
-  return true;
+  return (
+    aminoAcid.data.name === correctAminoAcidData.name &&
+    aminoAcid.data.threeLetterCode === correctAminoAcidData.threeLetterCode &&
+    aminoAcid.data.singleLetterCode === correctAminoAcidData.singleLetterCode
+  );
 };
 
 export const isCorrectAminoAcidSequence = (
-  aminoAcidSequence: AminoAcid[],
+  aminoAcidSequence: readonly AminoAcid[],
   correctSingleLetterCodeSequence: string,
 ): boolean => {
   if (aminoAcidSequence.length !== correctSingleLetterCodeSequence.length) {
     return false;
   }
   for (let i = 0; i < correctSingleLetterCodeSequence.length; i++) {
-    if (aminoAcidSequence[i].singleLetterCode !== correctSingleLetterCodeSequence[i]) {
+    if (aminoAcidSequence[i].data.singleLetterCode !== correctSingleLetterCodeSequence[i]) {
       return false;
     }
   }

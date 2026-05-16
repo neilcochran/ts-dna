@@ -9,7 +9,7 @@ import { parseGene } from '../../src/gene';
 import { DNA } from '../../src/sequence';
 import { parseMRNA, processRNA } from '../../src/processing';
 import { transcribe } from '../../src/transcription';
-import { Polypeptide } from '../../src/model/Polypeptide';
+import { translate } from '../../src/translation';
 import { transcribeSequence } from '../../src/sequence';
 import { isSuccess, isFailure } from '../../src/result/Result';
 
@@ -73,14 +73,14 @@ describe('Biological Scenarios Integration Tests', () => {
           expect(codingSeq.endsWith('UAG')).toBe(true);
 
           // Create protein
-          const polypeptide = new Polypeptide(mRNA);
+          const polypeptide = translate(mRNA).unwrap();
 
           // Exact protein length: (72-3)/3 = 23 amino acids
-          expect(polypeptide.aminoAcidSequence.length).toBe(23);
-          expect(polypeptide.aminoAcidSequence[0]?.singleLetterCode).toBe('M');
+          expect(polypeptide.aminoAcids.length).toBe(23);
+          expect(polypeptide.aminoAcids[0]?.data.singleLetterCode).toBe('M');
 
           // Verify protein sequence properties
-          const proteinSeq = polypeptide.aminoAcidSequence.map(aa => aa.singleLetterCode).join('');
+          const proteinSeq = polypeptide.aminoAcids.map(aa => aa.data.singleLetterCode).join('');
           expect(proteinSeq.startsWith('M')).toBe(true);
           expect(proteinSeq.length).toBe(23);
         }
@@ -124,7 +124,7 @@ describe('Biological Scenarios Integration Tests', () => {
 
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          const polypeptide = new Polypeptide(mRNA);
+          const polypeptide = translate(mRNA).unwrap();
 
           // Get actual coding sequence to verify
           const codingSeq = mRNA.codingSequence;
@@ -136,15 +136,15 @@ describe('Biological Scenarios Integration Tests', () => {
 
           // Calculate protein length from actual coding sequence
           const expectedProteinLength = Math.floor((codingSeq.length - 3) / 3);
-          expect(polypeptide.aminoAcidSequence.length).toBe(expectedProteinLength);
-          expect(polypeptide.aminoAcidSequence[0]?.singleLetterCode).toBe('M');
+          expect(polypeptide.aminoAcids.length).toBe(expectedProteinLength);
+          expect(polypeptide.aminoAcids[0]?.data.singleLetterCode).toBe('M');
 
           // Signal peptide should be at beginning
-          const sequence = polypeptide.aminoAcidSequence.map(aa => aa.singleLetterCode).join('');
+          const sequence = polypeptide.aminoAcids.map(aa => aa.data.singleLetterCode).join('');
           expect(sequence.startsWith('M')).toBe(true); // Signal peptide starts with Met
 
           // Verify protein properties from actual translation (includes UTR regions that get translated)
-          expect(polypeptide.aminoAcidSequence.length).toBe(23); // Actual length from complete exon translation
+          expect(polypeptide.aminoAcids.length).toBe(23); // Actual length from complete exon translation
         }
       }
     });
@@ -238,8 +238,8 @@ describe('Biological Scenarios Integration Tests', () => {
 
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          const polypeptide = new Polypeptide(mRNA);
-          expect(polypeptide.aminoAcidSequence.length).toBe(26); // (81bp - 3bp stop) / 3 = 26 amino acids
+          const polypeptide = translate(mRNA).unwrap();
+          expect(polypeptide.aminoAcids.length).toBe(26); // (81bp - 3bp stop) / 3 = 26 amino acids
         }
       }
     });
@@ -304,14 +304,12 @@ describe('Biological Scenarios Integration Tests', () => {
           expect(altCoding.substring(27)).toBe(normalCoding.substring(54)); // Exon 3 follows exon 1
 
           // Test protein length difference - normal has 26 AAs, alternative has 17 AAs
-          const normalPolypeptide = new Polypeptide(normalProcessed.data);
-          const altPolypeptide = new Polypeptide(altProcessed.data);
+          const normalPolypeptide = translate(normalProcessed.data).unwrap();
+          const altPolypeptide = translate(altProcessed.data).unwrap();
 
-          expect(normalPolypeptide.aminoAcidSequence.length).toBe(26); // (81-3)/3
-          expect(altPolypeptide.aminoAcidSequence.length).toBe(17); // (54-3)/3
-          expect(
-            normalPolypeptide.aminoAcidSequence.length - altPolypeptide.aminoAcidSequence.length,
-          ).toBe(9); // Lost 9 amino acids
+          expect(normalPolypeptide.aminoAcids.length).toBe(26); // (81-3)/3
+          expect(altPolypeptide.aminoAcids.length).toBe(17); // (54-3)/3
+          expect(normalPolypeptide.aminoAcids.length - altPolypeptide.aminoAcids.length).toBe(9); // Lost 9 amino acids
         }
       }
     });
@@ -355,7 +353,7 @@ describe('Biological Scenarios Integration Tests', () => {
 
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          const polypeptide = new Polypeptide(mRNA);
+          const polypeptide = translate(mRNA).unwrap();
 
           // Multi-domain protein with corrected structure
           const codingSeq = mRNA.codingSequence;
@@ -365,10 +363,10 @@ describe('Biological Scenarios Integration Tests', () => {
           expect(codingSeq.length % 3).toBe(0);
 
           // Calculate protein length: (72-3)/3 = 23 amino acids
-          expect(polypeptide.aminoAcidSequence.length).toBe(23);
+          expect(polypeptide.aminoAcids.length).toBe(23);
 
           // Verify domain structure in protein sequence
-          const proteinSeq = polypeptide.aminoAcidSequence.map(aa => aa.singleLetterCode).join('');
+          const proteinSeq = polypeptide.aminoAcids.map(aa => aa.data.singleLetterCode).join('');
           expect(proteinSeq.startsWith('M')).toBe(true); // Starts with methionine
           // Verify protein has expected length from multi-domain structure
           expect(proteinSeq.length).toBe(23);
@@ -413,11 +411,11 @@ describe('Biological Scenarios Integration Tests', () => {
       const highGCMRNA = parseMRNA(highGCSeq, 0, highGCSeq.length, true, 0).unwrap();
       const lowGCMRNA = parseMRNA(lowGCSeq, 0, lowGCSeq.length, true, 0).unwrap();
 
-      const highGCPolypeptide = new Polypeptide(highGCMRNA);
-      const lowGCPolypeptide = new Polypeptide(lowGCMRNA);
+      const highGCPolypeptide = translate(highGCMRNA).unwrap();
+      const lowGCPolypeptide = translate(lowGCMRNA).unwrap();
 
-      expect(highGCPolypeptide.aminoAcidSequence.length).toBe(7); // (24-3)/3 = 7 amino acids
-      expect(lowGCPolypeptide.aminoAcidSequence.length).toBe(7); // Same length despite different codon usage
+      expect(highGCPolypeptide.aminoAcids.length).toBe(7); // (24-3)/3 = 7 amino acids
+      expect(lowGCPolypeptide.aminoAcids.length).toBe(7); // Same length despite different codon usage
     });
   });
 });

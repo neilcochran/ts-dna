@@ -10,7 +10,8 @@ import { DNA, RNA, parseDNA, parseRNA, transcribeSequence } from '../../src/sequ
 import { NucleotidePattern } from '../../src/pattern';
 import { transcribe } from '../../src/transcription';
 import { processRNA } from '../../src/processing';
-import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
+import { parseMRNA } from '../../src/processing';
+import { translate } from '../../src/translation';
 import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('Validation Scenarios Integration Tests', () => {
@@ -224,9 +225,11 @@ describe('Validation Scenarios Integration Tests', () => {
       expect(isSuccess(rnaResult)).toBe(true);
 
       if (isSuccess(rnaResult)) {
-        const aminoAcids = RNAtoAminoAcids(rnaResult.data);
-        expect(aminoAcids.length).toBeGreaterThan(0);
-        expect(aminoAcids[0].singleLetterCode).toBe('M');
+        const sequence = rnaResult.data.sequence;
+        const mRNA = parseMRNA(sequence, 0, sequence.length).unwrap();
+        const polypeptide = translate(mRNA).unwrap();
+        expect(polypeptide.aminoAcids.length).toBeGreaterThan(0);
+        expect(polypeptide.aminoAcids[0].data.singleLetterCode).toBe('M');
       }
     });
 

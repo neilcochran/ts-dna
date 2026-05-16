@@ -1,5 +1,5 @@
 AAAT
-abbrv
+AAAUAG
 ACCTAAA
 AGCU
 ANNT
@@ -124,3 +124,14 @@ adenines
 AUGAAACCCGGGUAA
 AUGAAACCCGGGUAAAAAAAAAA
 polypyrimidine
+proteinogenic
+Monoisotopic
+Daltons
+Kyte
+uppercased
+AUGG
+UAGAAACCC
+AUGUAG
+CCCUAG
+AUGAAAUAGCCC
+AUGAA

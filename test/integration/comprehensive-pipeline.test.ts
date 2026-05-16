@@ -14,11 +14,10 @@ import {
   enumerateSpliceVariants,
   spliceRNAWithVariant,
 } from '../../src/processing';
-import { Polypeptide } from '../../src/model/Polypeptide';
+import { translate } from '../../src/translation';
 import { parsePreMRNA } from '../../src/transcription';
 import { transcribe } from '../../src/transcription';
 import { replicateDNA } from '../../src/utils/replication/simple-replication';
-import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('Comprehensive Pipeline Integration Tests', () => {
@@ -54,9 +53,8 @@ describe('Comprehensive Pipeline Integration Tests', () => {
       const rnaSeq = rna.getSequence();
       const mRNA = parseMRNA(rnaSeq, 0, rnaSeq.length, true, 0).unwrap();
 
-      // Translate to amino acids (operate on the coding-sequence RNA directly)
-      const codingRNA = new RNA(mRNA.codingSequence);
-      const aminoAcids = RNAtoAminoAcids(codingRNA);
+      // Translate the mature mRNA to a polypeptide
+      const aminoAcids = translate(mRNA).unwrap().aminoAcids;
 
       // MEANINGFUL: Verify exact amino acid count matches expected from sequence
       const expectedAminoAcids = codingSequence.length / 3 - 1; // -1 for stop codon
@@ -70,7 +68,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
       expect(mRNA.codingSequence.endsWith('UAG')).toBe(true);
 
       // MEANINGFUL: Verify first amino acid is methionine (can catch translation bugs)
-      expect(aminoAcids[0]?.singleLetterCode).toBe('M');
+      expect(aminoAcids[0]?.data.singleLetterCode).toBe('M');
     });
   });
 
@@ -251,20 +249,20 @@ describe('Comprehensive Pipeline Integration Tests', () => {
           const mRNA = processingResult.data;
 
           // Create polypeptide
-          const polypeptide = new Polypeptide(mRNA);
+          const polypeptide = translate(mRNA).unwrap();
 
           // First amino acid should be Methionine (start codon)
-          expect(polypeptide.aminoAcidSequence[0]?.singleLetterCode).toBe('M');
+          expect(polypeptide.aminoAcids[0]?.data.singleLetterCode).toBe('M');
 
           // MEANINGFUL: Verify exact protein length matches coding sequence
           const expectedProteinLength = Math.floor((mRNA.codingSequence.length - 3) / 3); // -3 for stop codon
-          expect(polypeptide.aminoAcidSequence.length).toBe(expectedProteinLength);
+          expect(polypeptide.aminoAcids.length).toBe(expectedProteinLength);
 
           // MEANINGFUL: Verify specific amino acid properties
-          const firstAA = polypeptide.aminoAcidSequence[0];
-          expect(firstAA?.name).toBe('Methionine');
-          expect(firstAA?.singleLetterCode).toBe('M');
-          expect(firstAA?.polarity).toBe('nonpolar');
+          const firstAA = polypeptide.aminoAcids[0];
+          expect(firstAA?.data.name).toBe('Methionine');
+          expect(firstAA?.data.singleLetterCode).toBe('M');
+          expect(firstAA?.data.polarity).toBe('nonpolar');
         }
       }
     });
@@ -298,12 +296,12 @@ describe('Comprehensive Pipeline Integration Tests', () => {
 
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          const polypeptide = new Polypeptide(mRNA);
+          const polypeptide = translate(mRNA).unwrap();
 
           // MEANINGFUL: Verify expected protein size from sequence length
           const codingLength = mRNA.codingSequence.length;
           const expectedLength = Math.floor((codingLength - 3) / 3); // -3 for stop codon
-          expect(polypeptide.aminoAcidSequence.length).toBe(expectedLength);
+          expect(polypeptide.aminoAcids.length).toBe(expectedLength);
         }
       }
 
@@ -342,12 +340,12 @@ describe('Comprehensive Pipeline Integration Tests', () => {
           // MEANINGFUL: Verify exact minimal coding sequence
           expect(mRNA.codingSequence).toBe('AUGUAG');
 
-          const polypeptide = new Polypeptide(mRNA);
+          const polypeptide = translate(mRNA).unwrap();
 
           // MEANINGFUL: Minimal protein should have exactly 1 amino acid
-          expect(polypeptide.aminoAcidSequence).toHaveLength(1);
-          expect(polypeptide.aminoAcidSequence[0]?.singleLetterCode).toBe('M');
-          expect(polypeptide.aminoAcidSequence[0]?.name).toBe('Methionine');
+          expect(polypeptide.aminoAcids).toHaveLength(1);
+          expect(polypeptide.aminoAcids[0]?.data.singleLetterCode).toBe('M');
+          expect(polypeptide.aminoAcids[0]?.data.name).toBe('Methionine');
         }
       }
     });
@@ -397,9 +395,9 @@ describe('Comprehensive Pipeline Integration Tests', () => {
           expect(codingSequence.length).toBe(304 + 303 + 303); // Sum of exon lengths
 
           // Test translation of large mRNA
-          const polypeptide = new Polypeptide(mRNA);
+          const polypeptide = translate(mRNA).unwrap();
           const expectedProteinLength = Math.floor((codingSequence.length - 3) / 3);
-          expect(polypeptide.aminoAcidSequence.length).toBe(expectedProteinLength);
+          expect(polypeptide.aminoAcids.length).toBe(expectedProteinLength);
         } else {
           // If processing fails on large sequences, that's understandable
           expect(isFailure(processingResult)).toBe(true);
@@ -511,12 +509,11 @@ describe('Comprehensive Pipeline Integration Tests', () => {
 
           // Step 3: Translate to amino acids if possible
           if (mRNA.sequence.sequence.length >= 3 && mRNA.sequence.sequence.length % 3 === 0) {
-            const codingRNA = new RNA(mRNA.codingSequence);
-            const aminoAcidResult = RNAtoAminoAcids(codingRNA);
-            expect(aminoAcidResult).toBeDefined();
+            const translateResult = translate(mRNA);
+            expect(isSuccess(translateResult)).toBe(true);
 
-            if (aminoAcidResult) {
-              expect(aminoAcidResult.length).toBeGreaterThan(0);
+            if (isSuccess(translateResult)) {
+              expect(translateResult.data.aminoAcids.length).toBeGreaterThan(0);
               processedVariants++;
             }
           }

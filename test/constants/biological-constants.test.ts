@@ -1,5 +1,4 @@
 import {
-  MIN_CODON_LENGTH,
   MIN_EXON_SIZE,
   MAX_EXON_SIZE,
   MIN_INTRON_SIZE,
@@ -41,7 +40,6 @@ describe('Biological Constants Validation', () => {
       // The genetic code is universally based on triplet codons
       // Reference: Crick et al. (1961) Nature, "General nature of the genetic code for proteins"
       expect(CODON_LENGTH).toBe(3);
-      expect(MIN_CODON_LENGTH).toBe(3);
     });
   });
 

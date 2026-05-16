@@ -9,7 +9,7 @@
  */
 
 import { parseGene } from '../../src/gene';
-import { Polypeptide } from '../../src/model/Polypeptide';
+import { translate } from '../../src/translation';
 import { transcribe } from '../../src/transcription';
 import { processRNA } from '../../src/processing';
 import { isSuccess, isFailure } from '../../src/result/Result';
@@ -237,10 +237,10 @@ describe('Gene Expression Pipeline Integration', () => {
           expect(codingSeq).toBe('AUGAAACCCGGGUUUUAG');
 
           // Create protein and verify
-          const polypeptide = new Polypeptide(mRNA);
-          expect(polypeptide.aminoAcidSequence.length).toBe(5); // M-K-P-G-F
-          expect(polypeptide.aminoAcidSequence[0]?.singleLetterCode).toBe('M');
-          expect(polypeptide.aminoAcidSequence[1]?.singleLetterCode).toBe('K');
+          const polypeptide = translate(mRNA).unwrap();
+          expect(polypeptide.aminoAcids.length).toBe(5); // M-K-P-G-F
+          expect(polypeptide.aminoAcids[0]?.data.singleLetterCode).toBe('M');
+          expect(polypeptide.aminoAcids[1]?.data.singleLetterCode).toBe('K');
         } else {
           // If processing fails due to splice site issues, that's okay
           expect(isFailure(processingResult)).toBe(true);
@@ -275,11 +275,11 @@ describe('Gene Expression Pipeline Integration', () => {
           expect(altCodingSeq).toBe('AUGAAAUUUUAG');
 
           // Create protein and verify different result
-          const altPolypeptide = new Polypeptide(altMRNA);
-          expect(altPolypeptide.aminoAcidSequence.length).toBe(3); // M-K-F
-          expect(altPolypeptide.aminoAcidSequence[0]?.singleLetterCode).toBe('M');
-          expect(altPolypeptide.aminoAcidSequence[1]?.singleLetterCode).toBe('K');
-          expect(altPolypeptide.aminoAcidSequence[2]?.singleLetterCode).toBe('F');
+          const altPolypeptide = translate(altMRNA).unwrap();
+          expect(altPolypeptide.aminoAcids.length).toBe(3); // M-K-F
+          expect(altPolypeptide.aminoAcids[0]?.data.singleLetterCode).toBe('M');
+          expect(altPolypeptide.aminoAcids[1]?.data.singleLetterCode).toBe('K');
+          expect(altPolypeptide.aminoAcids[2]?.data.singleLetterCode).toBe('F');
         } else {
           // If processing fails due to splice site issues, that's okay
           expect(isFailure(altProcessingResult)).toBe(true);
@@ -333,16 +333,14 @@ describe('Gene Expression Pipeline Integration', () => {
         expect(isSuccess(processing2)).toBe(true);
 
         if (isSuccess(processing1) && isSuccess(processing2)) {
-          const protein1 = new Polypeptide(processing1.data);
-          const protein2 = new Polypeptide(processing2.data);
+          const protein1 = translate(processing1.data).unwrap();
+          const protein2 = translate(processing2.data).unwrap();
 
           // Should produce different proteins
-          expect(protein1.aminoAcidSequence.length).toBe(protein2.aminoAcidSequence.length);
+          expect(protein1.aminoAcids.length).toBe(protein2.aminoAcids.length);
 
           // Same length but different sequence due to different exon choice
-          const seq1 = protein1.aminoAcidSequence.map(aa => aa.singleLetterCode).join('');
-          const seq2 = protein2.aminoAcidSequence.map(aa => aa.singleLetterCode).join('');
-          expect(seq1).not.toBe(seq2);
+          expect(protein1.getSequence()).not.toBe(protein2.getSequence());
         }
       }
     });
@@ -393,8 +391,8 @@ describe('Gene Expression Pipeline Integration', () => {
             expect(processing1.data.getCodingSequence()).toBe(processing2.data.getCodingSequence());
 
             // Step 5: Translate both mRNAs
-            const protein1 = new Polypeptide(processing1.data);
-            const protein2 = new Polypeptide(processing2.data);
+            const protein1 = translate(processing1.data);
+            const protein2 = translate(processing2.data);
 
             // Should produce identical proteins
             expect(protein1.aminoAcidSequence.length).toBe(protein2.aminoAcidSequence.length);
@@ -451,7 +449,7 @@ describe('Gene Expression Pipeline Integration', () => {
             const codingSeq = mRNA.codingSequence;
             expect(codingSeq).toBe('AUGAAACCCAAAUUUUAG'); // Exons joined
 
-            const polypeptide = new Polypeptide(mRNA);
+            const polypeptide = translate(mRNA);
             expect(polypeptide.aminoAcidSequence.length).toBe(5); // M-K-P-K-F
           }
         }

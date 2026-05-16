@@ -1,0 +1,81 @@
+import type { RNAError } from '../sequence/index.js';
+import { describeRNAError } from '../sequence/index.js';
+
+/**
+ * Tagged-union errors produced by `parseAminoAcid` and the `translate` pipeline.
+ *
+ * - `invalid-codon-sequence`: the supplied codon string failed RNA-alphabet parsing.
+ * - `invalid-codon-length`: the supplied codon string was not exactly 3 nucleotides.
+ * - `stop-codon`: the supplied codon was a stop codon (which does not code for an amino
+ *   acid).
+ * - `invalid-codon`: a 3-character RNA codon that nonetheless was not present in the codon
+ *   table (programmer-error path; should not be reachable with a validated RNA codon).
+ * - `invalid-reading-frame`: the mRNA coding sequence length is not a positive multiple of
+ *   the codon length.
+ */
+export type TranslationError =
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'invalid-codon-sequence';
+      /** The codon string the caller supplied. */
+      readonly codon: string;
+      /** Underlying RNA-parser failure. */
+      readonly cause: RNAError;
+    }
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'invalid-codon-length';
+      /** The codon string the caller supplied. */
+      readonly codon: string;
+      /** The codon length the caller supplied. */
+      readonly length: number;
+      /** The expected length (always 3 for the standard genetic code). */
+      readonly expected: number;
+    }
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'stop-codon';
+      /** The stop codon the caller supplied. */
+      readonly codon: string;
+    }
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'invalid-codon';
+      /** The codon string the caller supplied. */
+      readonly codon: string;
+      /**
+       * 0-based offset of the codon within the coding sequence, when reached during
+       * translation. `0` when the failure originates from {@link parseAminoAcid} on a
+       * single codon.
+       */
+      readonly position: number;
+    }
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'invalid-reading-frame';
+      /** The coding sequence length the caller supplied. */
+      readonly codingLength: number;
+      /** The expected codon length (always 3 for the standard genetic code). */
+      readonly codonLength: number;
+    };
+
+/**
+ * Renders a {@link TranslationError} as a human-readable message.
+ *
+ * @param error - The structured error payload
+ * @returns A short human-readable description, suitable for logs or developer-facing messages
+ */
+export function describeTranslationError(error: TranslationError): string {
+  switch (error.kind) {
+    case 'invalid-codon-sequence':
+      return `Invalid codon '${error.codon}': ${describeRNAError(error.cause)}`;
+    case 'invalid-codon-length':
+      return `Invalid codon '${error.codon}': length ${error.length} (expected ${error.expected})`;
+    case 'stop-codon':
+      return `Codon '${error.codon}' is a stop codon and does not code for an amino acid`;
+    case 'invalid-codon':
+      return `Codon '${error.codon}' at position ${error.position} does not code for any amino acid`;
+    case 'invalid-reading-frame':
+      return `Coding sequence length ${error.codingLength} is not a multiple of codon length ${error.codonLength}`;
+  }
+}

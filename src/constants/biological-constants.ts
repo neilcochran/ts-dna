@@ -3,12 +3,6 @@
  * Centralizes hardcoded values to prevent drift and improve maintainability.
  */
 
-// Codon and genetic code constants
-// CODON_LENGTH is the canonical name and lives in src/sequence/codons.ts.
-// MIN_CODON_LENGTH and READING_FRAME_DIVISOR (below) are legacy aliases that survive only
-// until Phase 7 of the restructure deletes them.
-export const MIN_CODON_LENGTH = 3;
-
 // Gene structure constraints
 export const MIN_EXON_SIZE = 3; // Minimum exon size in base pairs
 export const MAX_EXON_SIZE = 50000; // Maximum realistic exon size (prevent unrealistic sequences)
@@ -94,9 +88,6 @@ export const HIGH_DSE_SCORE = 0.8; // Score for high-quality DSE elements (GU-ri
 
 // Polyadenylation site strength thresholds
 export const MIN_POLYA_SITE_STRENGTH = 25; // Minimum total strength for valid polyadenylation site
-
-// Reading frame and validation constants
-export const READING_FRAME_DIVISOR = 3; // Codons are always 3 nucleotides
 
 // Transcription and promoter search constants
 export const DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE = 1000; // Default maximum upstream search for promoters

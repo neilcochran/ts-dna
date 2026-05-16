@@ -10,7 +10,7 @@
 import { parseGene } from '../../src/gene';
 import { transcribe } from '../../src/transcription';
 import { processRNA, isFullyProcessed } from '../../src/processing';
-import { Polypeptide } from '../../src/model/Polypeptide';
+import { translate } from '../../src/translation';
 import { replicateDNA } from '../../src/utils/replication/simple-replication';
 import { isSuccess, isFailure } from '../../src/result/Result';
 import { DNA } from '../../src/sequence';
@@ -49,11 +49,11 @@ describe('Cross-System Integration Tests', () => {
           expect(isFullyProcessed(mRNA)).toBe(true);
 
           // Step 3: Translation
-          const protein = new Polypeptide(mRNA);
+          const protein = translate(mRNA).unwrap();
           // Should produce exactly 21 amino acids from 66bp sequence (minus stop codon = 63bp = 21 AA)
-          expect(protein.aminoAcidSequence.length).toBe(21);
+          expect(protein.aminoAcids.length).toBe(21);
 
-          const sequence = protein.aminoAcidSequence.map(aa => aa.singleLetterCode).join('');
+          const sequence = protein.getSequence();
           expect(sequence.startsWith('M')).toBe(true);
           // Verify it's a valid protein sequence (no stop codons in middle)
           expect(sequence).not.toContain('*');
@@ -159,19 +159,16 @@ describe('Cross-System Integration Tests', () => {
           // Translation should either fail or produce truncated protein
           const mRNA = processingResult.data;
 
-          try {
-            const polypeptide = new Polypeptide(mRNA);
+          const translateResult = translate(mRNA);
+          if (isSuccess(translateResult)) {
             // If it succeeds, it should have detected the missing stop codon issue
-            const sequence = polypeptide.aminoAcidSequence.map(aa => aa.singleLetterCode).join('');
+            const sequence = translateResult.data.getSequence();
             // Should start with Met and have reasonable length - specific validation
             expect(sequence.startsWith('M')).toBe(true);
             expect(sequence.length).toBeGreaterThanOrEqual(15); // Reasonable minimum protein length
-          } catch (error) {
-            // Or it should throw a meaningful error about missing stop codon
-            expect(error).toBeInstanceOf(Error);
-            if (error instanceof Error) {
-              expect(error.message.toLowerCase()).toContain('stop');
-            }
+          } else {
+            // Or it should fail with a structured TranslationError naming the frame issue
+            expect(translateResult.error.kind).toBe('invalid-reading-frame');
           }
         } else {
           // Processing failed - should have meaningful structured error
