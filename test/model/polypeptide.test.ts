@@ -1,4 +1,5 @@
-import { MRNA, Polypeptide, InvalidSequenceError } from '../../src/model';
+import { Polypeptide, InvalidSequenceError } from '../../src/model';
+import { parseMRNA } from '../../src/processing';
 import { RNA, STOP_CODONS, CODON_LENGTH } from '../../src/sequence';
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import {
@@ -12,19 +13,19 @@ import {
 
 test('create invalid polypeptide from mRNA with wrong length', () => {
   expect(() => {
-    new Polypeptide(new MRNA('AUGC', 'AUGC', 0, 4));
+    new Polypeptide(parseMRNA('AUGC', 0, 4).unwrap());
   }).toThrowError(InvalidSequenceError);
 });
 
 test('create invalid polypeptide from invalid length mRNA sequence', () => {
   expect(() => {
-    new Polypeptide(new MRNA('AUGC', 'AUGC', 0, 4));
+    new Polypeptide(parseMRNA('AUGC', 0, 4).unwrap());
   }).toThrowError(InvalidSequenceError);
 });
 
 test('create invalid polypeptide from invalid (short) length mRNA sequence', () => {
   expect(() => {
-    new Polypeptide(new MRNA('AU', 'AU', 0, 2));
+    new Polypeptide(parseMRNA('AU', 0, 2).unwrap());
   }).toThrowError(InvalidSequenceError);
 });
 
@@ -80,13 +81,13 @@ test('RNAtoAminoAcids() stops translation at stop codon', () => {
 
 test('Polypeptide constructor creates empty polypeptide for stop codons only', () => {
   for (const stopCodon of STOP_CODONS) {
-    const polypeptide = new Polypeptide(new MRNA(stopCodon, stopCodon, 0, 3));
+    const polypeptide = new Polypeptide(parseMRNA(stopCodon, 0, 3).unwrap());
     expect(polypeptide.aminoAcidSequence).toHaveLength(0); // No amino acids
   }
 });
 
 test('Polypeptide constructor stops translation at stop codon', () => {
-  const polypeptide = new Polypeptide(new MRNA('AUGUAG', 'AUGUAG', 0, 6)); // Met + Stop(UAG)
+  const polypeptide = new Polypeptide(parseMRNA('AUGUAG', 0, 6).unwrap()); // Met + Stop(UAG)
   expect(polypeptide.aminoAcidSequence).toHaveLength(1); // Only Met
   expect(polypeptide.aminoAcidSequence[0].singleLetterCode).toBe('M'); // Met
 });
@@ -117,17 +118,17 @@ test('polypeptide maintains reference to original mRNA', () => {
   const mRNA = MRNA_ALL_AMINO_ACIDS_1;
   const polypeptide = new Polypeptide(mRNA);
   expect(polypeptide.mRNA).toBe(mRNA);
-  expect(polypeptide.mRNA.getSequence()).toEqual(mRNA.getSequence());
+  expect(polypeptide.mRNA.sequence.sequence).toEqual(mRNA.sequence.sequence);
 });
 
 test('polypeptide amino acid sequence has correct length', () => {
   const polypeptide = new Polypeptide(MRNA_ALL_AMINO_ACIDS_1);
-  const expectedLength = MRNA_ALL_AMINO_ACIDS_1.getCodingSequence().length / CODON_LENGTH;
+  const expectedLength = MRNA_ALL_AMINO_ACIDS_1.codingSequence.length / CODON_LENGTH;
   expect(polypeptide.aminoAcidSequence.length).toEqual(expectedLength);
 });
 
 test('polypeptide from single codon creates single amino acid', () => {
-  const mRNA = new MRNA('AUG', 'AUG', 0, 3); // Methionine
+  const mRNA = parseMRNA('AUG', 0, 3).unwrap(); // Methionine
   const polypeptide = new Polypeptide(mRNA);
   expect(polypeptide.aminoAcidSequence.length).toEqual(1);
   expect(polypeptide.aminoAcidSequence[0].singleLetterCode).toEqual('M');
@@ -148,8 +149,8 @@ test('polypeptide properties are readonly', () => {
 });
 
 test('create polypeptide with start and stop codons', () => {
-  // AUG (start) + UUU (Phe) + UAG (stop, but should still create Polypeptide with 2 amino acids since UAG codes for nothing)
-  const mRNA = new MRNA('AUGUUU', 'AUGUUU', 0, 6); // Met-Phe (6 nucleotides = 2 codons)
+  // AUG (start) + UUU (Phe) = 2 amino acids
+  const mRNA = parseMRNA('AUGUUU', 0, 6).unwrap();
   const polypeptide = new Polypeptide(mRNA);
   expect(polypeptide.aminoAcidSequence.length).toEqual(2);
   expect(polypeptide.aminoAcidSequence[0].singleLetterCode).toEqual('M'); // Methionine
@@ -176,13 +177,13 @@ test('polypeptide immutability - mRNA changes do not affect polypeptide', () => 
   // Verify polypeptide maintains its state
   expect(polypeptide.aminoAcidSequence.length).toEqual(originalAminoAcidCount);
   expect(polypeptide.aminoAcidSequence[0].singleLetterCode).toEqual(originalFirstAminoAcid);
-  expect(polypeptide.mRNA.getSequence()).toEqual(originalMRNA.getSequence());
+  expect(polypeptide.mRNA.sequence.sequence).toEqual(originalMRNA.sequence.sequence);
 });
 
 describe('length() method', () => {
   test('returns correct amino acid count', () => {
     // mRNA with 4 codons: AUG-AAA-GGG-AAA, followed by UAG stop
-    const mRNA = new MRNA('GAUGAAAGGGAAAUAG', 'AUGAAAGGGAAAUAG', 1, 16);
+    const mRNA = parseMRNA('GAUGAAAGGGAAAUAG', 1, 16).unwrap();
     const polypeptide = new Polypeptide(mRNA);
 
     expect(polypeptide.length()).toBe(4);
@@ -190,7 +191,7 @@ describe('length() method', () => {
   });
 
   test('returns correct length for known test sequences', () => {
-    // Both test mRNAs are 60 nucleotides, should produce 20 amino acids (60 ÷ 3 = 20)
+    // Both test mRNAs are 60 nucleotides, should produce 20 amino acids (60 / 3 = 20)
     const polypeptide1 = new Polypeptide(MRNA_ALL_AMINO_ACIDS_1);
     const polypeptide2 = new Polypeptide(MRNA_ALL_AMINO_ACIDS_2);
 

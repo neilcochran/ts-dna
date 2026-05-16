@@ -11,7 +11,7 @@
 import { parseGene } from '../../src/gene';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { transcribe } from '../../src/transcription';
-import { processRNA } from '../../src/utils/mrna-processing';
+import { processRNA } from '../../src/processing';
 import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('Gene Expression Pipeline Integration', () => {
@@ -58,7 +58,7 @@ describe('Gene Expression Pipeline Integration', () => {
           const mRNA = processingResult.data;
 
           // Validate biological accuracy
-          const codingSeq = mRNA.getCodingSequence();
+          const codingSeq = mRNA.codingSequence;
           expect(codingSeq.startsWith('AUG')).toBe(true); // Start codon
           expect(codingSeq.endsWith('UAG')).toBe(true); // Stop codon
           expect(codingSeq.length % 3).toBe(0); // Reading frame
@@ -121,7 +121,7 @@ describe('Gene Expression Pipeline Integration', () => {
 
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          const codingSeq = mRNA.getCodingSequence();
+          const codingSeq = mRNA.codingSequence;
           expect(codingSeq.startsWith('AUG')).toBe(true);
         }
       }
@@ -151,7 +151,7 @@ describe('Gene Expression Pipeline Integration', () => {
 
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          const codingSeq = mRNA.getCodingSequence();
+          const codingSeq = mRNA.codingSequence;
           expect(codingSeq).toBe('AUGAAACCCGGGUAG');
         }
       }
@@ -233,7 +233,7 @@ describe('Gene Expression Pipeline Integration', () => {
           const mRNA = processingResult.data;
 
           // Should include all exons: AUGAAACCCGGGIIUAG (with U conversion)
-          const codingSeq = mRNA.getCodingSequence();
+          const codingSeq = mRNA.codingSequence;
           expect(codingSeq).toBe('AUGAAACCCGGGUUUUAG');
 
           // Create protein and verify
@@ -271,7 +271,7 @@ describe('Gene Expression Pipeline Integration', () => {
           const altMRNA = altProcessingResult.data;
 
           // Should skip exon2: AUGAAAUUUUAG
-          const altCodingSeq = altMRNA.getCodingSequence();
+          const altCodingSeq = altMRNA.codingSequence;
           expect(altCodingSeq).toBe('AUGAAAUUUUAG');
 
           // Create protein and verify different result
@@ -448,7 +448,7 @@ describe('Gene Expression Pipeline Integration', () => {
             const mRNA = processingResult.data;
 
             // Should have properly spliced sequence
-            const codingSeq = mRNA.getCodingSequence();
+            const codingSeq = mRNA.codingSequence;
             expect(codingSeq).toBe('AUGAAACCCAAAUUUUAG'); // Exons joined
 
             const polypeptide = new Polypeptide(mRNA);

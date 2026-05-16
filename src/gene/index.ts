@@ -11,6 +11,7 @@ export { Promoter, PROMOTER_SYNERGY_MULTIPLIER } from './Promoter.js';
 export { PromoterElement } from './PromoterElement.js';
 export { parseGene, parsePromoter, parsePromoterElement } from './parse.js';
 export { validateExons } from './validate-exons.js';
+export type { SpliceVariant, AlternativeSplicingProfile } from './splice-variants.js';
 export type { GeneError, PromoterError, PromoterElementError } from './errors.js';
 export {
   describeGeneError,

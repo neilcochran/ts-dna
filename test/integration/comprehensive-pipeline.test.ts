@@ -8,17 +8,16 @@
 import { parseGene } from '../../src/gene';
 import { DNA } from '../../src/sequence';
 import { RNA } from '../../src/sequence';
-import { MRNA } from '../../src/model/nucleic-acids/MRNA';
+import {
+  parseMRNA,
+  processRNA,
+  enumerateSpliceVariants,
+  spliceRNAWithVariant,
+} from '../../src/processing';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { parsePreMRNA } from '../../src/transcription';
 import { transcribe } from '../../src/transcription';
-import { processRNA } from '../../src/utils/mrna-processing';
 import { replicateDNA } from '../../src/utils/replication/simple-replication';
-import {
-  generateAllSpliceVariants,
-  spliceRNAWithVariant,
-} from '../../src/utils/alternative-splicing';
-// Removed transcribeSequence, reverseTranscribeSequence imports - using direct constructors instead
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import { isSuccess, isFailure } from '../../src/result/Result';
 
@@ -53,28 +52,22 @@ describe('Comprehensive Pipeline Integration Tests', () => {
 
       // Create mRNA for translation (using the RNA as both sequence and coding sequence)
       const rnaSeq = rna.getSequence();
-      const mRNA = new MRNA(
-        rnaSeq, // sequence
-        rnaSeq, // coding sequence
-        0, // coding start
-        rnaSeq.length, // coding end
-        true, // has 5' cap
-        '', // poly-A tail
-      );
+      const mRNA = parseMRNA(rnaSeq, 0, rnaSeq.length, true, 0).unwrap();
 
-      // Translate to amino acids
-      const aminoAcids = RNAtoAminoAcids(mRNA);
+      // Translate to amino acids (operate on the coding-sequence RNA directly)
+      const codingRNA = new RNA(mRNA.codingSequence);
+      const aminoAcids = RNAtoAminoAcids(codingRNA);
 
       // MEANINGFUL: Verify exact amino acid count matches expected from sequence
       const expectedAminoAcids = codingSequence.length / 3 - 1; // -1 for stop codon
       expect(aminoAcids.length).toBe(expectedAminoAcids);
 
       // MEANINGFUL: Verify reading frame maintenance
-      expect(mRNA.getCodingSequence().length % 3).toBe(0);
+      expect(mRNA.codingSequence.length % 3).toBe(0);
 
       // MEANINGFUL: Verify specific start and stop codons (can catch conversion bugs)
-      expect(mRNA.getCodingSequence().startsWith('AUG')).toBe(true);
-      expect(mRNA.getCodingSequence().endsWith('UAG')).toBe(true);
+      expect(mRNA.codingSequence.startsWith('AUG')).toBe(true);
+      expect(mRNA.codingSequence.endsWith('UAG')).toBe(true);
 
       // MEANINGFUL: Verify first amino acid is methionine (can catch translation bugs)
       expect(aminoAcids[0]?.singleLetterCode).toBe('M');
@@ -221,10 +214,10 @@ describe('Comprehensive Pipeline Integration Tests', () => {
           const mRNA = processingResult.data;
 
           // Verify splicing removed introns
-          expect(mRNA.getSequence().length).toBe(27 + 27 + 200); // exons + poly-A tail
+          expect(mRNA.sequence.sequence.length).toBe(27 + 27 + 200); // exons + poly-A tail
 
           // Verify coding sequence extraction
-          const codingSeq = mRNA.getCodingSequence();
+          const codingSeq = mRNA.codingSequence;
           expect(codingSeq.startsWith('AUG')).toBe(true);
           expect(codingSeq.endsWith('UAG')).toBe(true);
         }
@@ -264,7 +257,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
           expect(polypeptide.aminoAcidSequence[0]?.singleLetterCode).toBe('M');
 
           // MEANINGFUL: Verify exact protein length matches coding sequence
-          const expectedProteinLength = Math.floor((mRNA.getCodingSequence().length - 3) / 3); // -3 for stop codon
+          const expectedProteinLength = Math.floor((mRNA.codingSequence.length - 3) / 3); // -3 for stop codon
           expect(polypeptide.aminoAcidSequence.length).toBe(expectedProteinLength);
 
           // MEANINGFUL: Verify specific amino acid properties
@@ -308,7 +301,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
           const polypeptide = new Polypeptide(mRNA);
 
           // MEANINGFUL: Verify expected protein size from sequence length
-          const codingLength = mRNA.getCodingSequence().length;
+          const codingLength = mRNA.codingSequence.length;
           const expectedLength = Math.floor((codingLength - 3) / 3); // -3 for stop codon
           expect(polypeptide.aminoAcidSequence.length).toBe(expectedLength);
         }
@@ -347,7 +340,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
           const mRNA = processingResult.data;
 
           // MEANINGFUL: Verify exact minimal coding sequence
-          expect(mRNA.getCodingSequence()).toBe('AUGUAG');
+          expect(mRNA.codingSequence).toBe('AUGUAG');
 
           const polypeptide = new Polypeptide(mRNA);
 
@@ -400,7 +393,7 @@ describe('Comprehensive Pipeline Integration Tests', () => {
           const mRNA = processingResult.data;
 
           // Verify splicing worked correctly - should have removed introns
-          const codingSequence = mRNA.getCodingSequence();
+          const codingSequence = mRNA.codingSequence;
           expect(codingSequence.length).toBe(304 + 303 + 303); // Sum of exon lengths
 
           // Test translation of large mRNA
@@ -478,62 +471,60 @@ describe('Comprehensive Pipeline Integration Tests', () => {
         allowSkipLastExon: true,
       };
 
-      const variantResult = generateAllSpliceVariants(gene, variantOptions);
-      expect(isSuccess(variantResult)).toBe(true);
+      const allVariants = [...enumerateSpliceVariants(gene, variantOptions)];
 
-      if (isSuccess(variantResult)) {
-        // Should generate 2^4 - 1 = 15 variants
-        expect(variantResult.data).toHaveLength(15);
+      // Should generate 2^4 - 1 = 15 variants
+      expect(allVariants).toHaveLength(15);
 
-        // Verify specific key variants exist
-        const variantNames = variantResult.data.map(v => v.name);
-        expect(variantNames).toContain('generated-variant-0-1-2-3'); // full-length
-        expect(variantNames).toContain('generated-variant-0-3'); // skip middle exons
-        expect(variantNames).toContain('generated-variant-1-2'); // skip first and last
+      // Verify specific key variants exist
+      const variantNames = allVariants.map(v => v.name);
+      expect(variantNames).toContain('generated-variant-0-1-2-3'); // full-length
+      expect(variantNames).toContain('generated-variant-0-3'); // skip middle exons
+      expect(variantNames).toContain('generated-variant-1-2'); // skip first and last
 
-        // Step 2: Process each variant through the complete pipeline
-        let processedVariants = 0;
+      // Step 2: Process each variant through the complete pipeline
+      let processedVariants = 0;
 
-        // Test a subset of variants through complete processing
-        const keyVariants = variantResult.data.filter(v =>
-          ['generated-variant-0-1-2-3', 'generated-variant-0-3', 'generated-variant-1-2'].includes(
-            v.name,
-          ),
-        );
+      // Test a subset of variants through complete processing
+      const keyVariants = allVariants.filter(v =>
+        ['generated-variant-0-1-2-3', 'generated-variant-0-3', 'generated-variant-1-2'].includes(
+          v.name,
+        ),
+      );
 
-        keyVariants.forEach(variant => {
-          // Create PreMRNA for processing
-          const preMRNA = parsePreMRNA(
-            gene.sequence.getSequence().replace(/T/g, 'U'),
-            gene,
-            0,
-          ).unwrap();
+      keyVariants.forEach(variant => {
+        // Create PreMRNA for processing
+        const preMRNA = parsePreMRNA(
+          gene.sequence.getSequence().replace(/T/g, 'U'),
+          gene,
+          0,
+        ).unwrap();
 
-          // Process variant to mRNA
-          const splicingResult = spliceRNAWithVariant(preMRNA, variant);
-          if (isSuccess(splicingResult)) {
-            const mRNA = splicingResult.data;
+        // Process variant to mRNA
+        const splicingResult = spliceRNAWithVariant(preMRNA, variant);
+        if (isSuccess(splicingResult)) {
+          const mRNA = splicingResult.data;
 
-            // Verify mRNA sequence matches expected variant sequence
-            const expectedSequence = gene.getVariantSequence(variant).replace(/T/g, 'U');
-            expect(mRNA.getSequence()).toBe(expectedSequence);
+          // Verify mRNA sequence matches expected variant sequence
+          const expectedSequence = gene.getVariantSequence(variant).replace(/T/g, 'U');
+          expect(mRNA.sequence.sequence).toBe(expectedSequence);
 
-            // Step 3: Translate to amino acids if possible
-            if (mRNA.getSequence().length >= 3 && mRNA.getSequence().length % 3 === 0) {
-              const aminoAcidResult = RNAtoAminoAcids(mRNA);
-              expect(aminoAcidResult).toBeDefined();
+          // Step 3: Translate to amino acids if possible
+          if (mRNA.sequence.sequence.length >= 3 && mRNA.sequence.sequence.length % 3 === 0) {
+            const codingRNA = new RNA(mRNA.codingSequence);
+            const aminoAcidResult = RNAtoAminoAcids(codingRNA);
+            expect(aminoAcidResult).toBeDefined();
 
-              if (aminoAcidResult) {
-                expect(aminoAcidResult.length).toBeGreaterThan(0);
-                processedVariants++;
-              }
+            if (aminoAcidResult) {
+              expect(aminoAcidResult.length).toBeGreaterThan(0);
+              processedVariants++;
             }
           }
-        });
+        }
+      });
 
-        // Verify we successfully processed multiple variants through the complete pipeline
-        expect(processedVariants).toBeGreaterThan(0);
-      }
+      // Verify we successfully processed multiple variants through the complete pipeline
+      expect(processedVariants).toBeGreaterThan(0);
     });
 
     test('splice variant generation integrates with biological validation', () => {
@@ -558,22 +549,19 @@ describe('Comprehensive Pipeline Integration Tests', () => {
         allowSkipLastExon: false,
       };
 
-      const strictResult = generateAllSpliceVariants(biologyGene, strictOptions);
-      expect(isSuccess(strictResult)).toBe(true);
+      const strictVariants = [...enumerateSpliceVariants(biologyGene, strictOptions)];
 
-      if (isSuccess(strictResult)) {
-        // Should get fewer variants due to biological constraints
-        // With 3 exons, first/last required, minimum 2 exons: [0,2], [0,1,2]
-        expect(strictResult.data).toHaveLength(2);
+      // Should get fewer variants due to biological constraints
+      // With 3 exons, first/last required, minimum 2 exons: [0,2], [0,1,2]
+      expect(strictVariants).toHaveLength(2);
 
-        // All variants should maintain reading frame
-        strictResult.data.forEach(variant => {
-          const sequence = biologyGene.getVariantSequence(variant);
-          expect(sequence.length % 3).toBe(0);
-          expect(variant.includedExons).toContain(0); // first exon
-          expect(variant.includedExons).toContain(2); // last exon
-        });
-      }
+      // All variants should maintain reading frame
+      strictVariants.forEach(variant => {
+        const sequence = biologyGene.getVariantSequence(variant);
+        expect(sequence.length % 3).toBe(0);
+        expect(variant.includedExons).toContain(0); // first exon
+        expect(variant.includedExons).toContain(2); // last exon
+      });
     });
   });
 });

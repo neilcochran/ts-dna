@@ -9,7 +9,7 @@ import { parseGene } from '../../src/gene';
 import { DNA, RNA, parseDNA, parseRNA, transcribeSequence } from '../../src/sequence';
 import { NucleotidePattern } from '../../src/pattern';
 import { transcribe } from '../../src/transcription';
-import { processRNA } from '../../src/utils/mrna-processing';
+import { processRNA } from '../../src/processing';
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import { isSuccess, isFailure } from '../../src/result/Result';
 
@@ -89,8 +89,11 @@ describe('Validation Scenarios Integration Tests', () => {
         const processingResult = processRNA(preMRNA);
 
         expect(isFailure(processingResult)).toBe(true);
-        if (isFailure(processingResult)) {
-          expect(processingResult.error).toContain('splice site');
+        if (isFailure(processingResult) && processingResult.error.kind === 'splicing-failed') {
+          const splicingKind = processingResult.error.cause.kind;
+          expect(
+            splicingKind === 'invalid-donor-site' || splicingKind === 'invalid-acceptor-site',
+          ).toBe(true);
         }
       }
     });
@@ -136,7 +139,7 @@ describe('Validation Scenarios Integration Tests', () => {
         const processingResult = processRNA(transcriptionResult.data);
         if (isFailure(processingResult)) {
           expect(processingResult.error).toBeDefined();
-          expect(typeof processingResult.error).toBe('string');
+          expect(typeof processingResult.error.kind).toBe('string');
         }
       }
     });
@@ -291,7 +294,7 @@ describe('Validation Scenarios Integration Tests', () => {
         const processingResult = processRNA(transcriptionResult.data);
         if (isFailure(processingResult)) {
           expect(processingResult.error).toBeTruthy();
-          expect(processingResult.error.length).toBeGreaterThan(0);
+          expect(typeof processingResult.error.kind).toBe('string');
         }
       } else {
         expect(isFailure(transcriptionResult)).toBe(true);

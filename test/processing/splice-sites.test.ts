@@ -1,0 +1,109 @@
+import {
+  validateSpliceSites,
+  findPotentialSpliceSites,
+  DNA_DONOR_SPLICE_CONSENSUS,
+  DNA_ACCEPTOR_SPLICE_CONSENSUS,
+} from '../../src/processing';
+import { isSuccess, isFailure } from '../../src/result';
+import { GenomicRegion } from '../../src/coordinates';
+
+describe('splice-sites (DNA-side)', () => {
+  describe('validateSpliceSites', () => {
+    test('accepts canonical GT...AG introns', () => {
+      const sequence = 'ATGGTAAAAGCCCGGG';
+      const introns: GenomicRegion[] = [{ start: 3, end: 10 }]; // GTAAAAG
+      const result = validateSpliceSites(sequence, introns);
+      expect(isSuccess(result)).toBe(true);
+    });
+
+    test('returns invalid-donor-site with position + found bases', () => {
+      const sequence = 'ATGATCCCAGTTTAAA';
+      const introns: GenomicRegion[] = [{ start: 3, end: 11 }]; // ATCCCAGT (AT donor)
+      const result = validateSpliceSites(sequence, introns);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-donor-site') {
+        expect(result.error.position).toBe(3);
+        expect(result.error.found).toBe('AT');
+        expect(result.error.intronIndex).toBe(0);
+      }
+    });
+
+    test('returns invalid-acceptor-site for non-AG suffix', () => {
+      const sequence = 'ATGGTCCCATTTTAAA';
+      const introns: GenomicRegion[] = [{ start: 3, end: 11 }]; // GTCCCATT
+      const result = validateSpliceSites(sequence, introns);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-acceptor-site') {
+        expect(result.error.found).toBe('TT');
+        expect(result.error.position).toBe(9);
+      }
+    });
+
+    test('returns intron-too-short when the intron has fewer than 4 bases', () => {
+      const sequence = 'ATGGTAAA';
+      const introns: GenomicRegion[] = [{ start: 3, end: 5 }];
+      const result = validateSpliceSites(sequence, introns);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'intron-too-short') {
+        expect(result.error.length).toBe(2);
+        expect(result.error.min).toBe(4);
+      }
+    });
+
+    test('succeeds on the minimal 4-base GT-AG intron', () => {
+      const sequence = 'ATGGTAG';
+      const introns: GenomicRegion[] = [{ start: 3, end: 7 }];
+      expect(isSuccess(validateSpliceSites(sequence, introns))).toBe(true);
+    });
+
+    test('succeeds with an empty intron list', () => {
+      expect(isSuccess(validateSpliceSites('ATGCCC', []))).toBe(true);
+    });
+
+    test('reports the first failing rule (donor) when multiple are invalid', () => {
+      const sequence = 'ATGATCCCATTTTAAA';
+      const introns: GenomicRegion[] = [{ start: 3, end: 11 }]; // ATCCCATT, both invalid
+      const result = validateSpliceSites(sequence, introns);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('invalid-donor-site');
+      }
+    });
+  });
+
+  describe('findPotentialSpliceSites', () => {
+    test('finds a single GT...AG candidate', () => {
+      const candidates = findPotentialSpliceSites('ATGGTCCCAGTTTAAA');
+      expect(candidates).toHaveLength(1);
+      expect(candidates[0]).toEqual({
+        start: 3,
+        end: 10,
+        name: 'potential_intron_3_10',
+      });
+    });
+
+    test('respects maxIntronLength', () => {
+      const sequence =
+        DNA_DONOR_SPLICE_CONSENSUS + 'C'.repeat(1000) + DNA_ACCEPTOR_SPLICE_CONSENSUS;
+      expect(findPotentialSpliceSites(sequence, 4, 100)).toHaveLength(0);
+    });
+
+    test('respects minIntronLength', () => {
+      // 'GTAG' is exactly 4 bases - accepted when min is 4
+      expect(findPotentialSpliceSites('GTAG', 4)).toHaveLength(1);
+      // Rejected when min is 5
+      expect(findPotentialSpliceSites('GTAG', 5)).toHaveLength(0);
+    });
+
+    test('returns empty when no GT-AG pairs exist', () => {
+      expect(findPotentialSpliceSites('ATCCCCTTTAAA')).toHaveLength(0);
+    });
+
+    test('sorts results by start position', () => {
+      const candidates = findPotentialSpliceSites('AGGTCCCAGGTAAAAGTTAG');
+      for (let i = 1; i < candidates.length; i++) {
+        expect(candidates[i].start).toBeGreaterThanOrEqual(candidates[i - 1].start);
+      }
+    });
+  });
+});

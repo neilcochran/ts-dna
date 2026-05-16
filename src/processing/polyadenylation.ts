@@ -1,11 +1,6 @@
 import { RNA } from '../sequence/index.js';
 import { NucleotidePattern, parseNucleotidePattern } from '../pattern/index.js';
 import {
-  PolyadenylationSite,
-  CleavageSiteOptions,
-  DEFAULT_CLEAVAGE_OPTIONS,
-} from '../types/polyadenylation-site.js';
-import {
   POLYA_SIGNALS,
   DEFAULT_POLYA_SIGNAL_STRENGTH,
   MIN_RNA_SEQUENCE_FOR_POLYA_SEARCH,
@@ -23,7 +18,29 @@ import {
   PERFECT_DSE_SCORE,
   MIN_POLYA_SITE_STRENGTH,
 } from '../constants/biological-constants.js';
-import { GenomicRegion } from '../coordinates/index.js';
+import type { GenomicRegion } from '../coordinates/index.js';
+import {
+  PolyadenylationSite,
+  CleavageSiteOptions,
+  DEFAULT_CLEAVAGE_OPTIONS,
+} from './polyadenylation-site.js';
+
+/**
+ * Window size (in bp) upstream of a polyadenylation signal to scan for USE elements.
+ */
+const USE_SEARCH_UPSTREAM_BP = 60;
+
+/**
+ * Window size (in bp) downstream of a polyadenylation signal to scan for DSE elements.
+ */
+const DSE_SEARCH_DOWNSTREAM_BP = 80;
+
+/**
+ * Upper cap applied to a polyadenylation site's strength score after USE / DSE boosts.
+ * Without this cap the scorer can produce values well above 100 for strong canonical sites
+ * surrounded by both regulatory elements.
+ */
+const MAX_POLYA_SITE_STRENGTH_WITH_BOOST = 150;
 
 /**
  * Static priority-ranked USE (upstream sequence element) patterns, compiled once at module
@@ -69,8 +86,8 @@ const POLY_G4_CONTEXT_PATTERN = new NucleotidePattern('G{4,}');
 
 /**
  * Compiles a polyadenylation-signal RNA string into a {@link NucleotidePattern}, or returns
- * `undefined` if the signal is not a valid pattern. Used by {@link findPolyadenylationSites} to
- * tolerate ill-formed user-supplied signals.
+ * `undefined` if the signal is not a valid pattern. Used by {@link findPolyadenylationSites}
+ * to tolerate ill-formed user-supplied signals.
  */
 function tryCompileSignal(signal: string): NucleotidePattern | undefined {
   const result = parseNucleotidePattern(signal);
@@ -78,17 +95,17 @@ function tryCompileSignal(signal: string): NucleotidePattern | undefined {
 }
 
 /**
- * Wraps an RNA-region substring (which may include the upper-case `T` characters introduced by
- * post-substring DNA-to-RNA touch-ups elsewhere in this module) in a typed {@link RNA} so the
- * pattern API can match against it. Normalization to `U` happens at the call site.
+ * Wraps an RNA-region substring (which may include the upper-case `T` characters introduced
+ * by post-substring DNA-to-RNA touch-ups elsewhere in this module) in a typed {@link RNA} so
+ * the pattern API can match against it. Normalization to `U` happens at the call site.
  */
 function rnaFromRegion(rnaRegion: string): RNA {
   return new RNA(rnaRegion);
 }
 
 /**
- * Finds polyadenylation sites in an RNA sequence with enhanced analysis
- * of signal strength, regulatory elements, and biological constraints.
+ * Finds polyadenylation sites in an RNA sequence with enhanced analysis of signal strength,
+ * regulatory elements, and biological constraints.
  *
  * @param rna - The RNA sequence to scan for polyadenylation signals
  * @param options - Optional configuration overriding the default polyA signals, USE/DSE
@@ -102,7 +119,6 @@ export function findPolyadenylationSites(
 ): PolyadenylationSite[] {
   const sequence = rna.getSequence();
 
-  // Minimum sequence length for meaningful analysis (signal + distance + context)
   if (sequence.length < MIN_RNA_SEQUENCE_FOR_POLYA_SEARCH) {
     return [];
   }
@@ -110,7 +126,6 @@ export function findPolyadenylationSites(
   const sites: PolyadenylationSite[] = [];
   const opts = { ...DEFAULT_CLEAVAGE_OPTIONS, ...options };
 
-  // Search for each polyadenylation signal with enhanced analysis
   for (const signal of opts.polyASignal!) {
     const pattern = tryCompileSignal(signal);
     if (pattern === undefined) {
@@ -125,7 +140,6 @@ export function findPolyadenylationSites(
     }
   }
 
-  // Sort by strength (highest first), then by position
   return sites.sort((a, b) => {
     if (a.strength !== b.strength) {
       return b.strength - a.strength;
@@ -146,7 +160,6 @@ export function getStrongestPolyadenylationSite(
   if (sites.length === 0) {
     return undefined;
   }
-
   return sites.reduce((strongest, current) =>
     current.strength > strongest.strength ? current : strongest,
   );
@@ -167,8 +180,9 @@ export function filterPolyadenylationSites(
 }
 
 /**
- * Analyzes polyadenylation sites with detailed USE/DSE scoring
- * and biological constraint validation.
+ * Scores a candidate polyadenylation site at `position` using the supplied options. Returns
+ * `null` when biological constraints reject the candidate or when its total strength falls
+ * below {@link MIN_POLYA_SITE_STRENGTH}.
  */
 function analyzePolyadenylationSite(
   sequence: string,
@@ -176,25 +190,21 @@ function analyzePolyadenylationSite(
   signal: string,
   options: CleavageSiteOptions,
 ): PolyadenylationSite | null {
-  // Get base signal strength
   const baseStrength = getSignalStrength(signal);
   let totalStrength = baseStrength;
 
-  // Upstream USE element analysis
   const upstreamUSE = findUpstreamUSE(sequence, position);
   if (upstreamUSE) {
     const useQuality = analyzeUSEQuality(sequence, upstreamUSE);
-    totalStrength += Math.round(useQuality * USE_ELEMENT_MAX_BOOST); // Up to 30 point boost
+    totalStrength += Math.round(useQuality * USE_ELEMENT_MAX_BOOST);
   }
 
-  // Downstream DSE element analysis
   const downstreamDSE = findDownstreamDSE(sequence, position + signal.length);
   if (downstreamDSE) {
     const dseQuality = analyzeDSEQuality(sequence, downstreamDSE);
-    totalStrength += Math.round(dseQuality * DSE_ELEMENT_MAX_BOOST); // Up to 20 point boost
+    totalStrength += Math.round(dseQuality * DSE_ELEMENT_MAX_BOOST);
   }
 
-  // Predict cleavage site with context scoring
   const cleavageSite = predictCleavageSite(
     sequence,
     position + signal.length,
@@ -202,12 +212,10 @@ function analyzePolyadenylationSite(
     [...options.cleavagePreference!],
   );
 
-  // Validate biological constraints
-  if (!validateCleavageSiteConstraints(sequence, position, cleavageSite, options)) {
+  if (!validateCleavageSiteConstraints(sequence, position, signal.length, cleavageSite, options)) {
     return null;
   }
 
-  // Apply strength threshold
   if (totalStrength < MIN_POLYA_SITE_STRENGTH) {
     return null;
   }
@@ -215,7 +223,7 @@ function analyzePolyadenylationSite(
   return {
     position,
     signal,
-    strength: Math.min(totalStrength, 150), // Allow boost above 100 for USE/DSE
+    strength: Math.min(totalStrength, MAX_POLYA_SITE_STRENGTH_WITH_BOOST),
     upstreamUSE,
     downstreamDSE,
     cleavageSite,
@@ -223,23 +231,24 @@ function analyzePolyadenylationSite(
 }
 
 /**
- * Signal strength calculation with biological scoring.
+ * Returns the strength score for a recognized polyadenylation signal, or the default fallback
+ * for unrecognized signals.
  */
 function getSignalStrength(signal: string): number {
   return POLYA_SIGNALS[signal as keyof typeof POLYA_SIGNALS] ?? DEFAULT_POLYA_SIGNAL_STRENGTH;
 }
 
 /**
- * Upstream USE element detection with multiple motif patterns.
+ * Searches the {@link USE_SEARCH_UPSTREAM_BP} window upstream of `position` for the
+ * highest-priority USE motif and returns the matching region, or `undefined` when no motif
+ * matches.
  */
 function findUpstreamUSE(sequence: string, position: number): GenomicRegion | undefined {
-  const searchStart = Math.max(0, position - 60);
-  const searchEnd = position; // Search right up to signal
-
+  const searchStart = Math.max(0, position - USE_SEARCH_UPSTREAM_BP);
+  const searchEnd = position;
   if (searchEnd <= searchStart) {
     return undefined;
   }
-
   const rnaRegion = sequence.substring(searchStart, searchEnd).replace(/T/g, 'U');
   if (rnaRegion === '') {
     return undefined;
@@ -247,7 +256,6 @@ function findUpstreamUSE(sequence: string, position: number): GenomicRegion | un
   const rna = rnaFromRegion(rnaRegion);
 
   let bestMatch: { start: number; end: number; priority: number } | undefined;
-
   for (const { pattern, priority } of USE_PATTERNS) {
     for (const match of pattern.findAll(rna)) {
       if (!bestMatch || priority > bestMatch.priority) {
@@ -259,21 +267,20 @@ function findUpstreamUSE(sequence: string, position: number): GenomicRegion | un
       }
     }
   }
-
   return bestMatch ? { start: bestMatch.start, end: bestMatch.end, name: 'USE' } : undefined;
 }
 
 /**
- * Downstream DSE element detection with GU-rich and U-rich patterns.
+ * Searches the {@link DSE_SEARCH_DOWNSTREAM_BP} window downstream of `position` for the
+ * highest-priority DSE motif and returns the matching region, or `undefined` when no motif
+ * matches.
  */
 function findDownstreamDSE(sequence: string, position: number): GenomicRegion | undefined {
-  const searchStart = position; // Start immediately after signal
-  const searchEnd = Math.min(sequence.length, position + 80);
-
+  const searchStart = position;
+  const searchEnd = Math.min(sequence.length, position + DSE_SEARCH_DOWNSTREAM_BP);
   if (searchEnd <= searchStart) {
     return undefined;
   }
-
   const rnaRegion = sequence.substring(searchStart, searchEnd).replace(/T/g, 'U');
   if (rnaRegion === '') {
     return undefined;
@@ -281,7 +288,6 @@ function findDownstreamDSE(sequence: string, position: number): GenomicRegion | 
   const rna = rnaFromRegion(rnaRegion);
 
   let bestMatch: { start: number; end: number; priority: number } | undefined;
-
   for (const { pattern, priority } of DSE_PATTERNS) {
     for (const match of pattern.findAll(rna)) {
       if (!bestMatch || priority > bestMatch.priority) {
@@ -293,39 +299,35 @@ function findDownstreamDSE(sequence: string, position: number): GenomicRegion | 
       }
     }
   }
-
   return bestMatch ? { start: bestMatch.start, end: bestMatch.end, name: 'DSE' } : undefined;
 }
 
 /**
- * Analyzes the quality of a USE element based on its sequence content.
+ * Scores a USE region: top score for a UGUA motif, high score for a UYU motif, moderate for
+ * generally U-rich, baseline otherwise.
  */
 function analyzeUSEQuality(sequence: string, useRegion: GenomicRegion): number {
   const useSequence = sequence.substring(useRegion.start, useRegion.end).replace(/T/g, 'U');
   if (useSequence === '') {
     return BASE_POLYA_SCORE;
   }
-
   let score = BASE_POLYA_SCORE;
-
-  // UGUA motif gets highest score
   if (useSequence.includes('UGUA')) {
     score = PERFECT_USE_SCORE;
-  }
-  // UYU motifs get high score
-  else if (USE_QUALITY_UYU_PATTERN.matches(new RNA(useSequence))) {
+  } else if (USE_QUALITY_UYU_PATTERN.matches(new RNA(useSequence))) {
     score = HIGH_USE_SCORE;
-  }
-  // High U content gets medium score
-  else if ((useSequence.match(/U/g) ?? []).length / useSequence.length > HIGH_U_CONTENT_THRESHOLD) {
+  } else if (
+    (useSequence.match(/U/g) ?? []).length / useSequence.length >
+    HIGH_U_CONTENT_THRESHOLD
+  ) {
     score = MODERATE_USE_SCORE;
   }
-
   return Math.min(score, PERFECT_USE_SCORE);
 }
 
 /**
- * Analyzes the quality of a DSE element based on its sequence content.
+ * Scores a DSE region: top score for GU-rich with U clusters, high for plain GU-rich,
+ * moderate for generally U-rich, baseline otherwise.
  */
 function analyzeDSEQuality(sequence: string, dseRegion: GenomicRegion): number {
   const dseSequence = sequence.substring(dseRegion.start, dseRegion.end).replace(/T/g, 'U');
@@ -333,30 +335,25 @@ function analyzeDSEQuality(sequence: string, dseRegion: GenomicRegion): number {
     return BASE_POLYA_SCORE;
   }
   const dseRNA = new RNA(dseSequence);
-
   let score = BASE_POLYA_SCORE;
-
-  // GU-rich regions with U clusters get highest score
   if (DSE_QUALITY_GU_U_PATTERN.matches(dseRNA)) {
     score = PERFECT_DSE_SCORE;
-  }
-  // Simple GU-rich gets high score
-  else if (DSE_QUALITY_GU3_PATTERN.matches(dseRNA)) {
+  } else if (DSE_QUALITY_GU3_PATTERN.matches(dseRNA)) {
     score = HIGH_DSE_SCORE;
-  }
-  // U-rich gets medium score
-  else if (
+  } else if (
     (dseSequence.match(/U/g) ?? []).length / dseSequence.length >
     MODERATE_U_CONTENT_THRESHOLD
   ) {
     score = MODERATE_USE_SCORE;
   }
-
   return Math.min(score, PERFECT_USE_SCORE);
 }
 
 /**
- * Cleavage site prediction with context-aware scoring.
+ * Predicts the cleavage-site position downstream of `startPosition` by scanning the
+ * configured distance range and picking the highest-scoring nucleotide under the cleavage
+ * preference order, with context-aware boosts (A/U-rich neighborhoods) and penalties (poly-G
+ * neighborhoods).
  */
 function predictCleavageSite(
   sequence: string,
@@ -368,84 +365,71 @@ function predictCleavageSite(
   const searchStart = startPosition + minDistance;
   const searchEnd = Math.min(sequence.length, startPosition + maxDistance);
 
-  let bestPosition = undefined;
+  let bestPosition: number | undefined;
   let bestScore = -1;
 
   for (let pos = searchStart; pos < searchEnd; pos++) {
     if (pos >= sequence.length) {
       break;
     }
-
     const nucleotide = sequence[pos].toUpperCase().replace('T', 'U');
     const preferenceIndex = preferences.indexOf(nucleotide);
-
-    if (preferenceIndex !== -1) {
-      // Base score from nucleotide preference
-      let score = preferences.length - preferenceIndex;
-
-      // Context scoring: avoid problematic sequences
-      const context = sequence.substring(Math.max(0, pos - 2), Math.min(sequence.length, pos + 3));
-
-      if (context !== '') {
-        // Penalize poly-G regions (difficult to cleave)
-        if (POLY_G3_CONTEXT_PATTERN.matches(new RNA(context))) {
-          score *= INHIBITORY_G_RUN_PENALTY;
+    if (preferenceIndex === -1) {
+      continue;
+    }
+    let score = preferences.length - preferenceIndex;
+    const context = sequence.substring(Math.max(0, pos - 2), Math.min(sequence.length, pos + 3));
+    if (context !== '') {
+      if (POLY_G3_CONTEXT_PATTERN.matches(new RNA(context))) {
+        score *= INHIBITORY_G_RUN_PENALTY;
+      } else {
+        const auContext = context.replace(/T/g, 'U');
+        if (auContext !== '' && AU_RICH_CONTEXT_PATTERN.matches(new RNA(auContext))) {
+          score *= AU_RICH_CONTEXT_BOOST;
         }
-        // Favor A/U rich context
-        else {
-          const auContext = context.replace(/T/g, 'U');
-          if (auContext !== '' && AU_RICH_CONTEXT_PATTERN.matches(new RNA(auContext))) {
-            score *= AU_RICH_CONTEXT_BOOST;
-          }
-        }
-      }
-
-      if (score > bestScore) {
-        bestScore = score;
-        bestPosition = pos;
       }
     }
+    if (score > bestScore) {
+      bestScore = score;
+      bestPosition = pos;
+    }
   }
-
   return bestPosition;
 }
 
 /**
- * Validates biological constraints for cleavage sites.
+ * Validates biological constraints for a candidate cleavage site: the cleavage must exist,
+ * fall within the configured distance range from the *matched* signal (not from
+ * `polyASignal[0]`), and not land inside a poly-G stretch.
+ *
+ * Takes `signalLength` rather than indexing `options.polyASignal[0].length` (the old
+ * implementation's bug, surfaced in PLAN.md Followups: it sized the distance check against
+ * the first configured signal instead of against the one that actually matched).
  */
 function validateCleavageSiteConstraints(
   sequence: string,
   signalPosition: number,
+  signalLength: number,
   cleavagePosition: number | undefined,
   options: CleavageSiteOptions,
 ): boolean {
-  // Must have a valid cleavage site
   if (cleavagePosition === undefined) {
     return false;
   }
-
-  // Check distance constraints
-  const distance = cleavagePosition - (signalPosition + options.polyASignal![0].length);
+  const distance = cleavagePosition - (signalPosition + signalLength);
   const [minDist, maxDist] = options.distanceRange!;
-
   if (distance < minDist || distance > maxDist) {
     return false;
   }
-
-  // Avoid cleavage in problematic regions
   const context = sequence.substring(
     Math.max(0, cleavagePosition - 3),
     Math.min(sequence.length, cleavagePosition + 3),
   );
-
   if (context === '') {
     return true;
   }
-
-  // Reject if cleavage site is in a poly-G region (>= 4 consecutive Gs)
   if (POLY_G4_CONTEXT_PATTERN.matches(new RNA(context))) {
     return false;
   }
-
   return true;
 }

@@ -9,7 +9,7 @@
 
 import { parseGene } from '../../src/gene';
 import { transcribe } from '../../src/transcription';
-import { processRNA } from '../../src/utils/mrna-processing';
+import { processRNA, isFullyProcessed } from '../../src/processing';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { replicateDNA } from '../../src/utils/replication/simple-replication';
 import { isSuccess, isFailure } from '../../src/result/Result';
@@ -46,7 +46,7 @@ describe('Cross-System Integration Tests', () => {
 
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          expect(mRNA.isFullyProcessed()).toBe(true);
+          expect(isFullyProcessed(mRNA)).toBe(true);
 
           // Step 3: Translation
           const protein = new Polypeptide(mRNA);
@@ -58,9 +58,11 @@ describe('Cross-System Integration Tests', () => {
           // Verify it's a valid protein sequence (no stop codons in middle)
           expect(sequence).not.toContain('*');
         } else {
-          // If processing fails, should have meaningful error
-          expect(typeof processingResult.error).toBe('string');
-          expect(processingResult.error).toMatch(/processing|splice|frame|codon|splicing/i);
+          // If processing fails, should have meaningful structured error
+          expect(typeof processingResult.error.kind).toBe('string');
+          expect(processingResult.error.kind).toMatch(
+            /splicing-failed|no-start-codon|no-in-frame-stop|invalid-/i,
+          );
         }
       }
     });
@@ -115,8 +117,8 @@ describe('Cross-System Integration Tests', () => {
 
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          expect(mRNA.getCodingSequence().length).toBe(66); // Should preserve exact coding sequence length
-          expect(mRNA.getCodingSequence().startsWith('AUG')).toBe(true);
+          expect(mRNA.codingSequence.length).toBe(66); // Should preserve exact coding sequence length
+          expect(mRNA.codingSequence.startsWith('AUG')).toBe(true);
         }
       }
     });
@@ -172,9 +174,11 @@ describe('Cross-System Integration Tests', () => {
             }
           }
         } else {
-          // Processing failed - should have meaningful error
-          expect(typeof processingResult.error).toBe('string');
-          expect(processingResult.error).toMatch(/stop|codon|processing|frame|splice|splicing/i);
+          // Processing failed - should have meaningful structured error
+          expect(typeof processingResult.error.kind).toBe('string');
+          expect(processingResult.error.kind).toMatch(
+            /splicing-failed|no-start-codon|no-in-frame-stop|invalid-/i,
+          );
         }
       }
     });

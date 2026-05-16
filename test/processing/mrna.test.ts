@@ -1,0 +1,147 @@
+import { parseMRNA, MRNA } from '../../src/processing';
+import { isSuccess, isFailure } from '../../src/result';
+
+describe('MRNA', () => {
+  describe('parseMRNA', () => {
+    test('parses a minimal capped mRNA with no UTRs', () => {
+      const result = parseMRNA('AUGAAACCCGGGUAA', 0, 15, true, 0);
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        const mRNA = result.data;
+        expect(mRNA).toBeInstanceOf(MRNA);
+        expect(mRNA.sequence.sequence).toBe('AUGAAACCCGGGUAA');
+        expect(mRNA.codingSequence).toBe('AUGAAACCCGGGUAA');
+        expect(mRNA.codingStart).toBe(0);
+        expect(mRNA.codingEnd).toBe(15);
+        expect(mRNA.fivePrimeCap).toBe(true);
+        expect(mRNA.polyATailLength).toBe(0);
+      }
+    });
+
+    test('defaults fivePrimeCap to true and polyATailLength to 0 when omitted', () => {
+      const result = parseMRNA('AUGAAACCCGGG', 0, 12);
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.fivePrimeCap).toBe(true);
+        expect(result.data.polyATailLength).toBe(0);
+      }
+    });
+
+    test('computes codingSequence as substring at construction', () => {
+      const result = parseMRNA('GGGAUGAAACCCGGGUAA', 3, 18);
+      expect(isSuccess(result)).toBe(true);
+      if (isSuccess(result)) {
+        expect(result.data.codingSequence).toBe('AUGAAACCCGGGUAA');
+      }
+    });
+
+    test('rejects invalid RNA characters with kind invalid-sequence', () => {
+      const result = parseMRNA('AUGNNN', 0, 6);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('invalid-sequence');
+        if (result.error.kind === 'invalid-sequence') {
+          expect(result.error.cause.kind).toBe('invalid-characters');
+        }
+      }
+    });
+
+    test('rejects empty sequence with kind invalid-sequence', () => {
+      const result = parseMRNA('', 0, 0);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('invalid-sequence');
+      }
+    });
+
+    test('rejects negative codingStart', () => {
+      const result = parseMRNA('AUGAAACCCGGG', -1, 12);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-coding-boundaries') {
+        expect(result.error.codingStart).toBe(-1);
+      }
+    });
+
+    test('rejects codingEnd past sequence length', () => {
+      const result = parseMRNA('AUGAAACCCGGG', 0, 15);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-coding-boundaries') {
+        expect(result.error.codingEnd).toBe(15);
+        expect(result.error.sequenceLength).toBe(12);
+      }
+    });
+
+    test('rejects codingStart >= codingEnd', () => {
+      const result = parseMRNA('AUGAAACCCGGG', 10, 5);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('invalid-coding-boundaries');
+      }
+    });
+
+    test('rejects negative polyA tail length', () => {
+      const result = parseMRNA('AUGAAACCCGGG', 0, 12, true, -1);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result) && result.error.kind === 'invalid-polya-tail-length') {
+        expect(result.error.polyATailLength).toBe(-1);
+      }
+    });
+
+    test('rejects polyA tail length larger than the sequence', () => {
+      const result = parseMRNA('AUGAAACCCGGG', 0, 12, true, 100);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('invalid-polya-tail-length');
+      }
+    });
+
+    test('rejects non-integer codingStart', () => {
+      const result = parseMRNA('AUGAAACCCGGG', 1.5, 12);
+      expect(isFailure(result)).toBe(true);
+      if (isFailure(result)) {
+        expect(result.error.kind).toBe('invalid-coding-boundaries');
+      }
+    });
+  });
+
+  describe('MRNA fields and helpers', () => {
+    test('getFivePrimeUTR returns the substring before codingStart', () => {
+      const mRNA = parseMRNA('GGGCCCAUGAAACCCGGG', 6, 18, true, 0).unwrap();
+      expect(mRNA.getFivePrimeUTR()).toBe('GGGCCC');
+    });
+
+    test('getFivePrimeUTR is empty when codingStart is 0', () => {
+      const mRNA = parseMRNA('AUGAAACCCGGG', 0, 12, true, 0).unwrap();
+      expect(mRNA.getFivePrimeUTR()).toBe('');
+    });
+
+    test('getThreePrimeUTR returns the substring between codingEnd and the poly-A tail', () => {
+      const mRNA = parseMRNA('AUGAAACCCGGGUAAGGGAAAAAAA', 0, 15, true, 7).unwrap();
+      expect(mRNA.getThreePrimeUTR()).toBe('GGG');
+    });
+
+    test('getThreePrimeUTR is empty when coding ends right before the tail', () => {
+      const mRNA = parseMRNA('AUGAAACCCGGGAAAAAAA', 0, 12, true, 7).unwrap();
+      expect(mRNA.getThreePrimeUTR()).toBe('');
+    });
+
+    test('toString summarizes length, coding boundaries, tail length, and cap', () => {
+      const mRNA = parseMRNA('AUGAAACCCGGGAAAAA', 0, 12, true, 5).unwrap();
+      expect(mRNA.toString()).toBe('MRNA(17nt, CDS 0-12, polyA 5, capped)');
+    });
+
+    test('toString omits cap suffix when uncapped', () => {
+      const mRNA = parseMRNA('AUGAAACCCGGG', 0, 12, false, 0).unwrap();
+      expect(mRNA.toString()).toBe('MRNA(12nt, CDS 0-12, polyA 0)');
+    });
+  });
+
+  describe('constructor sentinel', () => {
+    test('throws when constructed without the trusted key', () => {
+      // The bare constructor is module-private; calling it directly with a wrong key
+      // should throw. We exercise the guard via a runtime assertion.
+      const ctor = MRNA as unknown as new (...args: unknown[]) => MRNA;
+      expect(() => new ctor()).toThrow('MRNA must be constructed via parseMRNA');
+    });
+  });
+});

@@ -7,9 +7,8 @@
 
 import { parseGene } from '../../src/gene';
 import { DNA } from '../../src/sequence';
-import { MRNA } from '../../src/model/nucleic-acids/MRNA';
+import { parseMRNA, processRNA } from '../../src/processing';
 import { transcribe } from '../../src/transcription';
-import { processRNA } from '../../src/utils/mrna-processing';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { transcribeSequence } from '../../src/sequence';
 import { isSuccess, isFailure } from '../../src/result/Result';
@@ -58,7 +57,7 @@ describe('Biological Scenarios Integration Tests', () => {
 
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          const codingSeq = mRNA.getCodingSequence();
+          const codingSeq = mRNA.codingSequence;
 
           // Verify exact biological properties
           expect(codingSeq.startsWith('AUG')).toBe(true);
@@ -128,7 +127,7 @@ describe('Biological Scenarios Integration Tests', () => {
           const polypeptide = new Polypeptide(mRNA);
 
           // Get actual coding sequence to verify
-          const codingSeq = mRNA.getCodingSequence();
+          const codingSeq = mRNA.codingSequence;
 
           // Verify coding sequence properties
           expect(codingSeq.startsWith('AUG')).toBe(true);
@@ -191,7 +190,7 @@ describe('Biological Scenarios Integration Tests', () => {
           expect(preMRNASeq.length).toBe(66);
         } else {
           const mRNA = processingResult.data;
-          const codingSeq = mRNA.getCodingSequence();
+          const codingSeq = mRNA.codingSequence;
 
           expect(codingSeq.startsWith('AUG')).toBe(true);
           expect(codingSeq.endsWith('UAG')).toBe(true);
@@ -291,8 +290,8 @@ describe('Biological Scenarios Integration Tests', () => {
         const altProcessed = processRNA(altResult.data);
 
         if (isSuccess(normalProcessed) && isSuccess(altProcessed)) {
-          const normalCoding = normalProcessed.data.getCodingSequence();
-          const altCoding = altProcessed.data.getCodingSequence();
+          const normalCoding = normalProcessed.data.codingSequence;
+          const altCoding = altProcessed.data.codingSequence;
 
           // Alternative should be exactly 27bp shorter (skipped exon 2)
           expect(normalCoding.length - altCoding.length).toBe(27);
@@ -359,7 +358,7 @@ describe('Biological Scenarios Integration Tests', () => {
           const polypeptide = new Polypeptide(mRNA);
 
           // Multi-domain protein with corrected structure
-          const codingSeq = mRNA.getCodingSequence();
+          const codingSeq = mRNA.codingSequence;
           expect(codingSeq.length).toBe(72); // Actual length from splicing
           expect(codingSeq.startsWith('AUG')).toBe(true);
           expect(codingSeq.endsWith('UAG')).toBe(true);
@@ -411,22 +410,8 @@ describe('Biological Scenarios Integration Tests', () => {
       const highGCSeq = highGCRNA.getSequence(); // 'AUGGGCGGCGGCCUGCCGCUGUAG'
       const lowGCSeq = lowGCRNA.getSequence(); // 'AUGAAAAAUAAAUUUAAUUUAUAG'
 
-      const highGCMRNA = new MRNA(
-        highGCSeq,
-        highGCSeq, // coding sequence is the entire sequence
-        0, // coding starts at position 0
-        highGCSeq.length, // coding ends at sequence end
-        true, // has 5' cap
-        '', // no poly-A tail for this test
-      );
-      const lowGCMRNA = new MRNA(
-        lowGCSeq,
-        lowGCSeq, // coding sequence is the entire sequence
-        0, // coding starts at position 0
-        lowGCSeq.length, // coding ends at sequence end
-        true, // has 5' cap
-        '', // no poly-A tail for this test
-      );
+      const highGCMRNA = parseMRNA(highGCSeq, 0, highGCSeq.length, true, 0).unwrap();
+      const lowGCMRNA = parseMRNA(lowGCSeq, 0, lowGCSeq.length, true, 0).unwrap();
 
       const highGCPolypeptide = new Polypeptide(highGCMRNA);
       const lowGCPolypeptide = new Polypeptide(lowGCMRNA);

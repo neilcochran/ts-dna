@@ -3,7 +3,7 @@
  */
 
 import { RNA } from '../../src/sequence';
-import { MRNA } from '../../src/model/nucleic-acids/MRNA.js';
+import { parseMRNA } from '../../src/processing';
 import { Polypeptide } from '../../src/model/Polypeptide.js';
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids.js';
 import { STOP_CODONS } from '../../src/sequence';
@@ -71,8 +71,7 @@ describe('Stop Codon Handling', () => {
   describe('Polypeptide with stop codons', () => {
     test('should create polypeptide from mRNA with stop codon', () => {
       const fullSequence = 'AUGAAACCCGGGUAG';
-      const codingSequence = 'AUGAAACCCGGGUAG';
-      const mRNA = new MRNA(fullSequence, codingSequence, 0, 15, true, '');
+      const mRNA = parseMRNA(fullSequence, 0, 15, true, 0).unwrap();
 
       const polypeptide = new Polypeptide(mRNA);
 
@@ -85,9 +84,7 @@ describe('Stop Codon Handling', () => {
 
     test('should handle mRNA with stop codon and poly-A tail', () => {
       const fullSequence = 'AUGAAACCCUAGAAAAAAAAAA';
-      const codingSequence = 'AUGAAACCCUAG';
-      const polyATail = 'AAAAAAAAAA';
-      const mRNA = new MRNA(fullSequence, codingSequence, 0, 12, true, polyATail);
+      const mRNA = parseMRNA(fullSequence, 0, 12, true, 10).unwrap();
 
       const polypeptide = new Polypeptide(mRNA);
 

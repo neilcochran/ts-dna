@@ -1,6 +1,6 @@
-import { RNA, parseRNA } from '../../../src/sequence';
-import { InvalidSequenceError } from '../../../src/model/errors/InvalidSequenceError';
-import { isFailure } from '../../../src/result/Result';
+import { RNA, parseRNA } from '../../src/sequence';
+import { InvalidSequenceError } from '../../src/model/errors/InvalidSequenceError';
+import { isFailure } from '../../src/result/Result';
 
 describe('RNA', () => {
   describe('constructor', () => {

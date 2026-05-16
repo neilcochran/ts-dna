@@ -4,6 +4,7 @@ export * from './sequence/index.js';
 export * from './pattern/index.js';
 export * from './gene/index.js';
 export * from './transcription/index.js';
+export * from './processing/index.js';
 export * from './model/index.js';
 export * from './enums/index.js';
 export * from './types/index.js';

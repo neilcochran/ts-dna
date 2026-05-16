@@ -1,6 +1,6 @@
-import { DNA, parseDNA } from '../../../src/sequence';
-import { InvalidSequenceError } from '../../../src/model/errors/InvalidSequenceError';
-import { isFailure } from '../../../src/result/Result';
+import { DNA, parseDNA } from '../../src/sequence';
+import { InvalidSequenceError } from '../../src/model/errors/InvalidSequenceError';
+import { isFailure } from '../../src/result/Result';
 
 describe('DNA', () => {
   describe('constructor', () => {

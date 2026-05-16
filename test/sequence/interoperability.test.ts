@@ -4,7 +4,7 @@
  * goes through `transcribeSequence` / `reverseTranscribeSequence` only.
  */
 
-import { DNA, RNA, transcribeSequence, reverseTranscribeSequence } from '../../../src/sequence';
+import { DNA, RNA, transcribeSequence, reverseTranscribeSequence } from '../../src/sequence';
 
 describe('DNA/RNA explicit conversion', () => {
   const DNA_SEQ = 'ATCGATCG';

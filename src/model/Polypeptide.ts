@@ -1,5 +1,5 @@
 import { RNA } from '../sequence/index.js';
-import { MRNA } from './nucleic-acids/MRNA.js';
+import { MRNA, parseMRNA } from '../processing/index.js';
 import { AminoAcid } from './AminoAcid.js';
 import { RNAtoAminoAcids } from '../utils/amino-acids.js';
 
@@ -31,7 +31,7 @@ export class Polypeptide {
    */
   constructor(mRNA: MRNA) {
     // Use the coding sequence for translation, which is biologically accurate
-    const codingRNA = new RNA(mRNA.getCodingSequence());
+    const codingRNA = new RNA(mRNA.codingSequence);
     this.aminoAcidSequence = RNAtoAminoAcids(codingRNA);
     this.mRNA = mRNA;
   }
@@ -164,7 +164,7 @@ export class Polypeptide {
     const subSequence = subAminoAcids.map(aa => aa.codon.getSequence()).join('');
     // Add a stop codon to make it valid
     const fullSubSequence = subSequence + 'UAG';
-    const subMRNA = new MRNA(fullSubSequence, fullSubSequence, 0, fullSubSequence.length);
+    const subMRNA = parseMRNA(fullSubSequence, 0, fullSubSequence.length).unwrap();
 
     // Create new polypeptide and manually set the amino acid sequence
     const subPolypeptide = new Polypeptide(subMRNA);

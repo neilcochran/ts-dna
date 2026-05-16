@@ -3,7 +3,7 @@ import { parseDNA } from '../sequence/index.js';
 import type { DNA } from '../sequence/index.js';
 import { geneCoord, type GeneCoord, type GenomicRegion } from '../coordinates/index.js';
 import type { NucleotidePattern } from '../pattern/index.js';
-import type { AlternativeSplicingProfile } from '../types/alternative-splicing.js';
+import type { AlternativeSplicingProfile } from './splice-variants.js';
 import { Gene } from './Gene.js';
 import { Promoter } from './Promoter.js';
 import { PromoterElement } from './PromoterElement.js';

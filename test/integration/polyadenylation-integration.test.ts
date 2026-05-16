@@ -6,8 +6,7 @@
 
 import { parseGene } from '../../src/gene';
 import { transcribe } from '../../src/transcription';
-import { processRNA } from '../../src/utils/mrna-processing';
-import { findPolyadenylationSites } from '../../src/utils/polyadenylation';
+import { processRNA, findPolyadenylationSites, isFullyProcessed } from '../../src/processing';
 import { isSuccess } from '../../src/result/Result';
 
 describe('Polyadenylation Integration Tests', () => {
@@ -38,12 +37,12 @@ describe('Polyadenylation Integration Tests', () => {
         const mRNA = processingResult.data;
 
         // Verify basic mRNA structure
-        expect(mRNA.isFullyProcessed()).toBe(true);
-        expect(mRNA.hasFivePrimeCap()).toBe(true);
-        expect(mRNA.getPolyATailLength()).toBeGreaterThanOrEqual(0); // Allow for any poly-A tail length
+        expect(isFullyProcessed(mRNA)).toBe(true);
+        expect(mRNA.fivePrimeCap).toBe(true);
+        expect(mRNA.polyATailLength).toBeGreaterThanOrEqual(0); // Allow for any poly-A tail length
 
         // Verify coding sequence is intact
-        const codingSeq = mRNA.getCodingSequence();
+        const codingSeq = mRNA.codingSequence;
         expect(codingSeq.startsWith('AUG')).toBe(true);
         expect(codingSeq.endsWith('UAG')).toBe(true);
       }
@@ -117,11 +116,11 @@ describe('Polyadenylation Integration Tests', () => {
         // Should either succeed or fail gracefully
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          expect(mRNA.isFullyProcessed()).toBe(true);
+          expect(isFullyProcessed(mRNA)).toBe(true);
         } else {
-          expect(typeof processingResult.error).toBe('string');
-          expect(processingResult.error).toMatch(
-            /processing|splice|polyadenylation|coding|bounds|exon/i,
+          expect(typeof processingResult.error.kind).toBe('string');
+          expect(processingResult.error.kind).toMatch(
+            /splicing-failed|no-start-codon|no-in-frame-stop|invalid-/i,
           );
         }
       }
