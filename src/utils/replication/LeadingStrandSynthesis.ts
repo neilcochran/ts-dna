@@ -8,7 +8,7 @@
 
 import { DNAPolymerase } from '../../model/replication/enzyme/DNAPolymerase.js';
 import { OrganismProfile, ReplicationEvent } from '../../types/replication-types.js';
-import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import { Result, success, failure } from '../../result/index.js';
 import { DNA_PROOFREADING_THRESHOLD } from '../../constants/biological-constants.js';
 
 /**
@@ -38,7 +38,7 @@ export class LeadingStrandSynthesis {
    * @param primerPosition - Position where primer is located
    * @returns Validation result with success/failure
    */
-  initiateSynthesis(primerPosition: number): ValidationResult<void> {
+  initiateSynthesis(primerPosition: number): Result<void> {
     if (primerPosition < 0) {
       return failure(`Invalid primer position: ${primerPosition}. Must be non-negative`);
     }

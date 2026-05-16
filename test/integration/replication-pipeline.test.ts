@@ -8,7 +8,7 @@
 import { DNA } from '../../src/model/nucleic-acids/DNA';
 import { replicateDNA } from '../../src/utils/replication/simple-replication';
 import { E_COLI, HUMAN } from '../../src/types/replication-types';
-import { isSuccess } from '../../src/types/validation-result';
+import { isSuccess } from '../../src/result/Result';
 
 describe('DNA Replication Pipeline Integration', () => {
   describe('Complete Replication Process', () => {

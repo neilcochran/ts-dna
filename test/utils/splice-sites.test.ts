@@ -4,7 +4,7 @@ import {
   SPLICE_DONOR_SEQUENCES,
   SPLICE_ACCEPTOR_SEQUENCES,
 } from '../../src/utils/splice-sites';
-import { GenomicRegion } from '../../src/types/genomic-region';
+import { GenomicRegion } from '../../src/coordinates';
 import {
   DONOR_SPLICE_CONSENSUS,
   ACCEPTOR_SPLICE_CONSENSUS,

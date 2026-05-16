@@ -5,7 +5,7 @@
  * proper error handling and validation.
  */
 
-import { ValidationResult, success, failure } from '../../../types/validation-result.js';
+import { Result, success, failure } from '../../../result/index.js';
 import { Helicase } from './Helicase.js';
 import { Primase } from './Primase.js';
 import { DNAPolymerase } from './DNAPolymerase.js';
@@ -19,7 +19,7 @@ export class EnzymeFactory {
   /**
    * Creates a helicase with validation.
    */
-  static createHelicase(position: number): ValidationResult<Helicase> {
+  static createHelicase(position: number): Result<Helicase> {
     try {
       return success(new Helicase(position));
     } catch (error) {
@@ -32,7 +32,7 @@ export class EnzymeFactory {
   /**
    * Creates a primase with validation.
    */
-  static createPrimase(position: number): ValidationResult<Primase> {
+  static createPrimase(position: number): Result<Primase> {
     try {
       return success(new Primase(position));
     } catch (error) {
@@ -48,7 +48,7 @@ export class EnzymeFactory {
   static createPolymerase(
     position: number,
     variant: 'PolI' | 'PolII' | 'PolIII' = 'PolIII',
-  ): ValidationResult<DNAPolymerase> {
+  ): Result<DNAPolymerase> {
     try {
       return success(new DNAPolymerase(position, variant));
     } catch (error) {
@@ -61,7 +61,7 @@ export class EnzymeFactory {
   /**
    * Creates a DNA ligase with validation.
    */
-  static createLigase(position: number): ValidationResult<DNALigase> {
+  static createLigase(position: number): Result<DNALigase> {
     try {
       return success(new DNALigase(position));
     } catch (error) {
@@ -74,7 +74,7 @@ export class EnzymeFactory {
   /**
    * Creates an exonuclease with validation.
    */
-  static createExonuclease(position: number): ValidationResult<Exonuclease> {
+  static createExonuclease(position: number): Result<Exonuclease> {
     try {
       return success(new Exonuclease(position));
     } catch (error) {

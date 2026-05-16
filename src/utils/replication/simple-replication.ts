@@ -8,7 +8,7 @@
 import { DNA } from '../../model/nucleic-acids/DNA.js';
 import { ReplicationFork } from '../../model/replication/ReplicationFork.js';
 import { ForkCoordinator } from './ForkCoordinator.js';
-import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import { Result, success, failure } from '../../result/index.js';
 import { OrganismProfile, E_COLI } from '../../types/replication-types.js';
 
 /**
@@ -54,7 +54,7 @@ export interface ReplicationResult {
  *
  * @param dna - The DNA sequence to replicate
  * @param options - Optional configuration for replication
- * @returns ValidationResult containing the two replicated DNA strands
+ * @returns Result containing the two replicated DNA strands
  *
  * @example
  * ```typescript
@@ -84,7 +84,7 @@ export interface ReplicationResult {
 export function replicateDNA(
   dna: DNA,
   options: SimpleReplicationOptions = {},
-): ValidationResult<ReplicationResult> {
+): Result<ReplicationResult> {
   try {
     // Apply defaults
     const { organism = E_COLI, startPosition = 0, maxSteps = 10000 } = options;
@@ -153,7 +153,7 @@ export function replicateDNA(
  *
  * @param dna - The DNA sequence to replicate
  * @param organism - Optional organism profile (default: E_COLI)
- * @returns ValidationResult containing the two replicated DNA strands
+ * @returns Result containing the two replicated DNA strands
  *
  * @example
  * ```typescript
@@ -171,7 +171,7 @@ export function replicateDNA(
 export function replicateDNASimple(
   dna: DNA,
   organism: OrganismProfile = E_COLI,
-): ValidationResult<[DNA, DNA]> {
+): Result<[DNA, DNA]> {
   const result = replicateDNA(dna, { organism });
 
   if (result.success) {

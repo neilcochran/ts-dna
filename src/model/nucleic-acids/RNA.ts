@@ -2,7 +2,7 @@ import { validateNucleicAcid } from '../../utils/validation.js';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError.js';
 import { NucleicAcid } from './NucleicAcid.js';
-import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import { Result, success, failure } from '../../result/index.js';
 
 /**
  * A class representing RNA with a valid sequence.
@@ -51,9 +51,9 @@ export class RNA extends NucleicAcid {
    * Creates an RNA instance with validation.
    *
    * @param source - String sequence OR any NucleicAcid to convert to RNA
-   * @returns ValidationResult containing RNA or error
+   * @returns Result containing RNA or error
    */
-  static create(source: string | NucleicAcid): ValidationResult<RNA> {
+  static create(source: string | NucleicAcid): Result<RNA> {
     try {
       return success(new RNA(source));
     } catch (error) {

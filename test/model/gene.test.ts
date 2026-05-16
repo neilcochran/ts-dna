@@ -1,5 +1,5 @@
 import { Gene } from '../../src/model/nucleic-acids/Gene';
-import { GenomicRegion } from '../../src/types/genomic-region';
+import { GenomicRegion } from '../../src/coordinates';
 import { InvalidSequenceError } from '../../src/model/errors/InvalidSequenceError';
 import { SIMPLE_TWO_EXON_GENE, THREE_EXON_GENE, SINGLE_EXON_GENE } from '../test-genes';
 

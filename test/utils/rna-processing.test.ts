@@ -4,8 +4,8 @@ import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { spliceRNA, validateReadingFrame } from '../../src/utils/rna-processing';
 import { transcribe } from '../../src/utils/transcription';
 import { CODON_LENGTH } from '../../src/constants/biological-constants';
-import { GenomicRegion } from '../../src/types/genomic-region';
-import { isSuccess, isFailure } from '../../src/types/validation-result';
+import { GenomicRegion } from '../../src/coordinates';
+import { isSuccess, isFailure } from '../../src/result/Result';
 import {
   SIMPLE_TWO_EXON_GENE,
   THREE_EXON_GENE,

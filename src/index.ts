@@ -1,3 +1,5 @@
+export * from './result/index.js';
+export * from './coordinates/index.js';
 export * from './model/index.js';
 export * from './enums/index.js';
 export * from './types/index.js';

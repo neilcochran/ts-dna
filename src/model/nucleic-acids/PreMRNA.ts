@@ -1,6 +1,6 @@
 import { RNA } from './RNA.js';
 import { Gene } from './Gene.js';
-import { GenomicRegion } from '../../types/genomic-region.js';
+import { GenomicRegion } from '../../coordinates/index.js';
 
 /**
  * Represents pre-mRNA (precursor mRNA) - the initial RNA transcript containing both exons and introns.

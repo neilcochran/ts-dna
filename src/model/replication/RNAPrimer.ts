@@ -9,7 +9,7 @@
 import { RNA } from '../nucleic-acids/RNA.js';
 import { validateNucleicAcid } from '../../utils/validation.js';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
-import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import { Result, success, failure } from '../../result/index.js';
 import {
   MIN_RNA_PRIMER_LENGTH,
   MAX_RNA_PRIMER_LENGTH,
@@ -57,13 +57,9 @@ export class RNAPrimer {
    * @param sequence - RNA sequence to validate
    * @param position - Position for the primer
    * @param isRemoved - Whether primer is removed
-   * @returns ValidationResult containing RNAPrimer or error
+   * @returns Result containing RNAPrimer or error
    */
-  static create(
-    sequence: string,
-    position: number,
-    isRemoved: boolean = false,
-  ): ValidationResult<RNAPrimer> {
+  static create(sequence: string, position: number, isRemoved: boolean = false): Result<RNAPrimer> {
     try {
       // Validate length
       if (sequence.length < MIN_RNA_PRIMER_LENGTH || sequence.length > MAX_RNA_PRIMER_LENGTH) {
@@ -133,9 +129,9 @@ export class RNAPrimer {
    *
    * @param length - Length of primer (3-10 nucleotides)
    * @param position - Position for the primer
-   * @returns ValidationResult containing random RNAPrimer
+   * @returns Result containing random RNAPrimer
    */
-  static generateRandom(length: number, position: number): ValidationResult<RNAPrimer> {
+  static generateRandom(length: number, position: number): Result<RNAPrimer> {
     if (length < 3 || length > 10) {
       return failure(`Primer length must be 3-10 nucleotides. Provided: ${length}`);
     }

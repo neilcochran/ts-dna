@@ -17,7 +17,7 @@ import {
   isFullyProcessed,
 } from '../../src/utils/rna-modifications';
 import { PolyadenylationSite } from '../../src/types/polyadenylation-site';
-import { isSuccess, isFailure } from '../../src/types/validation-result';
+import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('rna-modifications', () => {
   describe('add5PrimeCap', () => {

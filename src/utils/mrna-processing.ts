@@ -1,6 +1,6 @@
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
 import { MRNA } from '../model/nucleic-acids/MRNA.js';
-import { ValidationResult, success, failure, isSuccess } from '../types/validation-result.js';
+import { Result, success, failure, isSuccess } from '../result/index.js';
 import { spliceRNA } from './rna-processing.js';
 import { findPolyadenylationSites, getStrongestPolyadenylationSite } from './polyadenylation.js';
 import { START_CODON, STOP_CODONS } from './nucleic-acids.js';
@@ -24,7 +24,7 @@ import {
  * @param preMRNA - The pre-mRNA to process
  * @param options - Optional processing configuration. Set skipSpliceSiteValidation to true
  *   to bypass splice site validation during splicing. Useful for mutation modeling.
- * @returns ValidationResult containing mature MRNA or error message
+ * @returns Result containing mature MRNA or error message
  *
  * @example
  * ```typescript
@@ -40,7 +40,7 @@ import {
 export function processRNA(
   preMRNA: PreMRNA,
   options: RNAProcessingOptions = DEFAULT_RNA_PROCESSING_OPTIONS,
-): ValidationResult<MRNA> {
+): Result<MRNA> {
   const opts = { ...DEFAULT_RNA_PROCESSING_OPTIONS, ...options };
 
   try {
@@ -171,12 +171,12 @@ interface CodingSequenceInfo {
  *
  * @param sequence - The full mRNA sequence including any poly-A tail
  * @param polyATailLength - Length of poly-A tail to exclude from search
- * @returns ValidationResult with coding sequence information
+ * @returns Result with coding sequence information
  */
 function findCodingSequence(
   sequence: string,
   polyATailLength: number = 0,
-): ValidationResult<CodingSequenceInfo> {
+): Result<CodingSequenceInfo> {
   // Search region excludes poly-A tail
   const searchSequence = sequence.substring(0, sequence.length - polyATailLength);
 
@@ -218,7 +218,7 @@ function findCodingSequence(
  * This is a migration utility for transitioning from the temporary ProcessedRNA class.
  *
  * @param processedRNA - The ProcessedRNA instance to convert
- * @returns ValidationResult containing the equivalent MRNA instance
+ * @returns Result containing the equivalent MRNA instance
  *
  * @example
  * ```typescript
@@ -230,7 +230,7 @@ export function convertProcessedRNAToMRNA(processedRNA: {
   getSequence(): string;
   polyATail?: string;
   hasFivePrimeCap?: boolean;
-}): ValidationResult<MRNA> {
+}): Result<MRNA> {
   try {
     const sequence = processedRNA.getSequence();
     const polyATail = processedRNA.polyATail ?? '';

@@ -5,7 +5,7 @@ import {
   SimpleReplicationOptions,
 } from '../../../src/utils/replication/simple-replication.js';
 import { E_COLI, HUMAN } from '../../../src/types/replication-types.js';
-import { isSuccess, isFailure } from '../../../src/types/validation-result.js';
+import { isSuccess, isFailure } from '../../../src/result/Result.js';
 
 describe('Simple DNA Replication', () => {
   describe('replicateDNA', () => {

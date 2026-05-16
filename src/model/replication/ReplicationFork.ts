@@ -7,7 +7,7 @@
  */
 
 import { OrganismProfile } from '../../types/replication-types.js';
-import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import { Result, success, failure } from '../../result/index.js';
 
 /**
  * Represents a DNA replication fork and its progression.
@@ -35,13 +35,13 @@ export class ReplicationFork {
    * @param position - Starting position
    * @param dnaLength - Total DNA length
    * @param organism - Organism profile
-   * @returns ValidationResult containing ReplicationFork or error
+   * @returns Result containing ReplicationFork or error
    */
   static create(
     position: number,
     dnaLength: number,
     organism: OrganismProfile,
-  ): ValidationResult<ReplicationFork> {
+  ): Result<ReplicationFork> {
     try {
       if (position < 0) {
         return failure(`Position must be non-negative. Provided: ${position}`);

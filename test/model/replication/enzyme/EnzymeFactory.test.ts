@@ -7,7 +7,7 @@ import {
   EnzymeFactory,
 } from '../../../../src/model/replication/enzyme/index.js';
 import { EnzymeType } from '../../../../src/types/replication-types.js';
-import { isSuccess, isFailure } from '../../../../src/types/validation-result.js';
+import { isSuccess, isFailure } from '../../../../src/result/Result.js';
 
 describe('EnzymeFactory', () => {
   describe('enzyme creation with validation', () => {

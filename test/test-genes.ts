@@ -5,7 +5,7 @@
  * - Proper start codons (ATG) and biological sequences
  */
 
-import { GenomicRegion } from '../src/types/genomic-region';
+import { GenomicRegion } from '../src/coordinates';
 
 // Simple two-exon gene with 20bp intron and stop codon
 export const SIMPLE_TWO_EXON_GENE = {

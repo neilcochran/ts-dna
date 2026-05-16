@@ -1,7 +1,7 @@
 import { Replisome } from '../../../src/model/replication/Replisome.js';
 import { ReplicationFork } from '../../../src/model/replication/ReplicationFork.js';
 import { E_COLI, HUMAN, EnzymeType } from '../../../src/types/replication-types.js';
-import { isSuccess } from '../../../src/types/validation-result.js';
+import { isSuccess, success, failure } from '../../../src/result/Result.js';
 import { EnzymeFactory } from '../../../src/model/replication/enzyme/EnzymeFactory.js';
 import { RNAPrimer } from '../../../src/model/replication/RNAPrimer.js';
 import { OkazakiFragment } from '../../../src/model/replication/OkazakiFragment.js';
@@ -535,61 +535,52 @@ describe('Replisome', () => {
       // Test helicase creation failure
       const helicaseSpy = jest
         .spyOn(EnzymeFactory, 'createHelicase')
-        .mockReturnValue({ success: false, error: 'Helicase creation failed' });
+        .mockReturnValue(failure('Helicase creation failed'));
       const primaseSpy = jest
         .spyOn(EnzymeFactory, 'createPrimase')
-        .mockReturnValue({ success: true, data: {} as any });
+        .mockReturnValue(success({} as any));
       const polymeraseSpy = jest
         .spyOn(EnzymeFactory, 'createPolymerase')
-        .mockReturnValue({ success: true, data: {} as any });
+        .mockReturnValue(success({} as any));
       const ligaseSpy = jest
         .spyOn(EnzymeFactory, 'createLigase')
-        .mockReturnValue({ success: true, data: {} as any });
+        .mockReturnValue(success({} as any));
       const exonucleaseSpy = jest
         .spyOn(EnzymeFactory, 'createExonuclease')
-        .mockReturnValue({ success: true, data: {} as any });
+        .mockReturnValue(success({} as any));
 
       expect(() => new Replisome(fork, E_COLI)).toThrow('Helicase creation failed');
 
       // Test primase creation failure
-      helicaseSpy.mockReturnValue({ success: true, data: {} as any });
-      primaseSpy.mockReturnValue({
-        success: false,
-        error: 'Primase creation failed',
-      });
+      helicaseSpy.mockReturnValue(success({} as any));
+      primaseSpy.mockReturnValue(failure('Primase creation failed'));
 
       expect(() => new Replisome(fork, E_COLI)).toThrow('Primase creation failed');
 
       // Test leading polymerase creation failure
-      primaseSpy.mockReturnValue({ success: true, data: {} as any });
+      primaseSpy.mockReturnValue(success({} as any));
       polymeraseSpy
-        .mockReturnValueOnce({ success: false, error: 'Leading polymerase creation failed' })
-        .mockReturnValue({ success: true, data: {} as any });
+        .mockReturnValueOnce(failure('Leading polymerase creation failed'))
+        .mockReturnValue(success({} as any));
 
       expect(() => new Replisome(fork, E_COLI)).toThrow('Leading polymerase creation failed');
 
       // Test lagging polymerase creation failure
       polymeraseSpy
-        .mockReturnValueOnce({ success: true, data: {} as any })
-        .mockReturnValueOnce({ success: false, error: 'Lagging polymerase creation failed' });
+        .mockReturnValueOnce(success({} as any))
+        .mockReturnValueOnce(failure('Lagging polymerase creation failed'));
 
       expect(() => new Replisome(fork, E_COLI)).toThrow('Lagging polymerase creation failed');
 
       // Test ligase creation failure
-      polymeraseSpy.mockReturnValue({ success: true, data: {} as any });
-      ligaseSpy.mockReturnValue({
-        success: false,
-        error: 'Ligase creation failed',
-      });
+      polymeraseSpy.mockReturnValue(success({} as any));
+      ligaseSpy.mockReturnValue(failure('Ligase creation failed'));
 
       expect(() => new Replisome(fork, E_COLI)).toThrow('Ligase creation failed');
 
       // Test exonuclease creation failure
-      ligaseSpy.mockReturnValue({ success: true, data: {} as any });
-      exonucleaseSpy.mockReturnValue({
-        success: false,
-        error: 'Exonuclease creation failed',
-      });
+      ligaseSpy.mockReturnValue(success({} as any));
+      exonucleaseSpy.mockReturnValue(failure('Exonuclease creation failed'));
 
       expect(() => new Replisome(fork, E_COLI)).toThrow('Exonuclease creation failed');
 
@@ -606,9 +597,7 @@ describe('Replisome', () => {
 
       // Mock RNAPrimer.generateRandom to fail
       const originalGenerateRandom = RNAPrimer.generateRandom;
-      RNAPrimer.generateRandom = jest
-        .fn()
-        .mockReturnValue({ success: false, error: 'Primer generation failed' });
+      RNAPrimer.generateRandom = jest.fn().mockReturnValue(failure('Primer generation failed'));
 
       // Try to advance the fork which should trigger fragment initiation
       expect(() => replisome.advanceFork(1000)).toThrow(
@@ -624,9 +613,7 @@ describe('Replisome', () => {
 
       // Mock OkazakiFragment.create to fail
       const originalCreate = OkazakiFragment.create;
-      OkazakiFragment.create = jest
-        .fn()
-        .mockReturnValue({ success: false, error: 'Fragment creation failed' });
+      OkazakiFragment.create = jest.fn().mockReturnValue(failure('Fragment creation failed'));
 
       // Try to advance the fork which should trigger fragment initiation
       expect(() => replisome.advanceFork(1000)).toThrow(

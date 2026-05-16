@@ -1,7 +1,7 @@
 import { transcribe, TranscriptionOptions } from '../../src/utils/transcription';
 import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';
-import { isSuccess, isFailure } from '../../src/types/validation-result';
+import { isSuccess, isFailure } from '../../src/result/Result';
 import {
   MAX_PROMOTER_SEARCH_DISTANCE,
   MIN_INTRON_SIZE,

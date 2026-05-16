@@ -1,6 +1,6 @@
 import { RNA } from '../model/nucleic-acids/RNA.js';
 import { PolyadenylationSite } from '../types/polyadenylation-site.js';
-import { ValidationResult, success, failure } from '../types/validation-result.js';
+import { Result, success, failure } from '../result/index.js';
 import {
   DEFAULT_POLY_A_TAIL_LENGTH,
   MAX_POLY_A_TAIL_LENGTH,
@@ -69,7 +69,7 @@ export function add3PrimePolyATail(
   rna: RNA,
   cleavageSite: number,
   tailLength: number = DEFAULT_POLY_A_TAIL_LENGTH,
-): ValidationResult<ProcessedRNA> {
+): Result<ProcessedRNA> {
   try {
     const sequence = rna.getSequence();
 
@@ -113,7 +113,7 @@ export function add3PrimePolyATailAtSite(
   rna: RNA,
   polySite: PolyadenylationSite,
   tailLength: number = DEFAULT_POLY_A_TAIL_LENGTH,
-): ValidationResult<ProcessedRNA> {
+): Result<ProcessedRNA> {
   const cleavageSite = polySite.cleavageSite ?? polySite.position + polySite.signal.length + 15;
   return add3PrimePolyATail(rna, cleavageSite, tailLength);
 }
@@ -122,7 +122,7 @@ export function add3PrimePolyATailAtSite(
  * Removes the 3' poly-A tail from an RNA sequence.
  * This can be useful for analysis or simulating deadenylation.
  */
-export function remove3PrimePolyATail(rna: RNA): ValidationResult<ProcessedRNA> {
+export function remove3PrimePolyATail(rna: RNA): Result<ProcessedRNA> {
   try {
     if (rna instanceof ProcessedRNA) {
       if (rna.polyATail.length === 0) {
@@ -153,7 +153,7 @@ export function remove3PrimePolyATail(rna: RNA): ValidationResult<ProcessedRNA> 
 /**
  * Removes the 5' cap from an RNA sequence.
  */
-export function remove5PrimeCap(rna: RNA): ValidationResult<ProcessedRNA> {
+export function remove5PrimeCap(rna: RNA): Result<ProcessedRNA> {
   try {
     if (rna instanceof ProcessedRNA) {
       if (!rna.hasFivePrimeCap) {

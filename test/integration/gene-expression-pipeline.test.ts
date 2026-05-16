@@ -12,7 +12,7 @@ import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { transcribe } from '../../src/utils/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
-import { isSuccess, isFailure } from '../../src/types/validation-result';
+import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('Gene Expression Pipeline Integration', () => {
   describe('complete pipeline: Gene → transcription → RNA processing', () => {

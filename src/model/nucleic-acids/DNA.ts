@@ -2,7 +2,7 @@ import { NucleicAcid } from './NucleicAcid.js';
 import { validateNucleicAcid } from '../../utils/validation.js';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError.js';
-import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import { Result, success, failure } from '../../result/index.js';
 
 /**
  * A class representing DNA with a valid sequence.
@@ -51,9 +51,9 @@ export class DNA extends NucleicAcid {
    * Creates a DNA instance with validation.
    *
    * @param source - String sequence OR any NucleicAcid to convert to DNA
-   * @returns ValidationResult containing DNA or error
+   * @returns Result containing DNA or error
    */
-  static create(source: string | NucleicAcid): ValidationResult<DNA> {
+  static create(source: string | NucleicAcid): Result<DNA> {
     try {
       return success(new DNA(source));
     } catch (error) {

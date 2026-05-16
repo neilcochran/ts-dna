@@ -14,7 +14,7 @@ import { processRNA } from '../../src/utils/mrna-processing';
 import { convertToRNA, isValidNucleicAcid } from '../../src/utils/nucleic-acids';
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import { NucleicAcidType } from '../../src/enums/nucleic-acid-type';
-import { isSuccess, isFailure } from '../../src/types/validation-result';
+import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('Validation Scenarios Integration Tests', () => {
   describe('Sequence Validation Across Modules', () => {
@@ -25,7 +25,7 @@ describe('Validation Scenarios Integration Tests', () => {
       expect(() => new DNA('ATGXYZ')).toThrow();
       expect(() => new RNA('AUGXYZ')).toThrow();
 
-      // ValidationResult pattern should handle errors gracefully
+      // Result pattern should handle errors gracefully
       const dnaResult = DNA.create('ATGXYZ');
       expect(isFailure(dnaResult)).toBe(true);
 

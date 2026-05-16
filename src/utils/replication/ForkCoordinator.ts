@@ -16,7 +16,7 @@ import {
   ReplicationEvent,
   ReplicationRuntimeState,
 } from '../../types/replication-types.js';
-import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import { Result, success, failure } from '../../result/index.js';
 
 /**
  * Coordinates replication fork progression and strand synthesis activities.
@@ -50,7 +50,7 @@ export class ForkCoordinator {
    *
    * @returns Validation result with initialization events
    */
-  initializeReplication(): ValidationResult<ReplicationEvent[]> {
+  initializeReplication(): Result<ReplicationEvent[]> {
     const events: ReplicationEvent[] = [];
 
     try {
@@ -83,7 +83,7 @@ export class ForkCoordinator {
    * @param basePairs - Number of base pairs to advance
    * @returns Validation result with replication state
    */
-  advanceFork(basePairs: number): ValidationResult<ReplicationRuntimeState> {
+  advanceFork(basePairs: number): Result<ReplicationRuntimeState> {
     if (basePairs <= 0) {
       return failure('Base pairs to advance must be positive');
     }
@@ -126,7 +126,7 @@ export class ForkCoordinator {
    * @param maxSteps - Maximum number of advancement steps to prevent infinite loops
    * @returns Validation result with final state
    */
-  completeReplication(maxSteps: number = 10000): ValidationResult<ReplicationRuntimeState> {
+  completeReplication(maxSteps: number = 10000): Result<ReplicationRuntimeState> {
     let steps = 0;
     const stepSize = Math.max(1, Math.floor(this.dna.getSequence().length / 100)); // 1% increments
 

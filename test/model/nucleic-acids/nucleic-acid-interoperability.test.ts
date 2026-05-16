@@ -4,7 +4,7 @@
 
 import { DNA } from '../../../src/model/nucleic-acids/DNA';
 import { RNA } from '../../../src/model/nucleic-acids/RNA';
-import { isSuccess } from '../../../src/types/validation-result';
+import { isSuccess } from '../../../src/result/Result';
 
 describe('Nucleic Acid Interoperability', () => {
   const testDNASequence = 'ATCGATCG';

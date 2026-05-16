@@ -1,0 +1,91 @@
+/**
+ * Branded coordinate types and conversion helpers.
+ *
+ * The library deals with positions in several distinct coordinate spaces - gene-relative,
+ * transcript-relative, and eventually CDS-relative. Mixing them is the single most-common
+ * bug source in the codebase. Branded `number` types make the coordinate space part of the
+ * type, so the type system prevents accidental cross-space arithmetic at compile time.
+ *
+ * The brand is purely type-level: at runtime the values are ordinary numbers. Construct via
+ * the {@link geneCoord} / {@link transcriptCoord} assignment primitives, and translate between
+ * spaces via the conversion helpers.
+ */
+
+/**
+ * A position measured relative to the start of a gene's sequence (gene-relative coordinates).
+ *
+ * Used for `Gene.exons`, `Gene.introns`, and any other position expressed in the gene's own
+ * coordinate frame. Distinct at the type level from {@link TranscriptCoord}; conversion goes
+ * via {@link transcriptToGeneCoord} / {@link geneToTranscriptCoord}.
+ */
+export type GeneCoord = number & {
+  /** Type-level brand. Not present at runtime. */
+  readonly __brand: 'GeneCoord';
+};
+
+/**
+ * A position measured relative to the start of a transcript (transcription start site = 0).
+ *
+ * Used for `PreMRNA.exonRegions`, `PreMRNA.intronRegions`, and any other position expressed
+ * in transcript-relative coordinates. Distinct at the type level from {@link GeneCoord};
+ * conversion goes via {@link geneToTranscriptCoord} / {@link transcriptToGeneCoord}.
+ */
+export type TranscriptCoord = number & {
+  /** Type-level brand. Not present at runtime. */
+  readonly __brand: 'TranscriptCoord';
+};
+
+/**
+ * Brands a plain number as a {@link GeneCoord}.
+ *
+ * The function performs no validation; it is the caller's responsibility to ensure that `n`
+ * is a meaningful position in gene-relative coordinates.
+ *
+ * @param n - The numeric position
+ * @returns `n` with the {@link GeneCoord} brand applied
+ */
+export function geneCoord(n: number): GeneCoord {
+  return n as GeneCoord;
+}
+
+/**
+ * Brands a plain number as a {@link TranscriptCoord}.
+ *
+ * The function performs no validation; it is the caller's responsibility to ensure that `n`
+ * is a meaningful position in transcript-relative coordinates.
+ *
+ * @param n - The numeric position
+ * @returns `n` with the {@link TranscriptCoord} brand applied
+ */
+export function transcriptCoord(n: number): TranscriptCoord {
+  return n as TranscriptCoord;
+}
+
+/**
+ * Converts a {@link GeneCoord} into the corresponding {@link TranscriptCoord}, given the gene-relative
+ * transcription start site.
+ *
+ * Positions upstream of the TSS produce negative {@link TranscriptCoord} values; downstream
+ * positions produce non-negative values. The conversion is `coord - tss`.
+ *
+ * @param coord - The gene-relative position to convert
+ * @param tss - The gene-relative position of the transcription start site
+ * @returns The position in transcript-relative coordinates
+ */
+export function geneToTranscriptCoord(coord: GeneCoord, tss: GeneCoord): TranscriptCoord {
+  return transcriptCoord(coord - tss);
+}
+
+/**
+ * Converts a {@link TranscriptCoord} into the corresponding {@link GeneCoord}, given the gene-relative
+ * transcription start site.
+ *
+ * The conversion is `coord + tss`.
+ *
+ * @param coord - The transcript-relative position to convert
+ * @param tss - The gene-relative position of the transcription start site
+ * @returns The position in gene-relative coordinates
+ */
+export function transcriptToGeneCoord(coord: TranscriptCoord, tss: GeneCoord): GeneCoord {
+  return geneCoord(coord + tss);
+}

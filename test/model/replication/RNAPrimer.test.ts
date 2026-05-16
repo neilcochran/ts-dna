@@ -1,5 +1,5 @@
 import { RNAPrimer } from '../../../src/model/replication/RNAPrimer.js';
-import { isSuccess, isFailure } from '../../../src/types/validation-result.js';
+import { isSuccess, isFailure } from '../../../src/result/Result.js';
 
 describe('RNAPrimer', () => {
   describe('constructor', () => {

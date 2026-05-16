@@ -2,7 +2,7 @@ import { ForkCoordinator } from '../../../src/utils/replication/ForkCoordinator.
 import { DNA } from '../../../src/model/nucleic-acids/DNA.js';
 import { ReplicationFork } from '../../../src/model/replication/ReplicationFork.js';
 import { E_COLI, HUMAN } from '../../../src/types/replication-types.js';
-import { isSuccess, isFailure } from '../../../src/types/validation-result.js';
+import { isSuccess, isFailure, failure } from '../../../src/result/Result.js';
 
 describe('ForkCoordinator', () => {
   let dna: DNA;
@@ -79,7 +79,7 @@ describe('ForkCoordinator', () => {
       const mockCoordinator = new ForkCoordinator(dna, fork, E_COLI);
       const originalInitiate = (mockCoordinator as any).leadingStrand.initiateSynthesis;
       (mockCoordinator as any).leadingStrand.initiateSynthesis = () => {
-        return { success: false, error: 'Leading strand mock failure' };
+        return failure('Leading strand mock failure');
       };
 
       const result = mockCoordinator.initializeReplication();
@@ -98,7 +98,7 @@ describe('ForkCoordinator', () => {
       const mockCoordinator = new ForkCoordinator(dna, fork, E_COLI);
       const originalInitiate = (mockCoordinator as any).laggingStrand.initiateSynthesis;
       (mockCoordinator as any).laggingStrand.initiateSynthesis = () => {
-        return { success: false, error: 'Lagging strand mock failure' };
+        return failure('Lagging strand mock failure');
       };
 
       const result = mockCoordinator.initializeReplication();
@@ -497,7 +497,7 @@ describe('ForkCoordinator', () => {
         callCount++;
         if (callCount > 2) {
           // Fail after a couple of successful calls
-          return { success: false, error: 'Simulated advancement failure' };
+          return failure('Simulated advancement failure');
         }
         return originalAdvanceFork(basePairs);
       });

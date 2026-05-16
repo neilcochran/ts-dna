@@ -1,6 +1,6 @@
 import { RNA } from '../model/nucleic-acids/RNA.js';
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
-import { ValidationResult, success, failure, isFailure } from '../types/validation-result.js';
+import { Result, success, failure, isFailure } from '../result/index.js';
 import { START_CODON } from './nucleic-acids.js';
 
 /**
@@ -16,7 +16,7 @@ import { START_CODON } from './nucleic-acids.js';
 export function spliceRNA(
   preMRNA: PreMRNA,
   options: { skipSpliceSiteValidation?: boolean } = {},
-): ValidationResult<RNA> {
+): Result<RNA> {
   try {
     const exonRegions = preMRNA.getExonRegions();
     const sequence = preMRNA.getSequence();
@@ -64,9 +64,9 @@ export function spliceRNA(
  * This fixes the coordinate system mismatch in the original validateAllSpliceSites function.
  *
  * @param preMRNA - The pre-mRNA to validate splice sites for
- * @returns ValidationResult indicating whether all splice sites are valid
+ * @returns Result indicating whether all splice sites are valid
  */
-function validateTranscriptSpliceSites(preMRNA: PreMRNA): ValidationResult<boolean> {
+function validateTranscriptSpliceSites(preMRNA: PreMRNA): Result<boolean> {
   const intronRegions = preMRNA.getIntronRegions();
 
   if (intronRegions.length === 0) {
@@ -108,7 +108,7 @@ function validateTranscriptSpliceSites(preMRNA: PreMRNA): ValidationResult<boole
  * Checks if a spliced RNA maintains proper reading frame for translation.
  * This is important for ensuring the resulting polypeptide will be correctly translated.
  */
-export function validateReadingFrame(rna: RNA, expectedStart?: number): ValidationResult<boolean> {
+export function validateReadingFrame(rna: RNA, expectedStart?: number): Result<boolean> {
   const sequence = rna.getSequence();
   const startPos = expectedStart ?? 0;
 

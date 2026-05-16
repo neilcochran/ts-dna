@@ -1,8 +1,8 @@
 import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
-import { GenomicRegion } from '../../src/types/genomic-region';
-import { isSuccess } from '../../src/types/validation-result';
+import { GenomicRegion } from '../../src/coordinates';
+import { isSuccess } from '../../src/result/Result';
 import {
   SpliceVariant,
   AlternativeSplicingProfile,

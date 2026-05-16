@@ -2,7 +2,7 @@ import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
 import { MRNA } from '../model/nucleic-acids/MRNA.js';
 import { DNA } from '../model/nucleic-acids/DNA.js';
 import { Gene } from '../model/nucleic-acids/Gene.js';
-import { ValidationResult, success, failure } from '../types/validation-result.js';
+import { Result, success, failure } from '../result/index.js';
 import { convertToRNA, START_CODON, STOP_CODONS } from './nucleic-acids.js';
 import { CODON_LENGTH } from '../constants/biological-constants.js';
 import {
@@ -18,7 +18,7 @@ import {
  * @param preMRNA - The pre-mRNA to process
  * @param variant - The splice variant specifying which exons to include
  * @param options - Optional configuration for splicing validation
- * @returns ValidationResult containing the mature RNA or error message
+ * @returns Result containing the mature RNA or error message
  *
  * @example
  * ```typescript
@@ -33,7 +33,7 @@ export function spliceRNAWithVariant(
   preMRNA: PreMRNA,
   variant: SpliceVariant,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
-): ValidationResult<MRNA> {
+): Result<MRNA> {
   const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
   const sourceGene = preMRNA.getSourceGene();
 
@@ -75,7 +75,7 @@ export function spliceRNAWithVariant(
  *
  * @param preMRNA - The pre-mRNA to process
  * @param options - Optional configuration for splicing validation
- * @returns ValidationResult containing array of SplicingOutcome objects or error message
+ * @returns Result containing array of SplicingOutcome objects or error message
  *
  * @example
  * ```typescript
@@ -90,7 +90,7 @@ export function spliceRNAWithVariant(
 export function processAllSplicingVariants(
   preMRNA: PreMRNA,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
-): ValidationResult<SplicingOutcome[]> {
+): Result<SplicingOutcome[]> {
   const sourceGene = preMRNA.getSourceGene();
   const splicingProfile = sourceGene.getSplicingProfile();
 
@@ -142,7 +142,7 @@ export function processAllSplicingVariants(
  * @param variant - The splice variant to validate
  * @param gene - The gene to validate against
  * @param options - Splicing validation options
- * @returns ValidationResult indicating whether the variant is valid
+ * @returns Result indicating whether the variant is valid
  *
  * @example
  * ```typescript
@@ -156,7 +156,7 @@ export function validateSpliceVariant(
   variant: SpliceVariant,
   gene: Gene,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
-): ValidationResult<boolean> {
+): Result<boolean> {
   const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
   const exons = gene.getExons();
 
@@ -240,7 +240,7 @@ export function validateSpliceVariant(
  *
  * @param preMRNA - The pre-mRNA to process
  * @param options - Optional configuration for splicing validation
- * @returns ValidationResult containing the mature RNA or error message
+ * @returns Result containing the mature RNA or error message
  *
  * @example
  * ```typescript
@@ -253,7 +253,7 @@ export function validateSpliceVariant(
 export function processDefaultSpliceVariant(
   preMRNA: PreMRNA,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
-): ValidationResult<MRNA> {
+): Result<MRNA> {
   const sourceGene = preMRNA.getSourceGene();
   const defaultVariant = sourceGene.getDefaultSplicingVariant();
 
@@ -269,7 +269,7 @@ export function processDefaultSpliceVariant(
  *
  * @param gene - The gene to generate variants for
  * @param options - Optional configuration for filtering generated variants
- * @returns ValidationResult containing array of generated SpliceVariant objects
+ * @returns Result containing array of generated SpliceVariant objects
  *
  * @example
  * ```typescript
@@ -285,7 +285,7 @@ export function processDefaultSpliceVariant(
 export function generateAllSpliceVariants(
   gene: Gene,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
-): ValidationResult<SpliceVariant[]> {
+): Result<SpliceVariant[]> {
   const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
   const exons = gene.getExons();
 
@@ -369,7 +369,7 @@ export function generateAllSpliceVariants(
  * @param minLength - Minimum polypeptide length in amino acids
  * @param maxLength - Maximum polypeptide length in amino acids
  * @param options - Optional configuration for splicing validation
- * @returns ValidationResult containing array of matching SplicingOutcome objects
+ * @returns Result containing array of matching SplicingOutcome objects
  *
  * @example
  * ```typescript
@@ -384,7 +384,7 @@ export function findVariantsByPolypeptideLength(
   minLength: number,
   maxLength: number,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
-): ValidationResult<SplicingOutcome[]> {
+): Result<SplicingOutcome[]> {
   const allVariantsResult = processAllSplicingVariants(preMRNA, options);
 
   if (!allVariantsResult.success) {

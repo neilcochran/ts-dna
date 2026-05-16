@@ -14,7 +14,7 @@
 
 import { RNAPrimer } from './RNAPrimer.js';
 import { DNA } from '../nucleic-acids/DNA.js';
-import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import { Result, success, failure } from '../../result/index.js';
 import { OrganismProfile } from '../../types/replication-types.js';
 
 /**
@@ -55,7 +55,7 @@ export class OkazakiFragment {
    * @param primer - RNA primer
    * @param isPrimerRemoved - Primer removal status
    * @param isLigated - Ligation status
-   * @returns ValidationResult containing OkazakiFragment or error
+   * @returns Result containing OkazakiFragment or error
    */
   static create(
     id: string,
@@ -64,7 +64,7 @@ export class OkazakiFragment {
     primer: RNAPrimer,
     isPrimerRemoved: boolean = false,
     isLigated: boolean = false,
-  ): ValidationResult<OkazakiFragment> {
+  ): Result<OkazakiFragment> {
     try {
       // Validate ID
       if (!id || id.trim().length === 0) {
@@ -221,7 +221,7 @@ export class OkazakiFragment {
    * @param organism - Organism profile to validate against
    * @returns Validation result
    */
-  validateForOrganism(organism: OrganismProfile): ValidationResult<boolean> {
+  validateForOrganism(organism: OrganismProfile): Result<boolean> {
     const length = this.getLength();
     const [minSize, maxSize] = organism.fragmentSize;
 
@@ -240,13 +240,13 @@ export class OkazakiFragment {
    * @param id - Fragment identifier
    * @param startPosition - Starting position
    * @param organism - Organism profile for size constraints
-   * @returns ValidationResult containing random OkazakiFragment
+   * @returns Result containing random OkazakiFragment
    */
   static generateRandom(
     id: string,
     startPosition: number,
     organism: OrganismProfile,
-  ): ValidationResult<OkazakiFragment> {
+  ): Result<OkazakiFragment> {
     try {
       // Generate random fragment size within organism constraints
       const [minSize, maxSize] = organism.fragmentSize;

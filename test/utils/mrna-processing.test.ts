@@ -8,8 +8,8 @@ import {
   convertProcessedRNAToMRNA,
 } from '../../src/utils/mrna-processing';
 import { DEFAULT_POLY_A_TAIL_LENGTH } from '../../src/constants/biological-constants';
-import { GenomicRegion } from '../../src/types/genomic-region';
-import { isSuccess, isFailure } from '../../src/types/validation-result';
+import { GenomicRegion } from '../../src/coordinates';
+import { isSuccess, isFailure } from '../../src/result/Result';
 import { SIMPLE_TWO_EXON_GENE, SINGLE_EXON_GENE, INVALID_SPLICE_GENE } from '../test-genes';
 
 describe('mrna-processing', () => {

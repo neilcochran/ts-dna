@@ -1,7 +1,7 @@
 import { OkazakiFragment } from '../../../src/model/replication/OkazakiFragment.js';
 import { RNAPrimer } from '../../../src/model/replication/RNAPrimer.js';
 import { E_COLI, HUMAN } from '../../../src/types/replication-types.js';
-import { isSuccess, isFailure } from '../../../src/types/validation-result.js';
+import { isSuccess, isFailure } from '../../../src/result/Result.js';
 
 describe('OkazakiFragment', () => {
   let testPrimer: RNAPrimer;

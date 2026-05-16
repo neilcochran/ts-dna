@@ -23,7 +23,7 @@ import {
   PERFECT_DSE_SCORE,
   MIN_POLYA_SITE_STRENGTH,
 } from '../constants/biological-constants.js';
-import { GenomicRegion } from '../types/genomic-region.js';
+import { GenomicRegion } from '../coordinates/index.js';
 
 /**
  * Finds polyadenylation sites in an RNA sequence with enhanced analysis

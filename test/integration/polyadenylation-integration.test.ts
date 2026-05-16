@@ -8,7 +8,7 @@ import { Gene } from '../../src/model/nucleic-acids/Gene';
 import { transcribe } from '../../src/utils/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { findPolyadenylationSites } from '../../src/utils/polyadenylation';
-import { isSuccess } from '../../src/types/validation-result';
+import { isSuccess } from '../../src/result/Result';
 
 describe('Polyadenylation Integration Tests', () => {
   test('basic polyadenylation integration with RNA processing', () => {

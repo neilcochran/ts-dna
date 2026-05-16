@@ -1,4 +1,4 @@
-import { GenomicRegion } from '../types/genomic-region.js';
+import { GenomicRegion } from '../coordinates/index.js';
 import {
   MIN_INTRON_LENGTH_FOR_SPLICING,
   DONOR_SPLICE_CONSENSUS,

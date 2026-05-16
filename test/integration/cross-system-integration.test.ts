@@ -12,7 +12,7 @@ import { transcribe } from '../../src/utils/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { replicateDNA } from '../../src/utils/replication/simple-replication';
-import { isSuccess, isFailure } from '../../src/types/validation-result';
+import { isSuccess, isFailure } from '../../src/result/Result';
 import { DNA } from '../../src/model/nucleic-acids/DNA';
 
 describe('Cross-System Integration Tests', () => {
@@ -195,7 +195,7 @@ describe('Cross-System Integration Tests', () => {
       // Gene construction should fail with validation error
       expect(() => new Gene(validSequence, invalidExons, 'invalid-gene')).toThrow(); // Should throw during construction
 
-      // Alternatively, if using ValidationResult pattern:
+      // Alternatively, if using Result pattern:
       // const geneResult = Gene.create(validSequence, invalidExons, 'invalid-gene');
       // expect(isFailure(geneResult)).toBe(true);
     });

@@ -23,7 +23,7 @@ import {
   ReplicationRuntimeState,
   EnzymePosition,
 } from '../../types/replication-types.js';
-import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import { Result, success, failure } from '../../result/index.js';
 
 /**
  * Configuration for replisome assembly.
@@ -80,13 +80,13 @@ export class Replisome {
    * @param fork - Replication fork
    * @param organism - Organism profile
    * @param config - Configuration options
-   * @returns ValidationResult containing Replisome or error
+   * @returns Result containing Replisome or error
    */
   static create(
     fork: ReplicationFork,
     organism: OrganismProfile,
     config: ReplisomeConfig = {},
-  ): ValidationResult<Replisome> {
+  ): Result<Replisome> {
     try {
       return success(new Replisome(fork, organism, config));
     } catch (error) {

@@ -13,7 +13,7 @@ import { Exonuclease } from '../../model/replication/enzyme/Exonuclease.js';
 import { OkazakiFragment } from '../../model/replication/OkazakiFragment.js';
 import { RNAPrimer } from '../../model/replication/RNAPrimer.js';
 import { OrganismProfile, ReplicationEvent } from '../../types/replication-types.js';
-import { ValidationResult, success, failure } from '../../types/validation-result.js';
+import { Result, success, failure } from '../../result/index.js';
 import { DNA_PROOFREADING_THRESHOLD } from '../../constants/biological-constants.js';
 
 /**
@@ -51,7 +51,7 @@ export class LaggingStrandSynthesis {
    * @param forkPosition - Current position of the replication fork
    * @returns Validation result with success/failure
    */
-  initiateSynthesis(forkPosition: number): ValidationResult<ReplicationEvent[]> {
+  initiateSynthesis(forkPosition: number): Result<ReplicationEvent[]> {
     if (forkPosition < 0) {
       return failure(`Invalid fork position: ${forkPosition}. Must be non-negative`);
     }
@@ -115,7 +115,7 @@ export class LaggingStrandSynthesis {
    * @param position - Position where the fragment should start
    * @returns Validation result with replication events
    */
-  private initiateFragment(position: number): ValidationResult<ReplicationEvent[]> {
+  private initiateFragment(position: number): Result<ReplicationEvent[]> {
     const events: ReplicationEvent[] = [];
 
     try {

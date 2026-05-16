@@ -1,6 +1,6 @@
 import { ReplicationFork } from '../../../src/model/replication/ReplicationFork.js';
 import { E_COLI, HUMAN } from '../../../src/types/replication-types.js';
-import { isSuccess, isFailure } from '../../../src/types/validation-result.js';
+import { isSuccess, isFailure } from '../../../src/result/Result.js';
 
 describe('ReplicationFork', () => {
   describe('constructor', () => {

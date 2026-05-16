@@ -20,7 +20,7 @@ import {
 } from '../../src/utils/alternative-splicing';
 // Removed convertToRNA, convertToDNA imports - using direct constructors instead
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
-import { isSuccess, isFailure } from '../../src/types/validation-result';
+import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('Comprehensive Pipeline Integration Tests', () => {
   describe('DNA → RNA → Protein Pipeline', () => {

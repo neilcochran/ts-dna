@@ -12,7 +12,7 @@ import { transcribe } from '../../src/utils/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { convertToRNA } from '../../src/utils/nucleic-acids';
-import { isSuccess, isFailure } from '../../src/types/validation-result';
+import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('Biological Scenarios Integration Tests', () => {
   describe('Human Gene Models', () => {

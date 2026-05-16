@@ -2,13 +2,7 @@ import { Gene } from '../model/nucleic-acids/Gene.js';
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
 import { DNA } from '../model/nucleic-acids/DNA.js';
 import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern.js';
-import {
-  ValidationResult,
-  success,
-  failure,
-  isFailure,
-  isSuccess,
-} from '../types/validation-result.js';
+import { Result, success, failure, isFailure, isSuccess } from '../result/index.js';
 import { findPromoters, identifyTSS, PromoterSearchOptions } from './promoter-recognition.js';
 import { convertToRNA } from './nucleic-acids.js';
 import {
@@ -62,7 +56,7 @@ function getDefaultTranscriptionOptions(): Required<TranscriptionOptions> {
  *
  * @param gene - The gene to transcribe
  * @param options - Optional transcription configuration
- * @returns ValidationResult containing PreMRNA or error message
+ * @returns Result containing PreMRNA or error message
  *
  * @example
  * ```typescript
@@ -78,10 +72,7 @@ function getDefaultTranscriptionOptions(): Required<TranscriptionOptions> {
  * }
  * ```
  */
-export function transcribe(
-  gene: Gene,
-  options: TranscriptionOptions = {},
-): ValidationResult<PreMRNA> {
+export function transcribe(gene: Gene, options: TranscriptionOptions = {}): Result<PreMRNA> {
   const opts = { ...getDefaultTranscriptionOptions(), ...options };
 
   try {
@@ -147,12 +138,12 @@ export function transcribe(
  *
  * @param gene - The gene to analyze
  * @param options - Transcription options
- * @returns ValidationResult with TSS position or error
+ * @returns Result with TSS position or error
  */
 function findTranscriptionStartSite(
   gene: Gene,
   options: Required<TranscriptionOptions>,
-): ValidationResult<number> {
+): Result<number> {
   try {
     // Create a DNA region upstream of the first exon to search for promoters
     const firstExon = gene.getExons()[0];
@@ -208,9 +199,9 @@ function findTranscriptionStartSite(
  *
  * @param gene - The gene to analyze
  * @param tss - Transcription start site position
- * @returns ValidationResult with polyadenylation site position or failure
+ * @returns Result with polyadenylation site position or failure
  */
-function findPolyadenylationSite(gene: Gene, tss: number): ValidationResult<number> {
+function findPolyadenylationSite(gene: Gene, tss: number): Result<number> {
   try {
     const sequence = gene.getSequence();
     const searchStart = tss;
@@ -247,9 +238,9 @@ function findPolyadenylationSite(gene: Gene, tss: number): ValidationResult<numb
  *
  * @param gene - The gene with exon definitions
  * @param tss - The detected transcription start site
- * @returns ValidationResult indicating compatibility
+ * @returns Result indicating compatibility
  */
-function validateTSSExonCompatibility(gene: Gene, tss: number): ValidationResult<void> {
+function validateTSSExonCompatibility(gene: Gene, tss: number): Result<void> {
   const exons = gene.getExons();
 
   if (exons.length === 0) {

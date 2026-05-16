@@ -447,7 +447,7 @@ test('get RNA base complement for empty string', () => {
 });
 
 /*
-    --- ValidationResult Pattern Tests ---
+    --- Result Pattern Tests ---
 */
 
 test('validateNucleicAcid returns success for valid DNA', () => {
@@ -601,10 +601,10 @@ test('RNA.create returns failure for DNA characters', () => {
 });
 
 /*
-    --- ValidationResult Utility Tests ---
+    --- Result Utility Tests ---
 */
 
-test('success creates successful ValidationResult', () => {
+test('success creates successful Result', () => {
   const result = success('test data');
   expect(isSuccess(result)).toBe(true);
   expect(isFailure(result)).toBe(false);
@@ -613,7 +613,7 @@ test('success creates successful ValidationResult', () => {
   }
 });
 
-test('failure creates failed ValidationResult', () => {
+test('failure creates failed Result', () => {
   const result = failure('test error');
   expect(isFailure(result)).toBe(true);
   expect(isSuccess(result)).toBe(false);

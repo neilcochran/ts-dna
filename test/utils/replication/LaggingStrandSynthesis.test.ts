@@ -1,6 +1,6 @@
 import { LaggingStrandSynthesis } from '../../../src/utils/replication/LaggingStrandSynthesis.js';
 import { E_COLI, HUMAN } from '../../../src/types/replication-types.js';
-import { isSuccess, isFailure } from '../../../src/types/validation-result.js';
+import { isSuccess, isFailure } from '../../../src/result/Result.js';
 
 describe('LaggingStrandSynthesis', () => {
   let laggingSynthesis: LaggingStrandSynthesis;

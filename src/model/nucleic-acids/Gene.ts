@@ -1,6 +1,7 @@
 import { DNA } from './DNA.js';
-import { GenomicRegion, validateExons } from '../../types/genomic-region.js';
-import { ValidationResult } from '../../types/validation-result.js';
+import type { GenomicRegion } from '../../coordinates/index.js';
+import { validateExons } from '../../types/genomic-region.js';
+import { Result, success, failure } from '../../result/index.js';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError.js';
 import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
 import { AlternativeSplicingProfile, SpliceVariant } from '../../types/alternative-splicing.js';
@@ -67,28 +68,28 @@ export class Gene extends DNA {
   }
 
   /**
-   * Creates a Gene instance, returning a ValidationResult instead of throwing.
+   * Creates a Gene instance, returning a Result instead of throwing.
    *
    * @param sequence - The complete gene DNA sequence
    * @param exons - Array of GenomicRegion objects defining exon locations
    * @param name - Optional name for the gene
    * @param splicingProfile - Optional alternative splicing profile for this gene
-   * @returns ValidationResult containing Gene instance or error message
+   * @returns Result containing Gene instance or error message
    */
   static createGene(
     sequence: string,
     exons: GenomicRegion[],
     name?: string,
     splicingProfile?: AlternativeSplicingProfile,
-  ): ValidationResult<Gene> {
+  ): Result<Gene> {
     try {
       const gene = new Gene(sequence, exons, name, splicingProfile);
-      return { success: true as const, data: gene };
+      return success(gene);
     } catch (error) {
       if (error instanceof InvalidSequenceError) {
-        return { success: false as const, error: error.message };
+        return failure(error.message);
       }
-      return { success: false as const, error: 'Unknown error creating Gene' };
+      return failure('Unknown error creating Gene');
     }
   }
 
@@ -253,17 +254,14 @@ export class Gene extends DNA {
    * Validates a splicing profile to ensure all variants reference valid exon indices.
    * @param splicingProfile - The splicing profile to validate
    * @param totalExons - Total number of exons in the gene
-   * @returns ValidationResult indicating success or failure with error message
+   * @returns Result indicating success or failure with error message
    */
   private validateSplicingProfile(
     splicingProfile: AlternativeSplicingProfile,
     totalExons: number,
-  ): ValidationResult<void> {
+  ): Result<void> {
     if (splicingProfile.variants.length === 0) {
-      return {
-        success: false as const,
-        error: 'Splicing profile must contain at least one variant',
-      };
+      return failure('Splicing profile must contain at least one variant');
     }
 
     // Check that default variant exists
@@ -271,10 +269,9 @@ export class Gene extends DNA {
       v => v.name === splicingProfile.defaultVariant,
     );
     if (!defaultVariantExists) {
-      return {
-        success: false as const,
-        error: `Default variant '${splicingProfile.defaultVariant}' not found in variants list`,
-      };
+      return failure(
+        `Default variant '${splicingProfile.defaultVariant}' not found in variants list`,
+      );
     }
 
     // Validate each variant
@@ -282,29 +279,22 @@ export class Gene extends DNA {
       const variant = splicingProfile.variants[i];
 
       if (variant.includedExons.length === 0) {
-        return {
-          success: false as const,
-          error: `Variant '${variant.name}' must include at least one exon`,
-        };
+        return failure(`Variant '${variant.name}' must include at least one exon`);
       }
 
       // Check all exon indices are valid
       for (const exonIndex of variant.includedExons) {
         if (exonIndex < 0 || exonIndex >= totalExons) {
-          return {
-            success: false as const,
-            error: `Variant '${variant.name}' references invalid exon index ${exonIndex}. Gene has ${totalExons} exons.`,
-          };
+          return failure(
+            `Variant '${variant.name}' references invalid exon index ${exonIndex}. Gene has ${totalExons} exons.`,
+          );
         }
       }
 
       // Check for duplicate exon indices within variant
       const uniqueExons = new Set(variant.includedExons);
       if (uniqueExons.size !== variant.includedExons.length) {
-        return {
-          success: false as const,
-          error: `Variant '${variant.name}' contains duplicate exon indices`,
-        };
+        return failure(`Variant '${variant.name}' contains duplicate exon indices`);
       }
     }
 
@@ -312,12 +302,9 @@ export class Gene extends DNA {
     const variantNames = splicingProfile.variants.map(v => v.name);
     const uniqueNames = new Set(variantNames);
     if (uniqueNames.size !== variantNames.length) {
-      return {
-        success: false as const,
-        error: 'Splicing profile contains duplicate variant names',
-      };
+      return failure('Splicing profile contains duplicate variant names');
     }
 
-    return { success: true as const, data: undefined };
+    return success(undefined);
   }
 }

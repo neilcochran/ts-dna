@@ -1,4 +1,4 @@
-import { GenomicRegion } from './genomic-region.js';
+import { GenomicRegion } from '../coordinates/index.js';
 import {
   DEFAULT_POLYA_SIGNALS,
   DEFAULT_UPSTREAM_USE_PATTERN,

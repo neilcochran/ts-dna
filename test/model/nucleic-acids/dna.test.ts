@@ -1,7 +1,7 @@
 import { DNA } from '../../../src/model/nucleic-acids/DNA';
 import { InvalidSequenceError } from '../../../src/model/errors/InvalidSequenceError';
 import { NucleicAcidType } from '../../../src/enums/nucleic-acid-type';
-import { isSuccess, isFailure } from '../../../src/types/validation-result';
+import { isSuccess, isFailure } from '../../../src/result/Result';
 
 describe('DNA Class', () => {
   describe('constructor', () => {

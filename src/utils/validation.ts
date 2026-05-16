@@ -1,8 +1,5 @@
 import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
-import { ValidationResult, success, failure, unwrap } from '../types/validation-result.js';
-
-// Re-export for convenience
-export { unwrap };
+import { Result, success, failure } from '../result/index.js';
 
 /**
  * Given a string sequence and a nucleic acid type, check if the sequence is valid
@@ -46,12 +43,12 @@ export const isValidNucleicAcid = (sequence: string, nucleicAcidType: NucleicAci
 };
 
 /**
- * Validates and normalizes a nucleic acid sequence, returning a ValidationResult
+ * Validates and normalizes a nucleic acid sequence, returning a Result
  *
  * @param sequence - The sequence to validate
  * @param nucleicAcidType - The type of nucleic acid
  *
- * @returns ValidationResult with normalized sequence (uppercase) or detailed error message
+ * @returns Result with normalized sequence (uppercase) or detailed error message
  *
  * @example
  * ```typescript
@@ -68,7 +65,7 @@ export const isValidNucleicAcid = (sequence: string, nucleicAcidType: NucleicAci
 export const validateNucleicAcid = (
   sequence: string,
   nucleicAcidType: NucleicAcidType,
-): ValidationResult<string> => {
+): Result<string> => {
   if (!sequence || sequence.length === 0) {
     return failure('Sequence cannot be empty');
   }
