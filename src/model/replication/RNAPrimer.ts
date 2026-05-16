@@ -6,10 +6,8 @@
  * that provide the essential 3'-OH group required by DNA polymerase.
  */
 
-import { RNA } from '../nucleic-acids/RNA.js';
-import { validateNucleicAcid } from '../../utils/validation.js';
-import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
-import { Result, success, failure } from '../../result/index.js';
+import { RNA, parseRNA, describeRNAError } from '../../sequence/index.js';
+import { Result, success, failure, isFailure } from '../../result/index.js';
 import {
   MIN_RNA_PRIMER_LENGTH,
   MAX_RNA_PRIMER_LENGTH,
@@ -74,9 +72,9 @@ export class RNAPrimer {
       }
 
       // Validate RNA sequence
-      const rnaValidation = validateNucleicAcid(sequence, NucleicAcidType.RNA);
-      if (!rnaValidation.success) {
-        return failure(`Invalid RNA sequence: ${rnaValidation.error}`);
+      const rnaResult = parseRNA(sequence);
+      if (isFailure(rnaResult)) {
+        return failure(`Invalid RNA sequence: ${describeRNAError(rnaResult.error)}`);
       }
 
       return success(new RNAPrimer(sequence, position, isRemoved));

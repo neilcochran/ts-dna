@@ -1,227 +1,87 @@
 /**
- * Tests for nucleic acid interoperability - constructing any nucleic acid from any other
+ * Tests covering the explicit-conversion contract between DNA and RNA. The implicit
+ * cross-type constructor polymorphism (`new DNA(rna)` / `new RNA(dna)`) is gone; conversion
+ * goes through `transcribeSequence` / `reverseTranscribeSequence` only.
  */
 
-import { DNA } from '../../../src/model/nucleic-acids/DNA';
-import { RNA } from '../../../src/model/nucleic-acids/RNA';
-import { isSuccess } from '../../../src/result/Result';
+import { DNA, RNA, transcribeSequence, reverseTranscribeSequence } from '../../../src/sequence';
 
-describe('Nucleic Acid Interoperability', () => {
-  const testDNASequence = 'ATCGATCG';
-  const testRNASequence = 'AUCGAUCG';
+describe('DNA/RNA explicit conversion', () => {
+  const DNA_SEQ = 'ATCGATCG';
+  const RNA_SEQ = 'AUCGAUCG';
 
-  describe('DNA Constructor Interoperability', () => {
-    test('DNA from string', () => {
-      const dna = new DNA(testDNASequence);
-      expect(dna.getSequence()).toBe(testDNASequence);
+  describe('transcribeSequence (DNA -> RNA)', () => {
+    test('replaces T with U and preserves other bases', () => {
+      const rna = transcribeSequence(new DNA(DNA_SEQ));
+      expect(rna).toBeInstanceOf(RNA);
+      expect(rna.sequence).toBe(RNA_SEQ);
     });
 
-    test('DNA from RNA (U→T conversion)', () => {
-      const rna = new RNA(testRNASequence);
-      const dna = new DNA(rna);
-      expect(dna.getSequence()).toBe(testDNASequence); // U converted to T
+    test('preserves length', () => {
+      const dna = new DNA('ATCGATCGATCGATCG');
+      expect(transcribeSequence(dna).sequence.length).toBe(dna.sequence.length);
     });
 
-    test('DNA from DNA (copy)', () => {
-      const originalDNA = new DNA(testDNASequence);
-      const copiedDNA = new DNA(originalDNA);
-      expect(copiedDNA.getSequence()).toBe(testDNASequence);
-      expect(copiedDNA).not.toBe(originalDNA); // Different instances
+    test('handles single nucleotide', () => {
+      expect(transcribeSequence(new DNA('A')).sequence).toBe('A');
+      expect(transcribeSequence(new DNA('T')).sequence).toBe('U');
+      expect(transcribeSequence(new DNA('C')).sequence).toBe('C');
+      expect(transcribeSequence(new DNA('G')).sequence).toBe('G');
     });
 
-    test('DNA.create from string', () => {
-      const result = DNA.create(testDNASequence);
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.getSequence()).toBe(testDNASequence);
-      }
-    });
-
-    test('DNA.create from RNA', () => {
-      const rna = new RNA(testRNASequence);
-      const result = DNA.create(rna);
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.getSequence()).toBe(testDNASequence);
-      }
-    });
-
-    test('DNA.create from DNA', () => {
-      const originalDNA = new DNA(testDNASequence);
-      const result = DNA.create(originalDNA);
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.getSequence()).toBe(testDNASequence);
-      }
+    test('handles long sequences', () => {
+      const long = 'ATCG'.repeat(100);
+      expect(transcribeSequence(new DNA(long)).sequence).toBe(long.replaceAll('T', 'U'));
     });
   });
 
-  describe('RNA Constructor Interoperability', () => {
-    test('RNA from string', () => {
-      const rna = new RNA(testRNASequence);
-      expect(rna.getSequence()).toBe(testRNASequence);
+  describe('reverseTranscribeSequence (RNA -> DNA)', () => {
+    test('replaces U with T and preserves other bases', () => {
+      const dna = reverseTranscribeSequence(new RNA(RNA_SEQ));
+      expect(dna).toBeInstanceOf(DNA);
+      expect(dna.sequence).toBe(DNA_SEQ);
     });
 
-    test('RNA from DNA (T→U conversion)', () => {
-      const dna = new DNA(testDNASequence);
-      const rna = new RNA(dna);
-      expect(rna.getSequence()).toBe(testRNASequence); // T converted to U
-    });
-
-    test('RNA from RNA (copy)', () => {
-      const originalRNA = new RNA(testRNASequence);
-      const copiedRNA = new RNA(originalRNA);
-      expect(copiedRNA.getSequence()).toBe(testRNASequence);
-      expect(copiedRNA).not.toBe(originalRNA); // Different instances
-    });
-
-    test('RNA.create from string', () => {
-      const result = RNA.create(testRNASequence);
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.getSequence()).toBe(testRNASequence);
-      }
-    });
-
-    test('RNA.create from DNA', () => {
-      const dna = new DNA(testDNASequence);
-      const result = RNA.create(dna);
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.getSequence()).toBe(testRNASequence);
-      }
-    });
-
-    test('RNA.create from RNA', () => {
-      const originalRNA = new RNA(testRNASequence);
-      const result = RNA.create(originalRNA);
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.getSequence()).toBe(testRNASequence);
-      }
+    test('handles single nucleotide', () => {
+      expect(reverseTranscribeSequence(new RNA('A')).sequence).toBe('A');
+      expect(reverseTranscribeSequence(new RNA('U')).sequence).toBe('T');
+      expect(reverseTranscribeSequence(new RNA('C')).sequence).toBe('C');
+      expect(reverseTranscribeSequence(new RNA('G')).sequence).toBe('G');
     });
   });
 
-  describe('Bidirectional Conversion Consistency', () => {
-    test('DNA → RNA → DNA round trip', () => {
-      const originalDNA = new DNA(testDNASequence);
-      const rna = new RNA(originalDNA);
-      const roundTripDNA = new DNA(rna);
-
-      expect(roundTripDNA.getSequence()).toBe(originalDNA.getSequence());
+  describe('round-trip identity', () => {
+    test('DNA -> RNA -> DNA returns the original DNA', () => {
+      const original = new DNA(DNA_SEQ);
+      const round = reverseTranscribeSequence(transcribeSequence(original));
+      expect(round.sequence).toBe(original.sequence);
     });
 
-    test('RNA → DNA → RNA round trip', () => {
-      const originalRNA = new RNA(testRNASequence);
-      const dna = new DNA(originalRNA);
-      const roundTripRNA = new RNA(dna);
-
-      expect(roundTripRNA.getSequence()).toBe(originalRNA.getSequence());
+    test('RNA -> DNA -> RNA returns the original RNA', () => {
+      const original = new RNA(RNA_SEQ);
+      const round = transcribeSequence(reverseTranscribeSequence(original));
+      expect(round.sequence).toBe(original.sequence);
     });
 
-    test('Multiple conversions maintain sequence integrity', () => {
-      const original = 'ATCGATCGATCG';
-
-      // Chain of conversions
-      const dna1 = new DNA(original);
-      const rna1 = new RNA(dna1);
-      const dna2 = new DNA(rna1);
-      const rna2 = new RNA(dna2);
-      const dna3 = new DNA(rna2);
-
-      expect(dna3.getSequence()).toBe(original);
-      expect(rna2.getSequence()).toBe(original.replaceAll('T', 'U'));
+    test('multiple round trips maintain sequence integrity', () => {
+      const start = 'ATCGATCGATCG';
+      const dna1 = new DNA(start);
+      const rna1 = transcribeSequence(dna1);
+      const dna2 = reverseTranscribeSequence(rna1);
+      const rna2 = transcribeSequence(dna2);
+      const dna3 = reverseTranscribeSequence(rna2);
+      expect(dna3.sequence).toBe(start);
+      expect(rna2.sequence).toBe(start.replaceAll('T', 'U'));
     });
   });
 
-  describe('Complex Sequence Handling', () => {
-    test('handles long sequences correctly', () => {
-      const longDNASequence = 'ATCG'.repeat(100); // 400bp
-      const longRNASequence = 'AUCG'.repeat(100); // 400bp
-
-      const dnaFromRNA = new DNA(new RNA(longRNASequence));
-      const rnaFromDNA = new RNA(new DNA(longDNASequence));
-
-      expect(dnaFromRNA.getSequence()).toBe(longDNASequence);
-      expect(rnaFromDNA.getSequence()).toBe(longRNASequence);
+  describe('runtime tag is preserved', () => {
+    test('transcribed RNA carries the RNA tag', () => {
+      expect(transcribeSequence(new DNA(DNA_SEQ)).nucleicAcidType).toBe('RNA');
     });
 
-    test('handles all nucleotide combinations', () => {
-      const dnaWithAllBases = 'ATCGATCGATCGATCG';
-      const rnaWithAllBases = 'AUCGAUCGAUCGAUCG';
-
-      const rnaConverted = new RNA(new DNA(dnaWithAllBases));
-      const dnaConverted = new DNA(new RNA(rnaWithAllBases));
-
-      expect(rnaConverted.getSequence()).toBe(rnaWithAllBases);
-      expect(dnaConverted.getSequence()).toBe(dnaWithAllBases);
-    });
-
-    test('maintains case normalization', () => {
-      const lowercaseDNA = 'atcgatcg';
-      const lowercaseRNA = 'aucgaucg';
-
-      const dna = new DNA(lowercaseDNA);
-      const rnaFromDNA = new RNA(dna);
-      const rna = new RNA(lowercaseRNA);
-      const dnaFromRNA = new DNA(rna);
-
-      expect(rnaFromDNA.getSequence()).toBe(testRNASequence.toUpperCase());
-      expect(dnaFromRNA.getSequence()).toBe(testDNASequence.toUpperCase());
-    });
-  });
-
-  describe('Error Handling with Invalid Sequences', () => {
-    test('invalid DNA sequence throws when creating RNA', () => {
-      expect(() => new DNA('ATCGX')).toThrow();
-    });
-
-    test('invalid RNA sequence throws when creating DNA', () => {
-      expect(() => new RNA('AUCGX')).toThrow();
-    });
-
-    test('DNA with T converted to RNA with U', () => {
-      // This should work - T in DNA becomes U in RNA
-      const dnaWithT = new DNA('ATCG');
-      const rnaFromDNA = new RNA(dnaWithT);
-      expect(rnaFromDNA.getSequence()).toBe('AUCG');
-    });
-
-    test('RNA with U converted to DNA with T', () => {
-      // This should work - U in RNA becomes T in DNA
-      const rnaWithU = new RNA('AUCG');
-      const dnaFromRNA = new DNA(rnaWithU);
-      expect(dnaFromRNA.getSequence()).toBe('ATCG');
-    });
-  });
-
-  describe('Type Safety and Polymorphism', () => {
-    test('maintains correct nucleic acid types after conversion', () => {
-      const dna = new DNA(testDNASequence);
-      const rna = new RNA(testRNASequence);
-
-      const dnaFromRNA = new DNA(rna);
-      const rnaFromDNA = new RNA(dna);
-
-      expect(dnaFromRNA.nucleicAcidType).toBe(dna.nucleicAcidType);
-      expect(rnaFromDNA.nucleicAcidType).toBe(rna.nucleicAcidType);
-    });
-
-    test('polymorphic function accepts any nucleic acid for conversion', () => {
-      function convertToRNA(source: string | any): RNA {
-        return new RNA(source);
-      }
-
-      const dna = new DNA(testDNASequence);
-      const existingRNA = new RNA(testRNASequence);
-
-      const rnaFromString = convertToRNA(testRNASequence);
-      const rnaFromDNA = convertToRNA(dna);
-      const rnaFromRNA = convertToRNA(existingRNA);
-
-      expect(rnaFromString.getSequence()).toBe(testRNASequence);
-      expect(rnaFromDNA.getSequence()).toBe(testRNASequence);
-      expect(rnaFromRNA.getSequence()).toBe(testRNASequence);
+    test('reverse-transcribed DNA carries the DNA tag', () => {
+      expect(reverseTranscribeSequence(new RNA(RNA_SEQ)).nucleicAcidType).toBe('DNA');
     });
   });
 });

@@ -1,4 +1,4 @@
-import { RNA } from './RNA.js';
+import { RNA } from '../../sequence/index.js';
 import { Gene } from './Gene.js';
 import { GenomicRegion } from '../../coordinates/index.js';
 

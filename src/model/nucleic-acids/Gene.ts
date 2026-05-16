@@ -1,9 +1,8 @@
-import { DNA } from './DNA.js';
+import { DNA } from '../../sequence/index.js';
 import type { GenomicRegion } from '../../coordinates/index.js';
 import { validateExons } from '../../types/genomic-region.js';
 import { Result, success, failure } from '../../result/index.js';
 import { InvalidSequenceError } from '../errors/InvalidSequenceError.js';
-import { NucleicAcidType } from '../../enums/nucleic-acid-type.js';
 import { AlternativeSplicingProfile, SpliceVariant } from '../../types/alternative-splicing.js';
 
 /**
@@ -49,14 +48,14 @@ export class Gene extends DNA {
     // Validate exons
     const exonValidation = validateExons(exons, sequence.length);
     if (!exonValidation.success) {
-      throw new InvalidSequenceError(exonValidation.error, sequence, NucleicAcidType.DNA);
+      throw new InvalidSequenceError(exonValidation.error, sequence, 'DNA');
     }
 
     // Validate splicing profile if provided
     if (splicingProfile) {
       const splicingValidation = this.validateSplicingProfile(splicingProfile, exons.length);
       if (!splicingValidation.success) {
-        throw new InvalidSequenceError(splicingValidation.error, sequence, NucleicAcidType.DNA);
+        throw new InvalidSequenceError(splicingValidation.error, sequence, 'DNA');
       }
     }
 

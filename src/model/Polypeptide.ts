@@ -1,4 +1,5 @@
-import { MRNA, RNA } from './nucleic-acids/index.js';
+import { RNA } from '../sequence/index.js';
+import { MRNA } from './nucleic-acids/MRNA.js';
 import { AminoAcid } from './AminoAcid.js';
 import { RNAtoAminoAcids } from '../utils/amino-acids.js';
 

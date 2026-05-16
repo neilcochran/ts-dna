@@ -1,5 +1,5 @@
 import { findPromoters, identifyTSS } from '../../src/utils/promoter-recognition';
-import { DNA } from '../../src/model/nucleic-acids/DNA';
+import { DNA } from '../../src/sequence';
 import { Promoter } from '../../src/model/Promoter';
 import { PromoterElement } from '../../src/model/PromoterElement';
 import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern';

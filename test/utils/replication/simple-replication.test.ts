@@ -1,4 +1,4 @@
-import { DNA } from '../../../src/model/nucleic-acids/DNA.js';
+import { DNA } from '../../../src/sequence';
 import {
   replicateDNA,
   replicateDNASimple,

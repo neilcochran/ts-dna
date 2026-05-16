@@ -1,7 +1,6 @@
-import { RNA } from '../model/nucleic-acids/RNA.js';
+import { RNA } from '../sequence/index.js';
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
 import { Result, success, failure, isFailure } from '../result/index.js';
-import { START_CODON } from './nucleic-acids.js';
 
 /**
  * Splices a pre-mRNA by removing introns and joining exons to produce mature mRNA.
@@ -96,37 +95,6 @@ function validateTranscriptSpliceSites(preMRNA: PreMRNA): Result<boolean> {
       if (acceptorSite !== 'AG') {
         return failure(
           `Invalid 3' splice site at transcript position ${intron.end - 2}: expected AG, found ${acceptorSite}`,
-        );
-      }
-    }
-  }
-
-  return success(true);
-}
-
-/**
- * Checks if a spliced RNA maintains proper reading frame for translation.
- * This is important for ensuring the resulting polypeptide will be correctly translated.
- */
-export function validateReadingFrame(rna: RNA, expectedStart?: number): Result<boolean> {
-  const sequence = rna.getSequence();
-  const startPos = expectedStart ?? 0;
-
-  // Check if sequence length from start position is divisible by 3
-  const codingLength = sequence.length - startPos;
-  if (codingLength % 3 !== 0) {
-    return failure(
-      `Reading frame error: coding sequence length ${codingLength} is not divisible by 3`,
-    );
-  }
-
-  // Check for start codon if position 0 is specified (beginning of complete coding sequence)
-  if (expectedStart === 0) {
-    if (startPos + 3 <= sequence.length) {
-      const startCodon = sequence.substring(startPos, startPos + 3);
-      if (startCodon !== START_CODON) {
-        return failure(
-          `Expected start codon ${START_CODON} at position ${startPos}, found ${startCodon}`,
         );
       }
     }

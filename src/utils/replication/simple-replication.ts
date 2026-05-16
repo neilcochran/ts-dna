@@ -5,7 +5,7 @@
  * complexity of fork coordination and enzyme management internally.
  */
 
-import { DNA } from '../../model/nucleic-acids/DNA.js';
+import { DNA } from '../../sequence/index.js';
 import { ReplicationFork } from '../../model/replication/ReplicationFork.js';
 import { ForkCoordinator } from './ForkCoordinator.js';
 import { Result, success, failure } from '../../result/index.js';

@@ -13,7 +13,7 @@
  */
 
 import { RNAPrimer } from './RNAPrimer.js';
-import { DNA } from '../nucleic-acids/DNA.js';
+import { DNA } from '../../sequence/index.js';
 import { Result, success, failure } from '../../result/index.js';
 import { OrganismProfile } from '../../types/replication-types.js';
 

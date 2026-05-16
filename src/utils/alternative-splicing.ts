@@ -1,10 +1,14 @@
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
 import { MRNA } from '../model/nucleic-acids/MRNA.js';
-import { DNA } from '../model/nucleic-acids/DNA.js';
+import {
+  DNA,
+  CODON_LENGTH,
+  START_CODON,
+  isStopCodon,
+  transcribeSequence,
+} from '../sequence/index.js';
 import { Gene } from '../model/nucleic-acids/Gene.js';
 import { Result, success, failure } from '../result/index.js';
-import { convertToRNA, START_CODON, STOP_CODONS } from './nucleic-acids.js';
-import { CODON_LENGTH } from '../constants/biological-constants.js';
 import {
   SpliceVariant,
   SplicingOutcome,
@@ -49,7 +53,7 @@ export function spliceRNAWithVariant(
 
     // Convert DNA to RNA
     const variantDNA = new DNA(variantSequence);
-    const rnaSequence = convertToRNA(variantDNA).getSequence();
+    const rnaSequence = transcribeSequence(variantDNA).getSequence();
 
     // Create MRNA with the entire sequence as coding sequence
     // In alternative splicing, we're dealing with processed exons only
@@ -206,7 +210,7 @@ export function validateSpliceVariant(
     try {
       const variantSequence = gene.getVariantSequence(variant);
       const variantDNA = new DNA(variantSequence);
-      const rnaSequence = convertToRNA(variantDNA).getSequence();
+      const rnaSequence = transcribeSequence(variantDNA).getSequence();
 
       if (rnaSequence.length >= CODON_LENGTH) {
         const startCodon = rnaSequence.substring(0, CODON_LENGTH);
@@ -219,7 +223,7 @@ export function validateSpliceVariant(
 
       if (rnaSequence.length >= CODON_LENGTH) {
         const lastCodon = rnaSequence.substring(rnaSequence.length - CODON_LENGTH);
-        if (!STOP_CODONS.includes(lastCodon)) {
+        if (!isStopCodon(lastCodon)) {
           return failure(
             `Variant '${variant.name}' does not end with stop codon, found '${lastCodon}'`,
           );

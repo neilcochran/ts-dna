@@ -1,4 +1,4 @@
-import { RNA } from './nucleic-acids/index.js';
+import { RNA, CODON_LENGTH } from '../sequence/index.js';
 import {
   getAminoAcidDataByCodon,
   SINGLE_LETTER_CODE_ALT_CODONS_MAP,
@@ -9,7 +9,6 @@ import { AminoAcidCharge } from '../enums/amino-acid-charge.js';
 import { AminoAcidSideChainType } from '../enums/amino-acid-side-chain-type.js';
 import { isDeepStrictEqual } from 'util';
 import { InvalidCodonError } from './errors/InvalidCodonError.js';
-import { CODON_LENGTH } from '../constants/biological-constants.js';
 
 /**
  * A class representing an amino acid instance with its backing RNA codon.

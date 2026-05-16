@@ -1,10 +1,9 @@
-import {
-  getReverseComplementSequence,
-  getNucleotidePatternSymbolComplement,
-} from '../../utils/nucleic-acids.js';
+import { DNA, RNA, complementDNABase, complementRNABase } from '../../sequence/index.js';
 import { InvalidNucleotidePatternError } from '../errors/InvalidNucleotidePatternError.js';
-import { NucleicAcid } from './NucleicAcid.js';
-import { NucleotidePatternSymbol } from './NucleotidePatternSymbol.js';
+import {
+  NucleotidePatternSymbol,
+  getNucleotidePatternSymbolComplement,
+} from './NucleotidePatternSymbol.js';
 
 /**
  * A class to represent patterns comprised of nucleotide IUPAC notation symbols.
@@ -35,11 +34,11 @@ export class NucleotidePattern {
   }
 
   /**
-   * Checks if a given NucleicAcid matches the nucleotide IUPAC notation pattern
+   * Checks if a given nucleic acid sequence matches the IUPAC notation pattern.
    *
-   * @param nucleicAcid - The NucleicAcid to check against the pattern
+   * @param nucleicAcid - The DNA or RNA sequence to check against the pattern
    *
-   * @returns True if the NucleicAcid matches the pattern, false otherwise
+   * @returns True if the sequence matches the pattern, false otherwise
    *
    * @example
    * ```typescript
@@ -47,19 +46,13 @@ export class NucleotidePattern {
    *  const pattern = new NucleotidePattern('ANNT');
    *
    *  //check a valid DNA match
-   *  pattern.matches(new DNA('AAAT')); //returns true
+   *  pattern.matches(parseDNA('AAAT').unwrap()); //returns true
    *
    *  //check an invalid DNA match
-   *  pattern.matches(new DNA('CCCC')); //returns false
-   *
-   *  //check an invalid RNA match
-   *  pattern.matches(new RNA('AGCU')); //returns false
-   *
-   *  //check DNA that matches the pattern, but is longer than the pattern
-   *  pattern.matches(new DNA('ACCTAAA')); //returns false
+   *  pattern.matches(parseDNA('CCCC').unwrap()); //returns false
    * ```
    */
-  matches(nucleicAcid: NucleicAcid): boolean {
+  matches(nucleicAcid: DNA | RNA): boolean {
     const sequence = nucleicAcid.getSequence();
     if (!sequence) {
       return false;
@@ -68,21 +61,21 @@ export class NucleotidePattern {
   }
 
   /**
-   * Finds all occurrences of the pattern within a nucleic acid sequence
+   * Finds all occurrences of the pattern within a nucleic acid sequence.
    *
-   * @param nucleicAcid - The NucleicAcid to search within
+   * @param nucleicAcid - The DNA or RNA sequence to search within
    *
    * @returns Array of match objects with start position, end position, and matched sequence
    *
    * @example
    * ```typescript
    *  const pattern = new NucleotidePattern('RY');
-   *  const dna = new DNA('ATGAGCGATC');
+   *  const dna = parseDNA('ATGAGCGATC').unwrap();
    *  const matches = pattern.findMatches(dna);
    *  // Returns: [{ start: 2, end: 4, match: 'GA' }, { start: 5, end: 7, match: 'GC' }]
    * ```
    */
-  findMatches(nucleicAcid: NucleicAcid): Array<{ start: number; end: number; match: string }> {
+  findMatches(nucleicAcid: DNA | RNA): Array<{ start: number; end: number; match: string }> {
     const sequence = nucleicAcid.getSequence();
     if (!sequence) {
       return [];
@@ -104,21 +97,21 @@ export class NucleotidePattern {
   }
 
   /**
-   * Finds the first occurrence of the pattern within a nucleic acid sequence
+   * Finds the first occurrence of the pattern within a nucleic acid sequence.
    *
-   * @param nucleicAcid - The NucleicAcid to search within
+   * @param nucleicAcid - The DNA or RNA sequence to search within
    *
    * @returns Match object with start position, end position, and matched sequence, or null if no match found
    *
    * @example
    * ```typescript
    *  const pattern = new NucleotidePattern('RY');
-   *  const dna = new DNA('ATGAGCGATC');
+   *  const dna = parseDNA('ATGAGCGATC').unwrap();
    *  const match = pattern.findFirst(dna);
    *  // Returns: { start: 2, end: 4, match: 'GA' }
    * ```
    */
-  findFirst(nucleicAcid: NucleicAcid): { start: number; end: number; match: string } | null {
+  findFirst(nucleicAcid: DNA | RNA): { start: number; end: number; match: string } | null {
     const sequence = nucleicAcid.getSequence();
     if (!sequence) {
       return null;
@@ -138,48 +131,39 @@ export class NucleotidePattern {
 
   /**
    * Checks if the pattern matches either the forward strand or reverse complement strand
-   * of the given nucleic acid sequence
+   * of the given nucleic acid sequence.
    *
-   * @param nucleicAcid - The NucleicAcid to check against both strands
+   * @param nucleicAcid - The DNA or RNA sequence to check against both strands
    *
    * @returns True if the pattern matches either the forward or reverse complement strand
    *
    * @example
    * ```typescript
    *  const pattern = new NucleotidePattern('GAATTC'); // EcoRI restriction site
-   *  const dna = new DNA('CTTAAG'); // Reverse complement of GAATTC
+   *  const dna = parseDNA('CTTAAG').unwrap(); // Reverse complement of GAATTC
    *  console.log(pattern.matches(dna)); // false
    *  console.log(pattern.matchesEitherStrand(dna)); // true
    * ```
    */
-  matchesEitherStrand(nucleicAcid: NucleicAcid): boolean {
-    // Check forward strand - does the pattern match the sequence directly?
+  matchesEitherStrand(nucleicAcid: DNA | RNA): boolean {
     if (this.matches(nucleicAcid)) {
       return true;
     }
 
-    // Check reverse complement strand - would the pattern match if we were looking
-    // at the opposite strand of the DNA double helix?
-    // This means: does the reverse complement of the pattern match the sequence?
-    const originalSequence = nucleicAcid.getSequence();
-    const patternSequence = this.pattern;
-
-    // Get reverse complement of the pattern using optimized function
-    const reverseComplementPattern = getReverseComplementSequence(
-      patternSequence,
+    const reverseComplementPattern = baseLevelReverseComplement(
+      this.pattern,
       nucleicAcid.nucleicAcidType,
     );
 
-    if (!reverseComplementPattern) {
+    if (reverseComplementPattern === undefined) {
       return false;
     }
 
-    // Create a new pattern from the reverse complement and test it
     try {
       const rcPatternRegex = NucleotidePattern.getNucleotidePattern(
         reverseComplementPattern,
       ) as RegExp;
-      return rcPatternRegex.test(originalSequence);
+      return rcPatternRegex.test(nucleicAcid.getSequence());
     } catch {
       return false;
     }
@@ -191,9 +175,8 @@ export class NucleotidePattern {
    * @param nucleicAcid - The nucleic acid to test
    * @returns True if the pattern is found in the sequence
    */
-  test(nucleicAcid: NucleicAcid): boolean {
-    const sequence = nucleicAcid.getSequence();
-    return this.patternRegex.test(sequence);
+  test(nucleicAcid: DNA | RNA): boolean {
+    return this.patternRegex.test(nucleicAcid.getSequence());
   }
 
   /**
@@ -213,9 +196,8 @@ export class NucleotidePattern {
    * @param replacement - The replacement string
    * @returns The modified sequence string
    */
-  replace(nucleicAcid: NucleicAcid, replacement: string): string {
-    const sequence = nucleicAcid.getSequence();
-    return sequence.replace(this.patternRegex, replacement);
+  replace(nucleicAcid: DNA | RNA, replacement: string): string {
+    return nucleicAcid.getSequence().replace(this.patternRegex, replacement);
   }
 
   /**
@@ -235,9 +217,8 @@ export class NucleotidePattern {
    * @param nucleicAcid - The nucleic acid to split
    * @returns Array of sequence parts split by the pattern
    */
-  split(nucleicAcid: NucleicAcid): string[] {
-    const sequence = nucleicAcid.getSequence();
-    return sequence.split(this.patternRegex);
+  split(nucleicAcid: DNA | RNA): string[] {
+    return nucleicAcid.getSequence().split(this.patternRegex);
   }
 
   /**
@@ -251,7 +232,7 @@ export class NucleotidePattern {
   }
 
   /**
-   * Finds all occurrences of the pattern within a string sequence
+   * Finds all occurrences of the pattern within a string sequence.
    *
    * @param sequence - The sequence string to search within
    *
@@ -325,14 +306,12 @@ export class NucleotidePattern {
    * ```
    */
   getReverseComplement(): NucleotidePattern {
-    // Get complement pattern string
     const complementPattern = NucleotidePattern.getNucleotidePattern(
       this.pattern,
       true,
       false,
     ) as string;
 
-    // Reverse the complement pattern
     const reverseComplementPattern = complementPattern.split('').reverse().join('');
 
     return new NucleotidePattern(reverseComplementPattern);
@@ -385,4 +364,17 @@ export class NucleotidePattern {
     }
     return getRegex ? new RegExp(result) : result;
   }
+}
+
+function baseLevelReverseComplement(sequence: string, alphabet: 'DNA' | 'RNA'): string | undefined {
+  const complementBase = alphabet === 'DNA' ? complementDNABase : complementRNABase;
+  let result = '';
+  for (let i = sequence.length - 1; i >= 0; i--) {
+    const complemented = complementBase(sequence[i]);
+    if (complemented === undefined) {
+      return undefined;
+    }
+    result += complemented;
+  }
+  return result;
 }

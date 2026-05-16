@@ -1,7 +1,7 @@
 import { NucleotidePattern } from '../../../src/model/nucleic-acids/NucleotidePattern';
 import { NucleotidePatternSymbol } from '../../../src/model/nucleic-acids/NucleotidePatternSymbol';
-import { DNA } from '../../../src/model/nucleic-acids/DNA';
-import { RNA } from '../../../src/model/nucleic-acids/RNA';
+import { DNA } from '../../../src/sequence';
+import { RNA } from '../../../src/sequence';
 import { InvalidNucleotidePatternError } from '../../../src/model/errors/InvalidNucleotidePatternError';
 import { NUCLEOTIDE_PATTERN_SYMBOLS } from '../../../src/data/iupac-symbols';
 
@@ -275,21 +275,14 @@ describe('NucleotidePattern Core Functionality', () => {
       expect(pattern.matchesEitherStrand(problematicDNA)).toBe(false);
     });
 
-    test('handles reverse complement pattern creation errors', async () => {
-      // This test ensures error handling in the try/catch block
-      const pattern = new NucleotidePattern('A');
-      const dna = new DNA('T');
-
-      // Mock getReverseComplementSequence to return an invalid pattern that would cause getNucleotidePattern to throw
-      const nucleicAcidsUtils = await import('../../../src/utils/nucleic-acids.js');
-      jest
-        .spyOn(nucleicAcidsUtils, 'getReverseComplementSequence')
-        .mockReturnValueOnce('INVALID_CHARS_XYZ');
+    test('returns false when the pattern contains characters that cannot be reverse-complemented', () => {
+      // Pattern with a regex quantifier ('+') that the base-level reverse-complement helper
+      // cannot turn into a valid sequence: it never matches the forward strand on this input
+      // and the reverse-complement attempt bails out, so matchesEitherStrand reports false.
+      const pattern = new NucleotidePattern('A+');
+      const dna = new DNA('CCC');
 
       expect(pattern.matchesEitherStrand(dna)).toBe(false);
-
-      // Restore the mock
-      jest.restoreAllMocks();
     });
   });
 

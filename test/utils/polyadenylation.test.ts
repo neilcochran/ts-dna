@@ -1,4 +1,4 @@
-import { RNA } from '../../src/model/nucleic-acids/RNA';
+import { RNA } from '../../src/sequence';
 import {
   findPolyadenylationSites,
   getStrongestPolyadenylationSite,

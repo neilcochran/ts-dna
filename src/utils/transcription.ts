@@ -1,10 +1,9 @@
 import { Gene } from '../model/nucleic-acids/Gene.js';
 import { PreMRNA } from '../model/nucleic-acids/PreMRNA.js';
-import { DNA } from '../model/nucleic-acids/DNA.js';
+import { DNA, transcribeSequence } from '../sequence/index.js';
 import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern.js';
 import { Result, success, failure, isFailure, isSuccess } from '../result/index.js';
 import { findPromoters, identifyTSS, PromoterSearchOptions } from './promoter-recognition.js';
-import { convertToRNA } from './nucleic-acids.js';
 import {
   DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE,
   DEFAULT_DOWNSTREAM_SEARCH_DISTANCE,
@@ -115,7 +114,7 @@ export function transcribe(gene: Gene, options: TranscriptionOptions = {}): Resu
 
     // Convert DNA to RNA
     const transcriptDNAObj = new DNA(transcriptDNA);
-    const transcriptRNA = convertToRNA(transcriptDNAObj).getSequence();
+    const transcriptRNA = transcribeSequence(transcriptDNAObj).getSequence();
 
     // Step 6: Create PreMRNA with structural information
     const preMRNA = new PreMRNA(

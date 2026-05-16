@@ -1,4 +1,5 @@
-import { RNA, DNA, MRNA, AminoAcid } from '../../src/model';
+import { RNA, DNA } from '../../src/sequence';
+import { MRNA, AminoAcid } from '../../src/model';
 
 //ensure RNA and DNA sequences are the same (excluding base differences) since some tests rely it
 export const RNA_SEQ = 'AUCGGCUA';

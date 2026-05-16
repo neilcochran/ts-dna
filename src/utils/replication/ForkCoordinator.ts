@@ -6,7 +6,7 @@
  * proper synchronized DNA replication.
  */
 
-import { DNA } from '../../model/nucleic-acids/DNA.js';
+import { DNA } from '../../sequence/index.js';
 import { Replisome } from '../../model/replication/Replisome.js';
 import { ReplicationFork } from '../../model/replication/ReplicationFork.js';
 import { LeadingStrandSynthesis } from './LeadingStrandSynthesis.js';

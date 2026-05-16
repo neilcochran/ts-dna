@@ -1,9 +1,8 @@
-import { RNA } from '../../src/model/nucleic-acids/RNA';
+import { RNA, CODON_LENGTH, validateReadingFrame } from '../../src/sequence';
 import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
 import { Gene } from '../../src/model/nucleic-acids/Gene';
-import { spliceRNA, validateReadingFrame } from '../../src/utils/rna-processing';
+import { spliceRNA } from '../../src/utils/rna-processing';
 import { transcribe } from '../../src/utils/transcription';
-import { CODON_LENGTH } from '../../src/constants/biological-constants';
 import { GenomicRegion } from '../../src/coordinates';
 import { isSuccess, isFailure } from '../../src/result/Result';
 import {
@@ -288,41 +287,43 @@ describe('rna-processing', () => {
   describe('validateReadingFrame', () => {
     test('validates correct reading frame', () => {
       const rna = new RNA('AUGAAACCCGGGUUU'); // 15 nucleotides = 5 codons
-      const result = validateReadingFrame(rna);
+      const result = validateReadingFrame(rna.sequence);
 
       expect(isSuccess(result)).toBe(true);
     });
 
     test('fails with incorrect reading frame length', () => {
-      const rna = new RNA('AUGAAACCCGGGUUAA'); // 16 nucleotides (not divisible by ${CODON_LENGTH})
-      const result = validateReadingFrame(rna);
+      const rna = new RNA('AUGAAACCCGGGUUAA'); // 16 nucleotides (not divisible by CODON_LENGTH)
+      const result = validateReadingFrame(rna.sequence);
 
       expect(isFailure(result)).toBe(true);
-      if (isFailure(result)) {
-        expect(result.error).toContain('not divisible by ' + CODON_LENGTH);
+      if (isFailure(result) && result.error.kind === 'frame-misaligned') {
+        expect(result.error.codingLength).toBe(16);
+        expect(result.error.codonLength).toBe(CODON_LENGTH);
       }
     });
 
     test('validates start codon when position specified', () => {
       const rna = new RNA('UUUAUGAAACCCGGG');
-      const result = validateReadingFrame(rna, CODON_LENGTH);
+      const result = validateReadingFrame(rna.sequence, CODON_LENGTH);
 
       expect(isSuccess(result)).toBe(true);
     });
 
     test('fails with wrong start codon', () => {
       const rna = new RNA('AAGAAACCCGGGUUU');
-      const result = validateReadingFrame(rna, 0);
+      const result = validateReadingFrame(rna.sequence, 0);
 
       expect(isFailure(result)).toBe(true);
-      if (isFailure(result)) {
-        expect(result.error).toContain('Expected start codon AUG');
+      if (isFailure(result) && result.error.kind === 'missing-start-codon') {
+        expect(result.error.found).toBe('AAG');
+        expect(result.error.position).toBe(0);
       }
     });
 
     test('validates reading frame from custom start position', () => {
       const rna = new RNA('UUUUUUGGGCCCAAA'); // 12 nucleotides from position 3
-      const result = validateReadingFrame(rna, CODON_LENGTH);
+      const result = validateReadingFrame(rna.sequence, CODON_LENGTH);
 
       expect(isSuccess(result)).toBe(true);
     });

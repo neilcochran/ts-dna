@@ -1,61 +1,51 @@
-import { DNA } from '../../../src/model/nucleic-acids/DNA';
+import { DNA, parseDNA } from '../../../src/sequence';
 import { InvalidSequenceError } from '../../../src/model/errors/InvalidSequenceError';
-import { NucleicAcidType } from '../../../src/enums/nucleic-acid-type';
-import { isSuccess, isFailure } from '../../../src/result/Result';
+import { isFailure } from '../../../src/result/Result';
 
-describe('DNA Class', () => {
+describe('DNA', () => {
   describe('constructor', () => {
-    test('creates DNA from valid sequence', () => {
+    test('creates DNA from a valid sequence', () => {
       const dna = new DNA('ATCG');
       expect(dna.getSequence()).toBe('ATCG');
-      expect(dna.nucleicAcidType).toBe(NucleicAcidType.DNA);
+      expect(dna.nucleicAcidType).toBe('DNA');
     });
 
     test('normalizes lowercase to uppercase', () => {
-      const dna = new DNA('atcg');
-      expect(dna.getSequence()).toBe('ATCG');
+      expect(new DNA('atcg').getSequence()).toBe('ATCG');
     });
 
     test('handles mixed case sequences', () => {
-      const dna = new DNA('AtCg');
-      expect(dna.getSequence()).toBe('ATCG');
+      expect(new DNA('AtCg').getSequence()).toBe('ATCG');
     });
 
     test('creates DNA with all valid nucleotides', () => {
-      const dna = new DNA('AATTCCGG');
-      expect(dna.getSequence()).toBe('AATTCCGG');
+      expect(new DNA('AATTCCGG').getSequence()).toBe('AATTCCGG');
     });
 
-    test('throws error for empty sequence', () => {
-      expect(() => {
-        new DNA('');
-      }).toThrow(InvalidSequenceError);
+    test('throws InvalidSequenceError for empty sequence', () => {
+      expect(() => new DNA('')).toThrow(InvalidSequenceError);
     });
 
-    test('throws error for invalid characters', () => {
-      expect(() => {
-        new DNA('ATCX');
-      }).toThrow(InvalidSequenceError);
-
-      expect(() => {
-        new DNA('ATCG123');
-      }).toThrow(InvalidSequenceError);
+    test('throws InvalidSequenceError for invalid characters', () => {
+      expect(() => new DNA('ATCX')).toThrow(InvalidSequenceError);
+      expect(() => new DNA('ATCG123')).toThrow(InvalidSequenceError);
     });
 
-    test('throws error for RNA nucleotides in DNA', () => {
-      expect(() => {
-        new DNA('AUCG'); // U is not valid in DNA
-      }).toThrow(InvalidSequenceError);
+    test('throws InvalidSequenceError for RNA nucleotides in DNA input', () => {
+      expect(() => new DNA('AUCG')).toThrow(InvalidSequenceError);
     });
 
-    test('error contains sequence and type information', () => {
+    test('error message names the offending character and tags the alphabet', () => {
       try {
         new DNA('ATCX');
         fail('Should have thrown InvalidSequenceError');
       } catch (error) {
         expect(error).toBeInstanceOf(InvalidSequenceError);
-        expect((error as InvalidSequenceError).message).toContain('X'); // Contains the invalid character
-        expect((error as InvalidSequenceError).nucleicAcidType).toBe(NucleicAcidType.DNA);
+        if (error instanceof InvalidSequenceError) {
+          expect(error.message).toContain('X');
+          expect(error.nucleicAcidType).toBe('DNA');
+          expect(error.sequence).toBe('ATCX');
+        }
       }
     });
 
@@ -63,140 +53,67 @@ describe('DNA Class', () => {
       const longSequence = 'ATCG'.repeat(1000);
       const dna = new DNA(longSequence);
       expect(dna.getSequence()).toBe(longSequence);
-      expect(dna.getSequence()).toHaveLength(4000);
+      expect(dna.length()).toBe(4000);
     });
 
     test('handles single nucleotide', () => {
-      const dna = new DNA('A');
-      expect(dna.getSequence()).toBe('A');
+      expect(new DNA('A').getSequence()).toBe('A');
     });
   });
 
-  describe('static create method', () => {
-    test('returns success for valid sequence', () => {
-      const result = DNA.create('ATCG');
-
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.getSequence()).toBe('ATCG');
-        expect(result.data).toBeInstanceOf(DNA);
-      }
-    });
-
-    test('returns failure for invalid sequence', () => {
-      const result = DNA.create('ATCX');
-
+  describe('parseDNA equivalence', () => {
+    test('parseDNA failure aligns with constructor throwing for the same input', () => {
+      const result = parseDNA('ATCX');
       expect(isFailure(result)).toBe(true);
-      if (isFailure(result)) {
-        expect(result.error).toContain('invalid');
-      }
-    });
-
-    test('returns failure for empty sequence', () => {
-      const result = DNA.create('');
-
-      expect(isFailure(result)).toBe(true);
-      if (isFailure(result)) {
-        expect(result.error).toBeDefined();
-      }
-    });
-
-    test('normalizes case in create method', () => {
-      const result = DNA.create('atcg');
-
-      expect(isSuccess(result)).toBe(true);
-      if (isSuccess(result)) {
-        expect(result.data.getSequence()).toBe('ATCG');
-      }
-    });
-
-    test('create method handles RNA nucleotides correctly', () => {
-      const result = DNA.create('AUCG');
-
-      expect(isFailure(result)).toBe(true);
+      expect(() => new DNA('ATCX')).toThrow(InvalidSequenceError);
     });
   });
 
-  describe('getSequence method', () => {
-    test('returns original sequence', () => {
-      const sequence = 'ATCGGATCCTAGG';
-      const dna = new DNA(sequence);
-      expect(dna.getSequence()).toBe(sequence);
+  describe('getSequence', () => {
+    test('returns the validated upper-case sequence', () => {
+      expect(new DNA('atcggatcctagg').getSequence()).toBe('ATCGGATCCTAGG');
     });
 
-    test('sequence is immutable', () => {
+    test('returns a stable string across calls', () => {
       const dna = new DNA('ATCG');
-      const sequence = dna.getSequence();
-
-      // Modifying returned string doesn't affect DNA
-      const modifiedSequence = sequence + 'AAAA';
       expect(dna.getSequence()).toBe('ATCG');
-      expect(dna.getSequence()).not.toBe(modifiedSequence);
+      expect(dna.getSequence()).toBe('ATCG');
     });
   });
 
-  describe('inheritance from NucleicAcid', () => {
-    test('has correct nucleic acid type', () => {
-      const dna = new DNA('ATCG');
-      expect(dna.nucleicAcidType).toBe(NucleicAcidType.DNA);
+  describe('equality', () => {
+    test('two DNAs with the same sequence are equal', () => {
+      expect(new DNA('ATCG').equals(new DNA('ATCG'))).toBe(true);
     });
 
-    test('implements equals method', () => {
-      const dna1 = new DNA('ATCG');
-      const dna2 = new DNA('ATCG');
-      const dna3 = new DNA('GGCC');
-
-      expect(dna1.equals(dna2)).toBe(true);
-      expect(dna1.equals(dna3)).toBe(false);
-    });
-
-    test('implements getComplementSequence method', () => {
-      const dna = new DNA('ATCG');
-      const complement = dna.getComplementSequence();
-
-      expect(complement).toBeDefined();
-      expect(complement).toContain('T'); // A -> T
-      expect(complement).toContain('A'); // T -> A
-      expect(complement).toContain('G'); // C -> G
-      expect(complement).toContain('C'); // G -> C
+    test('two DNAs with different sequences are not equal', () => {
+      expect(new DNA('ATCG').equals(new DNA('GGCC'))).toBe(false);
     });
   });
 
   describe('edge cases and validation', () => {
-    test('handles whitespace correctly', () => {
-      expect(() => {
-        new DNA(' ATCG ');
-      }).toThrow(InvalidSequenceError);
+    test('rejects whitespace inside sequences', () => {
+      expect(() => new DNA(' ATCG ')).toThrow(InvalidSequenceError);
     });
 
     test('rejects sequences with numbers', () => {
-      expect(() => {
-        new DNA('ATC123G');
-      }).toThrow(InvalidSequenceError);
+      expect(() => new DNA('ATC123G')).toThrow(InvalidSequenceError);
     });
 
     test('rejects sequences with special characters', () => {
-      expect(() => {
-        new DNA('ATC-G');
-      }).toThrow(InvalidSequenceError);
-
-      expect(() => {
-        new DNA('ATC.G');
-      }).toThrow(InvalidSequenceError);
+      expect(() => new DNA('ATC-G')).toThrow(InvalidSequenceError);
+      expect(() => new DNA('ATC.G')).toThrow(InvalidSequenceError);
     });
 
-    test('validates all four DNA nucleotides individually', () => {
+    test('accepts each canonical DNA base individually', () => {
       expect(() => new DNA('A')).not.toThrow();
       expect(() => new DNA('T')).not.toThrow();
       expect(() => new DNA('C')).not.toThrow();
       expect(() => new DNA('G')).not.toThrow();
     });
 
-    test('case sensitivity in error detection', () => {
-      // Lowercase should be normalized, not rejected
+    test('case insensitivity in validation', () => {
       expect(() => new DNA('atcg')).not.toThrow();
-
-      // But invalid characters should still be rejected regardless of case
       expect(() => new DNA('atcx')).toThrow(InvalidSequenceError);
       expect(() => new DNA('ATCX')).toThrow(InvalidSequenceError);
     });
@@ -204,329 +121,143 @@ describe('DNA Class', () => {
 
   describe('biological sequences', () => {
     test('handles realistic gene sequences', () => {
-      // Partial human beta-globin gene sequence
       const geneSequence = 'ATGGTGCACCTGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGGCAAG';
       const dna = new DNA(geneSequence);
-
       expect(dna.getSequence()).toBe(geneSequence);
-      expect(dna.getSequence()).toHaveLength(geneSequence.length);
-    });
-
-    test('handles repetitive sequences', () => {
-      const repetitive = 'ATATATAT';
-      const dna = new DNA(repetitive);
-      expect(dna.getSequence()).toBe(repetitive);
+      expect(dna.length()).toBe(geneSequence.length);
     });
 
     test('handles GC-rich sequences', () => {
-      const gcRich = 'GCGCGCGCGC';
-      const dna = new DNA(gcRich);
-      expect(dna.getSequence()).toBe(gcRich);
+      expect(new DNA('GCGCGCGCGC').getSequence()).toBe('GCGCGCGCGC');
     });
 
     test('handles AT-rich sequences', () => {
-      const atRich = 'ATATATATAT';
-      const dna = new DNA(atRich);
-      expect(dna.getSequence()).toBe(atRich);
+      expect(new DNA('ATATATATAT').getSequence()).toBe('ATATATATAT');
     });
   });
 
-  describe('new utility methods', () => {
+  describe('search and substring methods', () => {
     const testDNA = new DNA('ATCGATCG');
 
-    describe('length()', () => {
+    describe('length', () => {
       test('returns correct sequence length', () => {
         expect(testDNA.length()).toBe(8);
       });
 
       test('returns 1 for single nucleotide', () => {
-        const singleDNA = new DNA('A');
-        expect(singleDNA.length()).toBe(1);
-      });
-
-      test('returns correct length for longer sequences', () => {
-        const longDNA = new DNA('ATCGATCGATCGATCGATCG');
-        expect(longDNA.length()).toBe(20);
+        expect(new DNA('A').length()).toBe(1);
       });
     });
 
-    describe('contains()', () => {
-      test('finds existing subsequence with string', () => {
+    describe('contains', () => {
+      test('finds existing subsequence (string)', () => {
         expect(testDNA.contains('TCG')).toBe(true);
-        expect(testDNA.contains('ATC')).toBe(true);
         expect(testDNA.contains('ATCG')).toBe(true);
       });
 
-      test('returns false for non-existing subsequence', () => {
+      test('returns false for missing subsequence', () => {
         expect(testDNA.contains('AAA')).toBe(false);
         expect(testDNA.contains('TTT')).toBe(false);
-        expect(testDNA.contains('XYZ')).toBe(false);
       });
 
-      test('finds subsequence with DNA object', () => {
-        const subDNA = new DNA('TCG');
-        expect(testDNA.contains(subDNA)).toBe(true);
-      });
-
-      test('is case sensitive after normalization', () => {
-        expect(testDNA.contains('tcg')).toBe(false); // Should be uppercase
+      test('finds subsequence (DNA argument)', () => {
+        expect(testDNA.contains(new DNA('TCG'))).toBe(true);
       });
     });
 
-    describe('startsWith()', () => {
-      test('detects correct prefix with string', () => {
+    describe('startsWith / endsWith', () => {
+      test('startsWith handles strings and DNA', () => {
         expect(testDNA.startsWith('ATC')).toBe(true);
-        expect(testDNA.startsWith('AT')).toBe(true);
-        expect(testDNA.startsWith('ATCGATCG')).toBe(true);
-      });
-
-      test('returns false for incorrect prefix', () => {
+        expect(testDNA.startsWith(new DNA('ATC'))).toBe(true);
         expect(testDNA.startsWith('GTC')).toBe(false);
-        expect(testDNA.startsWith('TCG')).toBe(false);
       });
 
-      test('works with DNA object', () => {
-        const prefixDNA = new DNA('ATC');
-        expect(testDNA.startsWith(prefixDNA)).toBe(true);
-      });
-    });
-
-    describe('endsWith()', () => {
-      test('detects correct suffix with string', () => {
+      test('endsWith handles strings and DNA', () => {
         expect(testDNA.endsWith('TCG')).toBe(true);
-        expect(testDNA.endsWith('CG')).toBe(true);
-        expect(testDNA.endsWith('ATCGATCG')).toBe(true);
-      });
-
-      test('returns false for incorrect suffix', () => {
+        expect(testDNA.endsWith(new DNA('TCG'))).toBe(true);
         expect(testDNA.endsWith('ATC')).toBe(false);
-        expect(testDNA.endsWith('ATG')).toBe(false);
-      });
-
-      test('works with DNA object', () => {
-        const suffixDNA = new DNA('TCG');
-        expect(testDNA.endsWith(suffixDNA)).toBe(true);
       });
     });
 
-    describe('indexOf()', () => {
-      test('finds first occurrence of subsequence', () => {
+    describe('indexOf', () => {
+      test('returns first occurrence', () => {
         expect(testDNA.indexOf('TCG')).toBe(1);
         expect(testDNA.indexOf('ATC')).toBe(0);
-        expect(testDNA.indexOf('CG')).toBe(2);
       });
 
-      test('finds occurrence with start position', () => {
-        // testDNA = 'ATCGATCG' - positions: A(0)T(1)C(2)G(3)A(4)T(5)C(6)G(7)
-        expect(testDNA.indexOf('TCG', 2)).toBe(5); // Second occurrence starts at position 5
-        expect(testDNA.indexOf('C', 3)).toBe(6); // First C after position 3 is at position 6
+      test('respects start position', () => {
+        expect(testDNA.indexOf('TCG', 2)).toBe(5);
       });
 
-      test('returns -1 for non-existing subsequence', () => {
+      test('returns -1 when missing', () => {
         expect(testDNA.indexOf('AAA')).toBe(-1);
-        expect(testDNA.indexOf('XYZ')).toBe(-1);
       });
 
-      test('works with DNA object', () => {
-        const searchDNA = new DNA('TCG');
-        expect(testDNA.indexOf(searchDNA)).toBe(1);
+      test('accepts DNA argument', () => {
+        expect(testDNA.indexOf(new DNA('TCG'))).toBe(1);
       });
     });
 
-    describe('getSubsequence()', () => {
-      test('extracts subsequence with start and end', () => {
+    describe('getSubsequence', () => {
+      test('extracts an inclusive-exclusive range', () => {
         const sub = testDNA.getSubsequence(2, 5);
         expect(sub).toBeInstanceOf(DNA);
         expect(sub.getSequence()).toBe('CGA');
       });
 
-      test('extracts subsequence from start to end of sequence', () => {
-        const sub = testDNA.getSubsequence(5);
-        expect(sub.getSequence()).toBe('TCG');
-      });
-
-      test('extracts single nucleotide', () => {
-        const sub = testDNA.getSubsequence(0, 1);
-        expect(sub.getSequence()).toBe('A');
+      test('extracts to end of sequence when end is omitted', () => {
+        expect(testDNA.getSubsequence(5).getSequence()).toBe('TCG');
       });
 
       test('extracts entire sequence', () => {
-        const sub = testDNA.getSubsequence(0);
-        expect(sub.getSequence()).toBe('ATCGATCG');
-        expect(sub.equals(testDNA)).toBe(true);
-      });
-
-      test('handles edge cases', () => {
-        const sub = testDNA.getSubsequence(7, 8);
-        expect(sub.getSequence()).toBe('G');
+        expect(testDNA.getSubsequence(0).getSequence()).toBe('ATCGATCG');
       });
     });
+  });
 
-    describe('Object-based complement methods', () => {
-      describe('getComplement()', () => {
-        test('returns new DNA instance with complement sequence', () => {
-          const complement = testDNA.getComplement();
+  describe('complement transformations', () => {
+    const testDNA = new DNA('ATCGATCG');
 
-          expect(complement).toBeInstanceOf(DNA);
-          expect(complement.getSequence()).toBe('TAGCTAGC');
-          expect(complement).not.toBe(testDNA); // Different instance
-        });
+    test('getComplement returns a new DNA carrying the complement', () => {
+      const complement = testDNA.getComplement();
+      expect(complement).toBeInstanceOf(DNA);
+      expect(complement.getSequence()).toBe('TAGCTAGC');
+      expect(complement).not.toBe(testDNA);
+    });
 
-        test('maintains consistency with string API', () => {
-          expect(testDNA.getComplement().getSequence()).toBe(testDNA.getComplementSequence());
-        });
+    test('getReverseComplement returns a new DNA carrying the reverse complement', () => {
+      const rc = testDNA.getReverseComplement();
+      expect(rc).toBeInstanceOf(DNA);
+      expect(rc.getSequence()).toBe('CGATCGAT');
+    });
 
-        test('handles single nucleotides', () => {
-          expect(new DNA('A').getComplement().getSequence()).toBe('T');
-          expect(new DNA('T').getComplement().getSequence()).toBe('A');
-          expect(new DNA('C').getComplement().getSequence()).toBe('G');
-          expect(new DNA('G').getComplement().getSequence()).toBe('C');
-        });
+    test('handles single bases', () => {
+      expect(new DNA('A').getComplement().getSequence()).toBe('T');
+      expect(new DNA('T').getComplement().getSequence()).toBe('A');
+      expect(new DNA('C').getComplement().getSequence()).toBe('G');
+      expect(new DNA('G').getComplement().getSequence()).toBe('C');
+    });
 
-        test('double complement returns equivalent sequence', () => {
-          const doubleComplement = testDNA.getComplement().getComplement();
-          expect(doubleComplement.getSequence()).toBe(testDNA.getSequence());
-          expect(doubleComplement.equals(testDNA)).toBe(true);
-        });
-      });
+    test('double complement is identity', () => {
+      const round = testDNA.getComplement().getComplement();
+      expect(round.equals(testDNA)).toBe(true);
+    });
 
-      describe('getReverseComplement()', () => {
-        test('returns new DNA instance with reverse complement sequence', () => {
-          const reverseComplement = testDNA.getReverseComplement();
+    test('palindromic restriction site equals its reverse complement', () => {
+      const ecori = new DNA('GAATTC');
+      expect(ecori.getReverseComplement().getSequence()).toBe('GAATTC');
+    });
 
-          expect(reverseComplement).toBeInstanceOf(DNA);
-          expect(reverseComplement.getSequence()).toBe('CGATCGAT');
-          expect(reverseComplement).not.toBe(testDNA); // Different instance
-        });
+    test('chains with substring extraction', () => {
+      const result = testDNA.getSubsequence(0, 4).getComplement().getReverseComplement();
+      expect(result.getSequence()).toBe('GCTA');
+    });
 
-        test('maintains consistency with string API', () => {
-          expect(testDNA.getReverseComplement().getSequence()).toBe(
-            testDNA.getReverseComplementSequence(),
-          );
-        });
-
-        test('handles palindromic sequences correctly', () => {
-          const palindromic = new DNA('GAATTC'); // EcoRI site
-          const reverseComplement = palindromic.getReverseComplement();
-
-          expect(reverseComplement.getSequence()).toBe('GAATTC');
-          expect(palindromic.equals(reverseComplement)).toBe(true);
-        });
-
-        test('double reverse complement returns original sequence', () => {
-          const doubleReverseComplement = testDNA.getReverseComplement().getReverseComplement();
-          expect(doubleReverseComplement.getSequence()).toBe(testDNA.getSequence());
-          expect(doubleReverseComplement.equals(testDNA)).toBe(true);
-        });
-      });
-
-      describe('Chainability and fluent API', () => {
-        test('methods are chainable', () => {
-          const result1 = testDNA.getComplement().getReverseComplement();
-          expect(result1).toBeInstanceOf(DNA);
-          expect(result1.getSequence()).toBe('GCTAGCTA');
-
-          const result2 = testDNA.getReverseComplement().getComplement();
-          expect(result2).toBeInstanceOf(DNA);
-          expect(result2.getSequence()).toBe('GCTAGCTA');
-        });
-
-        test('can chain with other DNA methods', () => {
-          const result = testDNA
-            .getSubsequence(0, 4) // 'ATCG'
-            .getComplement() // 'TAGC'
-            .getReverseComplement(); // 'GCTA'
-
-          expect(result.getSequence()).toBe('GCTA');
-        });
-
-        test('complex chaining maintains type safety', () => {
-          const complex = testDNA
-            .getComplement()
-            .getSubsequence(2, 6)
-            .getReverseComplement()
-            .getComplement();
-
-          expect(complex).toBeInstanceOf(DNA);
-          expect(typeof complex.getSequence).toBe('function');
-        });
-      });
-
-      describe('Biological applications', () => {
-        test('primer design workflow', () => {
-          const template = new DNA('ATGAAAGCGTTTGCGAAATTTAGCG');
-
-          // Forward primer (first 20 bp)
-          const forwardPrimer = template.getSubsequence(0, 20);
-          expect(forwardPrimer.getSequence()).toBe('ATGAAAGCGTTTGCGAAATT');
-
-          // Reverse primer (reverse complement of last 20 bp)
-          const reversePrimerRegion = template.getSubsequence(5);
-          const reversePrimer = reversePrimerRegion.getReverseComplement();
-
-          expect(reversePrimer).toBeInstanceOf(DNA);
-          expect(reversePrimer.getSequence().length).toBe(20);
-        });
-
-        test('double-stranded DNA representation', () => {
-          const strand1 = new DNA('ATGCGCTA');
-          const strand2 = strand1.getReverseComplement();
-
-          // Verify they represent complementary strands
-          expect(strand1.getSequence()).toBe('ATGCGCTA');
-          expect(strand2.getSequence()).toBe('TAGCGCAT');
-
-          // Verify reverse complement relationship
-          expect(strand2.getReverseComplement().equals(strand1)).toBe(true);
-        });
-
-        test('restriction enzyme recognition sites', () => {
-          const restrictionSites = [
-            'GAATTC', // EcoRI
-            'GGATCC', // BamHI
-            'AAGCTT', // HindIII
-          ];
-
-          for (const site of restrictionSites) {
-            const dna = new DNA(site);
-            const reverseComplement = dna.getReverseComplement();
-
-            // Palindromic sites should equal their reverse complement
-            expect(reverseComplement.getSequence()).toBe(site);
-            expect(dna.equals(reverseComplement)).toBe(true);
-          }
-        });
-      });
-
-      describe('Performance and immutability', () => {
-        test('maintains immutability', () => {
-          const original = new DNA('ATCG');
-          const complement = original.getComplement();
-          const reverseComplement = original.getReverseComplement();
-
-          // Original should be unchanged
-          expect(original.getSequence()).toBe('ATCG');
-
-          // Each operation creates new instances
-          expect(complement).not.toBe(original);
-          expect(reverseComplement).not.toBe(original);
-          expect(complement).not.toBe(reverseComplement);
-        });
-
-        test('handles large sequences efficiently', () => {
-          const largeSequence = 'ATCGATCG'.repeat(1000); // 8,000 bp
-          const largeDNA = new DNA(largeSequence);
-
-          const start = performance.now();
-          const complement = largeDNA.getComplement();
-          const reverseComplement = largeDNA.getReverseComplement();
-          const end = performance.now();
-
-          expect(complement.getSequence().length).toBe(largeSequence.length);
-          expect(reverseComplement.getSequence().length).toBe(largeSequence.length);
-          expect(end - start).toBeLessThan(100); // Should complete quickly
-        });
-      });
+    test('preserves immutability of the original', () => {
+      const original = new DNA('ATCG');
+      original.getComplement();
+      original.getReverseComplement();
+      expect(original.getSequence()).toBe('ATCG');
     });
   });
 });

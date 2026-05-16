@@ -1,4 +1,5 @@
-import { RNA, AminoAcid, InvalidCodonError } from '../../src/model';
+import { AminoAcid, InvalidCodonError } from '../../src/model';
+import { RNA, STOP_CODONS } from '../../src/sequence';
 import {
   getAminoAcidByCodon,
   getAminoAcidDataByCodon,
@@ -6,12 +7,6 @@ import {
   SINGLE_LETTER_CODE_ALT_CODONS_MAP,
   SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP,
 } from '../../src/utils/amino-acids';
-import {
-  STOP_CODON_UAA,
-  STOP_CODON_UAG,
-  STOP_CODON_UGA,
-  STOP_CODONS,
-} from '../../src/utils/nucleic-acids';
 import { AminoAcidPolarity, AminoAcidCharge, AminoAcidSideChainType } from '../../src';
 import { isCorrectAminoAcid, ALANINE_RNA_CODON_1, ALANINE_RNA_CODON_2 } from './test-utils';
 
@@ -37,15 +32,15 @@ test('create invalid AminoAcid (Alanine) from too long RNA', () => {
 });
 
 test('create invalid AminoAcid from stop codon UAA', () => {
-  expect(() => new AminoAcid(new RNA(STOP_CODON_UAA))).toThrowError(InvalidCodonError);
+  expect(() => new AminoAcid(new RNA('UAA'))).toThrowError(InvalidCodonError);
 });
 
 test('create invalid AminoAcid from stop codon UAG', () => {
-  expect(() => new AminoAcid(new RNA(STOP_CODON_UAG))).toThrowError(InvalidCodonError);
+  expect(() => new AminoAcid(new RNA('UAG'))).toThrowError(InvalidCodonError);
 });
 
 test('create invalid AminoAcid from stop codon UGA', () => {
-  expect(() => new AminoAcid(new RNA(STOP_CODON_UGA))).toThrowError(InvalidCodonError);
+  expect(() => new AminoAcid(new RNA('UGA'))).toThrowError(InvalidCodonError);
 });
 
 test('getAminoAcidByCodon returns undefined for all stop codons', () => {

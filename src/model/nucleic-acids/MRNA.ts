@@ -1,5 +1,5 @@
-import { RNA } from './RNA.js';
-import { MIN_POLY_A_DETECTION_LENGTH, CODON_LENGTH } from '../../constants/biological-constants.js';
+import { RNA, CODON_LENGTH } from '../../sequence/index.js';
+import { MIN_POLY_A_DETECTION_LENGTH } from '../../constants/biological-constants.js';
 
 /**
  * Represents mature messenger RNA (mRNA) that has undergone complete processing.

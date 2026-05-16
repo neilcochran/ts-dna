@@ -1,15 +1,12 @@
 import { AminoAcid } from '../model/AminoAcid.js';
-import { RNA } from '../model/nucleic-acids/RNA.js';
+import { RNA, CODON_LENGTH, isStopCodon } from '../sequence/index.js';
 import { InvalidCodonError } from '../model/errors/InvalidCodonError.js';
 import { InvalidSequenceError } from '../model/errors/InvalidSequenceError.js';
-import { NucleicAcidType } from '../enums/nucleic-acid-type.js';
 import { AminoAcidData } from '../types/amino-acid-data.js';
-import { CODON_LENGTH } from '../constants/biological-constants.js';
 import {
   SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP,
   CODON_TO_SINGLE_LETTER_CODE_MAP,
 } from '../data/codon-map.js';
-import { STOP_CODONS } from './nucleic-acids.js';
 
 export {
   SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP,
@@ -94,7 +91,7 @@ export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
     throw new InvalidSequenceError(
       `Invalid codon: ${sequence} The RNA sequence length must be divisible by ${CODON_LENGTH} to be comprised of only codons`,
       sequence,
-      NucleicAcidType.RNA,
+      'RNA',
     );
   }
 
@@ -103,7 +100,7 @@ export const RNAtoAminoAcids = (rna: RNA): AminoAcid[] => {
 
   for (const codonSeq of codons) {
     // Check if this is a stop codon - if so, terminate translation
-    if (STOP_CODONS.includes(codonSeq)) {
+    if (isStopCodon(codonSeq)) {
       break;
     }
 

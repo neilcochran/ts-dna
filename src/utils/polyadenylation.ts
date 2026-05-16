@@ -1,4 +1,4 @@
-import { RNA } from '../model/nucleic-acids/RNA.js';
+import { RNA } from '../sequence/index.js';
 import { NucleotidePattern } from '../model/nucleic-acids/NucleotidePattern.js';
 import {
   PolyadenylationSite,

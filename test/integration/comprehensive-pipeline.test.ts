@@ -6,8 +6,8 @@
  */
 
 import { Gene } from '../../src/model/nucleic-acids/Gene';
-import { DNA } from '../../src/model/nucleic-acids/DNA';
-import { RNA } from '../../src/model/nucleic-acids/RNA';
+import { DNA } from '../../src/sequence';
+import { RNA } from '../../src/sequence';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { PreMRNA } from '../../src/model/nucleic-acids/PreMRNA';
@@ -18,7 +18,7 @@ import {
   generateAllSpliceVariants,
   spliceRNAWithVariant,
 } from '../../src/utils/alternative-splicing';
-// Removed convertToRNA, convertToDNA imports - using direct constructors instead
+// Removed transcribeSequence, reverseTranscribeSequence imports - using direct constructors instead
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
 import { isSuccess, isFailure } from '../../src/result/Result';
 

@@ -5,7 +5,7 @@
  * between different replication components and real biological constraints.
  */
 
-import { DNA } from '../../src/model/nucleic-acids/DNA';
+import { DNA } from '../../src/sequence';
 import { replicateDNA } from '../../src/utils/replication/simple-replication';
 import { E_COLI, HUMAN } from '../../src/types/replication-types';
 import { isSuccess } from '../../src/result/Result';

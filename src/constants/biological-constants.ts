@@ -4,7 +4,9 @@
  */
 
 // Codon and genetic code constants
-export const CODON_LENGTH = 3;
+// CODON_LENGTH is the canonical name and lives in src/sequence/codons.ts.
+// MIN_CODON_LENGTH and READING_FRAME_DIVISOR (below) are legacy aliases that survive only
+// until Phase 7 of the restructure deletes them.
 export const MIN_CODON_LENGTH = 3;
 
 // Gene structure constraints

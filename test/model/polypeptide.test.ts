@@ -1,7 +1,6 @@
-import { RNA, MRNA, Polypeptide, InvalidSequenceError } from '../../src/model';
+import { MRNA, Polypeptide, InvalidSequenceError } from '../../src/model';
+import { RNA, STOP_CODONS, CODON_LENGTH } from '../../src/sequence';
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids';
-import { STOP_CODONS } from '../../src/utils/nucleic-acids';
-import { CODON_LENGTH } from '../../src/constants/biological-constants';
 import {
   isCorrectAminoAcidSequence,
   MRNA_ALL_AMINO_ACIDS_1,

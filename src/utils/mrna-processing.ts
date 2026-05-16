@@ -3,10 +3,9 @@ import { MRNA } from '../model/nucleic-acids/MRNA.js';
 import { Result, success, failure, isSuccess } from '../result/index.js';
 import { spliceRNA } from './rna-processing.js';
 import { findPolyadenylationSites, getStrongestPolyadenylationSite } from './polyadenylation.js';
-import { START_CODON, STOP_CODONS } from './nucleic-acids.js';
+import { START_CODON, CODON_LENGTH, isStopCodon } from '../sequence/index.js';
 import {
   DEFAULT_POLY_A_TAIL_LENGTH,
-  CODON_LENGTH,
   DEFAULT_CLEAVAGE_OFFSET,
 } from '../constants/biological-constants.js';
 
@@ -194,7 +193,7 @@ function findCodingSequence(
     i += CODON_LENGTH
   ) {
     const codon = searchSequence.substring(i, i + CODON_LENGTH);
-    if (STOP_CODONS.includes(codon)) {
+    if (isStopCodon(codon)) {
       stopCodonIndex = i + CODON_LENGTH; // Include stop codon in coding sequence
       break;
     }

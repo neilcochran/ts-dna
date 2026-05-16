@@ -1,5 +1,5 @@
 import { ForkCoordinator } from '../../../src/utils/replication/ForkCoordinator.js';
-import { DNA } from '../../../src/model/nucleic-acids/DNA.js';
+import { DNA } from '../../../src/sequence';
 import { ReplicationFork } from '../../../src/model/replication/ReplicationFork.js';
 import { E_COLI, HUMAN } from '../../../src/types/replication-types.js';
 import { isSuccess, isFailure, failure } from '../../../src/result/Result.js';

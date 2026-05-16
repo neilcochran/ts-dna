@@ -1,35 +1,21 @@
 import {
-  // Codon and genetic code constants
-  CODON_LENGTH,
   MIN_CODON_LENGTH,
-
-  // Gene structure constraints
   MIN_EXON_SIZE,
   MAX_EXON_SIZE,
   MIN_INTRON_SIZE,
   MAX_INTRON_SIZE,
   DEFAULT_MAX_INTRON_SEARCH,
-
-  // RNA processing constants
   DEFAULT_POLY_A_TAIL_LENGTH,
   MIN_POLY_A_DETECTION_LENGTH,
-
-  // Polyadenylation signals
   POLYA_SIGNALS,
   DEFAULT_POLYA_SIGNAL_STRENGTH,
   MIN_RNA_SEQUENCE_FOR_POLYA_SEARCH,
-
-  // Splice site sequences
   DONOR_SPLICE_CONSENSUS,
   ACCEPTOR_SPLICE_CONSENSUS,
   MIN_INTRON_LENGTH_FOR_SPLICING,
-
-  // Promoter element positioning
   TATA_BOX_TYPICAL_POSITION,
   DPE_TYPICAL_POSITION,
   MAX_PROMOTER_SEARCH_DISTANCE,
-
-  // Quality scoring constants
   BASE_POLYA_SCORE,
   HIGH_U_CONTENT_THRESHOLD,
   MODERATE_U_CONTENT_THRESHOLD,
@@ -37,6 +23,7 @@ import {
   DSE_ELEMENT_MAX_BOOST,
   MIN_POLYA_SITE_STRENGTH,
 } from '../../src/constants/biological-constants';
+import { CODON_LENGTH } from '../../src/sequence';
 
 /**
  * Tests that validate biological constants against known scientific literature.

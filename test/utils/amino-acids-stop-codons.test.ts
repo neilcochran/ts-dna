@@ -2,11 +2,11 @@
  * Tests for stop codon handling in amino acid translation
  */
 
-import { RNA } from '../../src/model/nucleic-acids/RNA.js';
+import { RNA } from '../../src/sequence';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA.js';
 import { Polypeptide } from '../../src/model/Polypeptide.js';
 import { RNAtoAminoAcids } from '../../src/utils/amino-acids.js';
-import { STOP_CODONS } from '../../src/utils/nucleic-acids.js';
+import { STOP_CODONS } from '../../src/sequence';
 
 describe('Stop Codon Handling', () => {
   describe('RNAtoAminoAcids', () => {

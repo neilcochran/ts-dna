@@ -13,7 +13,7 @@ import { processRNA } from '../../src/utils/mrna-processing';
 import { Polypeptide } from '../../src/model/Polypeptide';
 import { replicateDNA } from '../../src/utils/replication/simple-replication';
 import { isSuccess, isFailure } from '../../src/result/Result';
-import { DNA } from '../../src/model/nucleic-acids/DNA';
+import { DNA } from '../../src/sequence';
 
 describe('Cross-System Integration Tests', () => {
   describe('Basic Gene-to-Protein Pipeline', () => {

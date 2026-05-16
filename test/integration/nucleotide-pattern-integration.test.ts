@@ -4,8 +4,8 @@
  */
 
 import { NucleotidePattern } from '../../src/model/nucleic-acids/NucleotidePattern.js';
-import { DNA } from '../../src/model/nucleic-acids/DNA.js';
-import { RNA } from '../../src/model/nucleic-acids/RNA.js';
+import { DNA } from '../../src/sequence';
+import { RNA } from '../../src/sequence';
 
 describe('NucleotidePattern Integration Tests', () => {
   describe('Restriction Enzyme Site Recognition', () => {

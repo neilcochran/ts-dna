@@ -6,12 +6,12 @@
  */
 
 import { Gene } from '../../src/model/nucleic-acids/Gene';
-import { DNA } from '../../src/model/nucleic-acids/DNA';
+import { DNA } from '../../src/sequence';
 import { MRNA } from '../../src/model/nucleic-acids/MRNA';
 import { transcribe } from '../../src/utils/transcription';
 import { processRNA } from '../../src/utils/mrna-processing';
 import { Polypeptide } from '../../src/model/Polypeptide';
-import { convertToRNA } from '../../src/utils/nucleic-acids';
+import { transcribeSequence } from '../../src/sequence';
 import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('Biological Scenarios Integration Tests', () => {
@@ -385,12 +385,12 @@ describe('Biological Scenarios Integration Tests', () => {
       // High GC content (common in some organisms)
       const highGCSequence = 'ATGGGCGGCGGCCTGCCGCTGTAG';
       const highGCDNA = new DNA(highGCSequence);
-      const highGCRNA = convertToRNA(highGCDNA);
+      const highGCRNA = transcribeSequence(highGCDNA);
 
       // Low GC content
       const lowGCSequence = 'ATGAAAAATAAATTTAATTTATAG';
       const lowGCDNA = new DNA(lowGCSequence);
-      const lowGCRNA = convertToRNA(lowGCDNA);
+      const lowGCRNA = transcribeSequence(lowGCDNA);
 
       // Test exact GC content differences
       const highGCContent = (highGCSequence.match(/[GC]/g) ?? []).length / highGCSequence.length;

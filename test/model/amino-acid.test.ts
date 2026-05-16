@@ -1,9 +1,8 @@
 import { AminoAcid } from '../../src/model/AminoAcid';
-import { RNA } from '../../src/model/nucleic-acids/RNA';
+import { RNA } from '../../src/sequence';
 import { AminoAcidPolarity } from '../../src/enums/amino-acid-polarity';
 import { AminoAcidCharge } from '../../src/enums/amino-acid-charge';
 import { AminoAcidSideChainType } from '../../src/enums/amino-acid-side-chain-type';
-import { NucleicAcidType } from '../../src/enums/nucleic-acid-type';
 import { AminoAcidData } from '../../src/types/amino-acid-data';
 import { SINGLE_LETTER_CODE_AMINO_ACID_DATA_MAP } from '../../src/data/codon-map';
 import { InvalidCodonError } from '../../src/model/errors/InvalidCodonError';
@@ -18,7 +17,7 @@ describe('AminoAcid Class', () => {
       expect(aminoAcid.singleLetterCode).toBe('M');
       expect(aminoAcid.abbrv).toBe('Met');
       expect(aminoAcid.codon).toBe(codon);
-      expect(aminoAcid.codon.nucleicAcidType).toBe(NucleicAcidType.RNA);
+      expect(aminoAcid.codon.nucleicAcidType).toBe('RNA');
     });
 
     test('creates amino acid with correct molecular properties', () => {
@@ -135,7 +134,7 @@ describe('AminoAcid Class', () => {
       alternateCodons.forEach(codon => {
         expect(codon).toBeInstanceOf(RNA);
         expect(codon.getSequence()).toHaveLength(3);
-        expect(codon.nucleicAcidType).toBe(NucleicAcidType.RNA);
+        expect(codon.nucleicAcidType).toBe('RNA');
       });
     });
   });

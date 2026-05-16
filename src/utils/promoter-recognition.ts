@@ -1,4 +1,4 @@
-import { DNA } from '../model/nucleic-acids/DNA.js';
+import { DNA } from '../sequence/index.js';
 import { Promoter } from '../model/Promoter.js';
 import { PromoterElement } from '../model/PromoterElement.js';
 import { STANDARD_PROMOTER_ELEMENTS, CORE_PROMOTER_ELEMENTS } from '../data/promoter-elements.js';

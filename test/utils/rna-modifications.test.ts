@@ -1,4 +1,4 @@
-import { RNA } from '../../src/model/nucleic-acids/RNA';
+import { RNA } from '../../src/sequence';
 import {
   DEFAULT_POLY_A_TAIL_LENGTH,
   MAX_POLY_A_TAIL_LENGTH,
