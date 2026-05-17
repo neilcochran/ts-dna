@@ -3,6 +3,7 @@ export * from './coordinates/index.js';
 export * from './sequence/index.js';
 export * from './pattern/index.js';
 export * from './gene/index.js';
+export * from './variants/index.js';
 export * from './transcription/index.js';
 export * from './processing/index.js';
 export * from './translation/index.js';

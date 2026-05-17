@@ -1,15 +1,19 @@
 import {
-  validateSpliceVariant,
   spliceRNAWithVariant,
   processAllSplicingVariants,
   processDefaultSpliceVariant,
   enumerateSpliceVariants,
+} from '../../src/processing';
+import {
+  validateSpliceVariant,
   exonSkippingVariant,
   truncationVariant,
   fullLengthVariant,
   type AlternativeSplicingOptions,
-} from '../../src/processing';
-import { parseGene, type AlternativeSplicingProfile, type SpliceVariant } from '../../src/gene';
+  type AlternativeSplicingProfile,
+  type SpliceVariant,
+} from '../../src/variants';
+import { parseGene } from '../../src/gene';
 import { parsePreMRNA } from '../../src/transcription';
 import { isSuccess, isFailure } from '../../src/result';
 import { FOUR_EXON_GENE } from '../test-genes';

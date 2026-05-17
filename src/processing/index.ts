@@ -15,21 +15,12 @@ export type { RNAProcessingOptions } from './process-rna.js';
 export { spliceRNA, validateTranscriptSpliceSites } from './splicing.js';
 export type { SpliceRNAOptions } from './splicing.js';
 export {
-  validateSpliceVariant,
   spliceRNAWithVariant,
   processAllSplicingVariants,
   processDefaultSpliceVariant,
   enumerateSpliceVariants,
 } from './alternative-splicing.js';
-export {
-  SplicingOutcome,
-  DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
-  exonSkippingVariant,
-  truncationVariant,
-  minimalVariant,
-  fullLengthVariant,
-} from './splice-variants.js';
-export type { AlternativeSplicingOptions } from './splice-variants.js';
+export { SplicingOutcome } from './splicing-outcome.js';
 export {
   findPolyadenylationSites,
   getStrongestPolyadenylationSite,

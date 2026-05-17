@@ -36,6 +36,10 @@
       "types": "./dist/gene/index.d.ts",
       "import": "./dist/gene/index.js"
     },
+    "./variants": {
+      "types": "./dist/variants/index.d.ts",
+      "import": "./dist/variants/index.js"
+    },
     "./transcription": {
       "types": "./dist/transcription/index.d.ts",
       "import": "./dist/transcription/index.js"

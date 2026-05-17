@@ -7,7 +7,7 @@ import {
   type GenomicRegion,
 } from '../coordinates/index.js';
 import type { NucleotidePattern } from '../pattern/index.js';
-import type { AlternativeSplicingProfile } from './splice-variants.js';
+import type { AlternativeSplicingProfile } from '../variants/index.js';
 import type { Gene } from './Gene.js';
 import type { Promoter } from './Promoter.js';
 import type { PromoterElement } from './PromoterElement.js';

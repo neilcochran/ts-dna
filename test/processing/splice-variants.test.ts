@@ -3,9 +3,8 @@ import {
   truncationVariant,
   minimalVariant,
   fullLengthVariant,
-  SplicingOutcome,
-  parseMRNA,
-} from '../../src/processing';
+} from '../../src/variants';
+import { SplicingOutcome, parseMRNA } from '../../src/processing';
 
 describe('splice variant pattern free functions', () => {
   describe('exonSkippingVariant', () => {

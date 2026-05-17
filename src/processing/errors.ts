@@ -11,27 +11,26 @@
 import type { RNAError } from '../sequence/index.js';
 import { describeRNAError } from '../sequence/index.js';
 import { assertUnreachable } from '../result/index.js';
+import type { VariantValidationError } from '../variants/index.js';
+import { describeVariantValidationError } from '../variants/index.js';
 
 /**
  * Error variants produced by `spliceRNA`, `spliceRNAWithVariant`, and the splice-variant
- * validators.
+ * orchestrators.
+ *
+ * The splicing-mechanics kinds are local to this module; the per-variant rule failures are
+ * imported from `variants/` as {@link VariantValidationError} and merged in so that any
+ * function accepting a {@link SplicingError} still observes the full set of variant kinds.
  *
  * - `no-exons`: the pre-mRNA carries no exon regions to splice.
  * - `exon-out-of-bounds`: an exon region exceeds the transcript bounds.
  * - `invalid-donor-site`: an intron does not start with the canonical RNA donor (`GU`).
  * - `invalid-acceptor-site`: an intron does not end with the canonical RNA acceptor (`AG`).
  * - `intron-too-short`: an intron is shorter than the minimum splice-machinery threshold.
- * - `variant-invalid-exon-index`: a splice variant references an exon index outside the
- *   gene.
- * - `variant-skips-first-exon`: a splice variant excludes exon 0 when not permitted.
- * - `variant-skips-last-exon`: a splice variant excludes the final exon when not permitted.
- * - `variant-below-minimum-exons`: a splice variant includes fewer exons than required.
- * - `variant-not-in-frame`: a splice variant's mature sequence length is not divisible by 3.
- * - `variant-missing-start-codon`: a splice variant's first codon is not the start codon.
- * - `variant-missing-stop-codon`: a splice variant's last codon is not a stop codon.
  * - `no-splicing-profile`: an operation requiring a splicing profile was called on a gene
  *   without one.
  * - `no-default-variant`: a gene's splicing profile defines no resolvable default variant.
+ * - Plus every variant of {@link VariantValidationError}.
  */
 export type SplicingError =
   | {
@@ -82,68 +81,13 @@ export type SplicingError =
     }
   | {
       /** Discriminator naming the failure mode. */
-      readonly kind: 'variant-invalid-exon-index';
-      /** Name of the offending splice variant. */
-      readonly variantName: string;
-      /** Index that was out of range. */
-      readonly exonIndex: number;
-      /** Total exon count in the source gene. */
-      readonly totalExons: number;
-    }
-  | {
-      /** Discriminator naming the failure mode. */
-      readonly kind: 'variant-skips-first-exon';
-      /** Name of the offending splice variant. */
-      readonly variantName: string;
-    }
-  | {
-      /** Discriminator naming the failure mode. */
-      readonly kind: 'variant-skips-last-exon';
-      /** Name of the offending splice variant. */
-      readonly variantName: string;
-    }
-  | {
-      /** Discriminator naming the failure mode. */
-      readonly kind: 'variant-below-minimum-exons';
-      /** Name of the offending splice variant. */
-      readonly variantName: string;
-      /** Number of exons the variant included. */
-      readonly included: number;
-      /** Minimum number of exons required. */
-      readonly minimum: number;
-    }
-  | {
-      /** Discriminator naming the failure mode. */
-      readonly kind: 'variant-not-in-frame';
-      /** Name of the offending splice variant. */
-      readonly variantName: string;
-      /** Length of the variant's mature sequence in nucleotides. */
-      readonly length: number;
-    }
-  | {
-      /** Discriminator naming the failure mode. */
-      readonly kind: 'variant-missing-start-codon';
-      /** Name of the offending splice variant. */
-      readonly variantName: string;
-      /** The first 3-base codon found (or shorter for very short variants). */
-      readonly found: string;
-    }
-  | {
-      /** Discriminator naming the failure mode. */
-      readonly kind: 'variant-missing-stop-codon';
-      /** Name of the offending splice variant. */
-      readonly variantName: string;
-      /** The last 3-base codon found (or shorter for very short variants). */
-      readonly found: string;
-    }
-  | {
-      /** Discriminator naming the failure mode. */
       readonly kind: 'no-splicing-profile';
     }
   | {
       /** Discriminator naming the failure mode. */
       readonly kind: 'no-default-variant';
-    };
+    }
+  | VariantValidationError;
 
 /**
  * Error variants produced by `add3PrimePolyATail` and `add3PrimePolyATailAtSite`.
@@ -238,24 +182,18 @@ export function describeSplicingError(error: SplicingError): string {
       return `Invalid 3' splice site at transcript position ${error.position}: expected AG, found ${error.found}`;
     case 'intron-too-short':
       return `Intron ${error.intronIndex} is too short: ${error.length} bp (minimum ${error.min} bp required)`;
-    case 'variant-invalid-exon-index':
-      return `Variant '${error.variantName}' references invalid exon index ${error.exonIndex}. Gene has ${error.totalExons} exons.`;
-    case 'variant-skips-first-exon':
-      return `Variant '${error.variantName}' skips the first exon, which is not allowed`;
-    case 'variant-skips-last-exon':
-      return `Variant '${error.variantName}' skips the last exon, which is not allowed`;
-    case 'variant-below-minimum-exons':
-      return `Variant '${error.variantName}' includes ${error.included} exons, but minimum required is ${error.minimum}`;
-    case 'variant-not-in-frame':
-      return `Variant '${error.variantName}' does not maintain reading frame: length ${error.length} is not divisible by 3`;
-    case 'variant-missing-start-codon':
-      return `Variant '${error.variantName}' does not start with start codon AUG, found '${error.found}'`;
-    case 'variant-missing-stop-codon':
-      return `Variant '${error.variantName}' does not end with stop codon, found '${error.found}'`;
     case 'no-splicing-profile':
       return 'Gene does not have an alternative splicing profile';
     case 'no-default-variant':
       return 'Gene does not have a default splice variant defined';
+    case 'variant-invalid-exon-index':
+    case 'variant-skips-first-exon':
+    case 'variant-skips-last-exon':
+    case 'variant-below-minimum-exons':
+    case 'variant-not-in-frame':
+    case 'variant-missing-start-codon':
+    case 'variant-missing-stop-codon':
+      return describeVariantValidationError(error);
     default:
       return assertUnreachable(error);
   }

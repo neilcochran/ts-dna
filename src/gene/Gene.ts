@@ -1,6 +1,6 @@
 import type { DNA } from '../sequence/index.js';
 import type { GeneCoord, GenomicRegion } from '../coordinates/index.js';
-import type { AlternativeSplicingProfile, SpliceVariant } from './splice-variants.js';
+import type { AlternativeSplicingProfile, SpliceVariant } from '../variants/index.js';
 import { UNSAFE_GENE_KEY } from './internal-keys.js';
 
 /**
