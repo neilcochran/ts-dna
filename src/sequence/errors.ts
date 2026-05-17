@@ -6,6 +6,7 @@
  * rendering layer (see {@link describeDNAError} / {@link describeRNAError} /
  * {@link describeReadingFrameError}) rather than carried alongside the structured payload.
  */
+import { assertUnreachable } from '../result/index.js';
 
 /**
  * Error variants produced when parsing a DNA sequence string.
@@ -82,6 +83,8 @@ export function describeDNAError(error: DNAError): string {
       return 'DNA sequence cannot be empty';
     case 'invalid-characters':
       return `Invalid DNA sequence: contains invalid characters ${error.chars.join(', ')} (first at index ${error.firstAt})`;
+    default:
+      return assertUnreachable(error);
   }
 }
 
@@ -97,6 +100,8 @@ export function describeRNAError(error: RNAError): string {
       return 'RNA sequence cannot be empty';
     case 'invalid-characters':
       return `Invalid RNA sequence: contains invalid characters ${error.chars.join(', ')} (first at index ${error.firstAt})`;
+    default:
+      return assertUnreachable(error);
   }
 }
 
@@ -112,6 +117,8 @@ export function describeReadingFrameError(error: ReadingFrameError): string {
       return `Reading frame error: coding sequence length ${error.codingLength} is not divisible by ${error.codonLength}`;
     case 'missing-start-codon':
       return `Expected start codon AUG at position ${error.position}, found ${error.found}`;
+    default:
+      return assertUnreachable(error);
   }
 }
 
@@ -153,5 +160,7 @@ export function describeDoubleStrandedError(error: DoubleStrandedError): string 
       return `Double-stranded DNA requires equal-length strands; forward is ${error.forwardLength} nt, reverse is ${error.reverseLength} nt`;
     case 'not-complementary':
       return `Strands are not complementary: at forward index ${error.firstMismatchAt} the reverse strand has '${error.actual}' but expected '${error.expected}'`;
+    default:
+      return assertUnreachable(error);
   }
 }

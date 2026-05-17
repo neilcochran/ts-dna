@@ -2,6 +2,7 @@ import { findPromoters, identifyTSS, MAX_PROMOTER_SEARCH_DISTANCE } from '../../
 import { DNA, parseDNA } from '../../src/sequence';
 import { parsePromoter, parsePromoterElement, Promoter, PromoterElement } from '../../src/gene';
 import { parseNucleotidePattern, NucleotidePattern } from '../../src/pattern';
+import { at } from '../utils/test-utils';
 
 function dna(sequence: string): DNA {
   return parseDNA(sequence).unwrap();
@@ -82,8 +83,8 @@ describe('promoter-recognition', () => {
 
       if (promoters.length > 1) {
         for (let i = 1; i < promoters.length; i++) {
-          expect(promoters[i - 1].getStrengthScore()).toBeGreaterThanOrEqual(
-            promoters[i].getStrengthScore(),
+          expect(at(promoters, i - 1).getStrengthScore()).toBeGreaterThanOrEqual(
+            at(promoters, i).getStrengthScore(),
           );
         }
       }
@@ -164,7 +165,7 @@ describe('promoter-recognition', () => {
       const promoters = findPromoters(sequence);
       expect(promoters.length).toBeGreaterThan(0);
 
-      const bestPromoter = promoters[0];
+      const bestPromoter = at(promoters, 0);
       expect(bestPromoter.hasElement('TATA')).toBe(true);
       expect(bestPromoter.hasElement('CAAT')).toBe(true);
       expect(bestPromoter.getStrengthScore()).toBeGreaterThan(15);

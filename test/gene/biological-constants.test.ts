@@ -37,8 +37,8 @@ describe('Gene biological constants', () => {
       expect(MIN_INTRON_SIZE).toBeGreaterThanOrEqual(20);
     });
 
-    test('MAX_INTRON_SIZE is reasonable for memory constraints', () => {
-      expect(MAX_INTRON_SIZE).toBe(1000000);
+    test('MAX_INTRON_SIZE covers the largest known mammalian intron with headroom', () => {
+      expect(MAX_INTRON_SIZE).toBe(3000000);
     });
 
     test('DEFAULT_MAX_INTRON_SEARCH is practical for splice-site detection', () => {

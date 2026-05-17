@@ -1,11 +1,11 @@
 import {
   validateSpliceSites,
   findPotentialSpliceSites,
-  DNA_DONOR_SPLICE_CONSENSUS,
-  DNA_ACCEPTOR_SPLICE_CONSENSUS,
+  SPLICE_CONSENSUS,
 } from '../../src/processing';
 import { isSuccess, isFailure } from '../../src/result';
 import { GenomicRegion } from '../../src/coordinates';
+import { at } from '../utils/test-utils';
 
 describe('splice-sites (DNA-side)', () => {
   describe('validateSpliceSites', () => {
@@ -84,7 +84,7 @@ describe('splice-sites (DNA-side)', () => {
 
     test('respects maxIntronLength', () => {
       const sequence =
-        DNA_DONOR_SPLICE_CONSENSUS + 'C'.repeat(1000) + DNA_ACCEPTOR_SPLICE_CONSENSUS;
+        SPLICE_CONSENSUS.dna.donor + 'C'.repeat(1000) + SPLICE_CONSENSUS.dna.acceptor;
       expect(findPotentialSpliceSites(sequence, 4, 100)).toHaveLength(0);
     });
 
@@ -102,7 +102,7 @@ describe('splice-sites (DNA-side)', () => {
     test('sorts results by start position', () => {
       const candidates = findPotentialSpliceSites('AGGTCCCAGGTAAAAGTTAG');
       for (let i = 1; i < candidates.length; i++) {
-        expect(candidates[i].start).toBeGreaterThanOrEqual(candidates[i - 1].start);
+        expect(at(candidates, i).start).toBeGreaterThanOrEqual(at(candidates, i - 1).start);
       }
     });
   });

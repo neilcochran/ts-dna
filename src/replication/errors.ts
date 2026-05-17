@@ -1,5 +1,6 @@
 import type { RNAError } from '../sequence/index.js';
 import { describeRNAError } from '../sequence/index.js';
+import { assertUnreachable } from '../result/index.js';
 
 /**
  * Tagged-union errors raised by {@link parseRNAPrimer}.
@@ -112,6 +113,8 @@ export function describeRNAPrimerError(error: RNAPrimerError): string {
       return `Invalid RNA primer sequence: ${describeRNAError(error.cause)}`;
     case 'invalid-length':
       return `RNA primers must be ${error.min}-${error.max} nucleotides; received length ${error.length}`;
+    default:
+      return assertUnreachable(error);
   }
 }
 
@@ -133,6 +136,8 @@ export function describeOkazakiFragmentError(error: OkazakiFragmentError): strin
       return `RNA primer position (${error.primerPosition}) must equal fragment startPosition (${error.startPosition})`;
     case 'sequence-length-mismatch':
       return `Okazaki fragment sequence length (${error.sequenceLength}) must equal range length (${error.expectedLength})`;
+    default:
+      return assertUnreachable(error);
   }
 }
 

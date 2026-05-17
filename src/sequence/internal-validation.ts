@@ -88,6 +88,9 @@ function findInvalidBases(
   const chars: string[] = [];
   for (let i = 0; i < normalized.length; i++) {
     const ch = normalized[i];
+    if (ch === undefined) {
+      continue;
+    }
     if (!validBases.has(ch)) {
       if (firstAt === -1) {
         firstAt = i;

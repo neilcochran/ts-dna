@@ -4,8 +4,8 @@ import {
   MIN_INTRON_SIZE,
   MAX_INTRON_SIZE,
 } from './biological-constants.js';
-import { type GenomicRegion, isValidGenomicRegion } from '../coordinates/index.js';
-import { Result, success, failure } from '../result/index.js';
+import { type GenomicRegion, validateGenomicRegion } from '../coordinates/index.js';
+import { Result, success, failure, isFailure } from '../result/index.js';
 import type { GeneError } from './errors.js';
 
 /**
@@ -38,8 +38,11 @@ export function validateExons(
   // Per-exon validation: coordinates, bounds, size.
   for (let i = 0; i < exons.length; i++) {
     const exon = exons[i];
+    if (exon === undefined) {
+      continue;
+    }
 
-    if (!isValidGenomicRegion(exon)) {
+    if (isFailure(validateGenomicRegion(exon))) {
       return failure({
         kind: 'exon-invalid-coordinates',
         exonIndex: i,
@@ -86,8 +89,12 @@ export function validateExons(
 
     const events: SweepEvent[] = [];
     for (let i = 0; i < exons.length; i++) {
-      events.push({ position: exons[i].start, type: 'start', exonIndex: i });
-      events.push({ position: exons[i].end, type: 'end', exonIndex: i });
+      const exon = exons[i];
+      if (exon === undefined) {
+        continue;
+      }
+      events.push({ position: exon.start, type: 'start', exonIndex: i });
+      events.push({ position: exon.end, type: 'end', exonIndex: i });
     }
     events.sort((a, b) => {
       if (a.position !== b.position) {
@@ -110,7 +117,11 @@ export function validateExons(
         if (activeExons > 0) {
           const overlapping: number[] = [];
           for (let i = 0; i < exons.length; i++) {
-            if (exons[i].start <= event.position && exons[i].end > event.position) {
+            const exon = exons[i];
+            if (exon === undefined) {
+              continue;
+            }
+            if (exon.start <= event.position && exon.end > event.position) {
               overlapping.push(i);
             }
           }
@@ -132,7 +143,12 @@ export function validateExons(
   if (exons.length > 1) {
     const sortedExons = [...exons].sort((a, b) => a.start - b.start);
     for (let i = 0; i < sortedExons.length - 1; i++) {
-      const intronLength = sortedExons[i + 1].start - sortedExons[i].end;
+      const current = sortedExons[i];
+      const next = sortedExons[i + 1];
+      if (current === undefined || next === undefined) {
+        continue;
+      }
+      const intronLength = next.start - current.end;
       if (intronLength < MIN_INTRON_SIZE) {
         return failure({
           kind: 'intron-too-small',

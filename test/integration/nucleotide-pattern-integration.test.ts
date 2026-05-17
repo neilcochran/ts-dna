@@ -6,6 +6,7 @@
 
 import { NucleotidePattern, parseNucleotidePattern } from '../../src/pattern';
 import { DNA, RNA, parseDNA, parseRNA } from '../../src/sequence';
+import { at } from '../utils/test-utils';
 
 function pattern(source: string): NucleotidePattern {
   return parseNucleotidePattern(source).unwrap();
@@ -52,8 +53,8 @@ describe('NucleotidePattern Integration Tests', () => {
 
       const matches = hindIIIPattern.findAll(sequence);
       expect(matches).toHaveLength(1);
-      expect(matches[0].start).toBe(3);
-      expect(matches[0].matched).toBe('AAGCTT');
+      expect(at(matches, 0).start).toBe(3);
+      expect(at(matches, 0).matched).toBe('AAGCTT');
     });
   });
 
@@ -78,8 +79,8 @@ describe('NucleotidePattern Integration Tests', () => {
 
       const matches = caatPattern.findAll(promoterRegion);
       expect(matches).toHaveLength(2);
-      expect(matches[0].start).toBe(3);
-      expect(matches[1].start).toBe(23);
+      expect(at(matches, 0).start).toBe(3);
+      expect(at(matches, 1).start).toBe(23);
     });
 
     test('GC box recognition with reverse complement', () => {

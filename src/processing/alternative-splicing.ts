@@ -1,9 +1,9 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import { CODON_LENGTH, START_CODON, isStopCodon, transcribeSequence } from '../sequence/index.js';
-import { unsafeDNA } from '../sequence/parse.js';
+import { unsafeDNA } from '../sequence/internal-factories.js';
 import type { Gene, SpliceVariant } from '../gene/index.js';
 import type { PreMRNA } from '../transcription/index.js';
-import { unsafeMRNA } from './parse.js';
+import { unsafeMRNA } from './internal-factories.js';
 import type { MRNA } from './MRNA.js';
 import {
   SplicingOutcome,

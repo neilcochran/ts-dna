@@ -7,6 +7,7 @@
 
 import { parseGene } from '../../src/gene';
 import { parseDNA, parseRNA } from '../../src/sequence';
+import { at } from '../utils/test-utils';
 import {
   parseMRNA,
   processRNA,
@@ -115,10 +116,10 @@ describe('Comprehensive Pipeline Integration Tests', () => {
       expect(constitutiveGene.exons.length - alternativeGene.exons.length).toBe(1);
 
       // Verify gene coordinate validation works
-      expect(constitutiveGene.exons[0].start).toBe(29);
-      expect(alternativeGene.exons[0].start).toBe(29);
-      expect(constitutiveGene.exons[1].start).toBe(83);
-      expect(alternativeGene.exons[1].start).toBe(137); // Skipped exon 2
+      expect(at(constitutiveGene.exons, 0).start).toBe(29);
+      expect(at(alternativeGene.exons, 0).start).toBe(29);
+      expect(at(constitutiveGene.exons, 1).start).toBe(83);
+      expect(at(alternativeGene.exons, 1).start).toBe(137); // Skipped exon 2
 
       // Test validates gene construction and coordinate validation
       // Full transcription pipeline testing would require fixing utility function imports

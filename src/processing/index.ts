@@ -39,22 +39,14 @@ export { DEFAULT_CLEAVAGE_OPTIONS } from './polyadenylation-site.js';
 export type { PolyadenylationSite, CleavageSiteOptions } from './polyadenylation-site.js';
 export { validateSpliceSites, findPotentialSpliceSites } from './splice-sites.js';
 export {
-  add5PrimeCap,
   add3PrimePolyATail,
   add3PrimePolyATailAtSite,
   remove3PrimePolyATail,
-  has5PrimeCap,
   has3PrimePolyATail,
   get3PrimePolyATailLength,
   getCoreSequence,
-  isFullyProcessed,
 } from './modifications.js';
-export {
-  DNA_DONOR_SPLICE_CONSENSUS,
-  DNA_ACCEPTOR_SPLICE_CONSENSUS,
-  RNA_DONOR_SPLICE_CONSENSUS,
-  RNA_ACCEPTOR_SPLICE_CONSENSUS,
-} from './splice-consensus.js';
+export { SPLICE_CONSENSUS } from './splice-consensus.js';
 export type { ProcessingError, SplicingError, PolyadenylationError } from './errors.js';
 export {
   describeProcessingError,
@@ -67,18 +59,20 @@ export {
   MAX_POLY_A_TAIL_LENGTH,
   POLY_A_TAIL_PATTERN,
   POLYA_SIGNAL_OFFSET,
-  DEFAULT_CLEAVAGE_OFFSET,
   CANONICAL_POLYA_SIGNAL_DNA,
   POLYA_SIGNALS,
-  DEFAULT_POLYA_SIGNAL_STRENGTH,
   MIN_INTRON_LENGTH_FOR_SPLICING,
-  MIN_RNA_SEQUENCE_FOR_POLYA_SEARCH,
-  USE_ELEMENT_MAX_BOOST,
-  DSE_ELEMENT_MAX_BOOST,
-  MIN_POLYA_SITE_STRENGTH,
   DEFAULT_POLYA_SIGNALS,
   DEFAULT_UPSTREAM_USE_PATTERN,
   DEFAULT_DOWNSTREAM_DSE_PATTERN,
   DEFAULT_CLEAVAGE_PREFERENCE,
   DEFAULT_CLEAVAGE_DISTANCE_RANGE,
-} from './biological-constants.js';
+} from './biology.js';
+export {
+  DEFAULT_POLYA_SIGNAL_STRENGTH,
+  DEFAULT_CLEAVAGE_OFFSET,
+  MIN_RNA_SEQUENCE_FOR_POLYA_SEARCH,
+  USE_ELEMENT_MAX_BOOST,
+  DSE_ELEMENT_MAX_BOOST,
+  MIN_POLYA_SITE_STRENGTH,
+} from './scoring.js';

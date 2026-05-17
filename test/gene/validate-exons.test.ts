@@ -97,12 +97,12 @@ describe('validateExons', () => {
   test('enforces maximum intron size constraint', () => {
     const exons: GenomicRegion[] = [
       { start: 0, end: 50 },
-      { start: 1050100, end: 1050150 },
+      { start: 3050100, end: 3050150 },
     ];
-    const result = validateExons(exons, 1050200);
+    const result = validateExons(exons, 3050200);
     expect(isFailure(result)).toBe(true);
     if (isFailure(result) && result.error.kind === 'intron-too-large') {
-      expect(result.error.max).toBe(1000000);
+      expect(result.error.max).toBe(3000000);
     } else {
       throw new Error(`expected intron-too-large, got ${JSON.stringify(result)}`);
     }

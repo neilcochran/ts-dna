@@ -5,7 +5,7 @@ import {
   parseDoubleStrandedDNA,
   describeDoubleStrandedError,
 } from '../../src/sequence';
-import { unsafeDoubleStrandedDNA } from '../../src/sequence/parse';
+import { unsafeDoubleStrandedDNA } from '../../src/sequence/internal-factories';
 import { UNSAFE_DSDNA_KEY } from '../../src/sequence/internal-keys';
 import { isFailure, isSuccess } from '../../src/result/Result';
 

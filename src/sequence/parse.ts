@@ -1,10 +1,10 @@
 import { Result, success, failure } from '../result/index.js';
-import { DNA } from './DNA.js';
-import { RNA } from './RNA.js';
-import { DoubleStrandedDNA } from './DoubleStrandedDNA.js';
+import type { DNA } from './DNA.js';
+import type { RNA } from './RNA.js';
+import type { DoubleStrandedDNA } from './DoubleStrandedDNA.js';
 import type { DNAError, RNAError, DoubleStrandedError } from './errors.js';
 import { validateDNAString, validateRNAString } from './internal-validation.js';
-import { UNSAFE_DNA_KEY, UNSAFE_RNA_KEY, UNSAFE_DSDNA_KEY } from './internal-keys.js';
+import { unsafeDNA, unsafeRNA, unsafeDoubleStrandedDNA } from './internal-factories.js';
 
 /**
  * Parses an untrusted string as a {@link DNA} sequence.
@@ -63,34 +63,6 @@ export function parseRNA(input: string): Result<RNA, RNAError> {
 }
 
 /**
- * Constructs a {@link DNA} without re-validating the input. Reserved for sequence-internal
- * callers that already know the input is well-formed (e.g. after slicing a validated DNA,
- * after computing a complement). Not exported from the package barrel.
- *
- * @internal
- *
- * @param sequence - A pre-validated, normalized (upper-case) DNA sequence
- * @returns A new `DNA` wrapping the sequence with no validation
- */
-export function unsafeDNA(sequence: string): DNA {
-  return new DNA(sequence, UNSAFE_DNA_KEY);
-}
-
-/**
- * Constructs an {@link RNA} without re-validating the input. Reserved for sequence-internal
- * callers that already know the input is well-formed (e.g. after slicing a validated RNA,
- * after computing a complement). Not exported from the package barrel.
- *
- * @internal
- *
- * @param sequence - A pre-validated, normalized (upper-case) RNA sequence
- * @returns A new `RNA` wrapping the sequence with no validation
- */
-export function unsafeRNA(sequence: string): RNA {
-  return new RNA(sequence, UNSAFE_RNA_KEY);
-}
-
-/**
  * Validates that a pair of {@link DNA} strands form a valid double-stranded duplex.
  *
  * The pair is valid when both strands have the same length and the reverse strand (read
@@ -128,12 +100,14 @@ export function parseDoubleStrandedDNA(
   const expected = forward.getReverseComplement().sequence;
   if (expected !== reverse.sequence) {
     for (let i = 0; i < expected.length; i++) {
-      if (expected[i] !== reverse.sequence[i]) {
+      const expectedChar = expected[i];
+      const actualChar = reverse.sequence[i];
+      if (expectedChar !== actualChar && expectedChar !== undefined && actualChar !== undefined) {
         return failure({
           kind: 'not-complementary',
           firstMismatchAt: i,
-          expected: expected[i],
-          actual: reverse.sequence[i],
+          expected: expectedChar,
+          actual: actualChar,
         });
       }
     }
@@ -162,19 +136,4 @@ export function parseDoubleStrandedDNA(
  */
 export function doubleStrandedDNA(forward: DNA): DoubleStrandedDNA {
   return unsafeDoubleStrandedDNA(forward, forward.getReverseComplement());
-}
-
-/**
- * Constructs a {@link DoubleStrandedDNA} without re-validating the pair. Reserved for
- * sequence-internal callers that already know the two strands form a duplex. Not exported
- * from the package barrel.
- *
- * @internal
- *
- * @param forward - Pre-validated forward strand
- * @param reverse - Pre-validated reverse strand, complementary to `forward`
- * @returns A new `DoubleStrandedDNA` with no validation
- */
-export function unsafeDoubleStrandedDNA(forward: DNA, reverse: DNA): DoubleStrandedDNA {
-  return new DoubleStrandedDNA(forward, reverse, UNSAFE_DSDNA_KEY);
 }

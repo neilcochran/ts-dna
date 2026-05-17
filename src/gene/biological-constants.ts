@@ -15,8 +15,12 @@ export const MAX_EXON_SIZE = 50000;
 /** Minimum intron size for the spliceosome to recognize and process. */
 export const MIN_INTRON_SIZE = 20;
 
-/** Maximum realistic intron size in base pairs (DMD has a ~2.2 Mb intron; 1 Mb is the practical cap here). */
-export const MAX_INTRON_SIZE = 1000000;
+/**
+ * Maximum intron size in base pairs. Sized to cover the largest known mammalian intron
+ * (DMD intron 44 at ~2.2 Mb) with headroom; values beyond this are rejected by `parseGene`
+ * as biologically implausible rather than as a hard physical limit.
+ */
+export const MAX_INTRON_SIZE = 3000000;
 
 /** Default maximum intron length scanned by splice-site search routines. */
 export const DEFAULT_MAX_INTRON_SEARCH = 10000;

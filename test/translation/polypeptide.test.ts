@@ -1,18 +1,24 @@
 import { translate } from '../../src/translation';
+import type { Polypeptide } from '../../src/translation';
 import { parseMRNA } from '../../src/processing';
 import {
   MRNA_ALL_AMINO_ACIDS_1,
   ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ,
+  at,
 } from '../utils/test-utils';
+
+function poly(codingRNA: string): Polypeptide {
+  return translate(parseMRNA(codingRNA, 0, codingRNA.length).unwrap()).unwrap();
+}
 
 describe('Polypeptide', () => {
   test('aminoAcids is read out of the translate result', () => {
     const mRNA = parseMRNA('AUGAAACCCUAG', 0, 12).unwrap();
     const poly = translate(mRNA).unwrap();
     expect(poly.aminoAcids).toHaveLength(3);
-    expect(poly.aminoAcids[0].data.singleLetterCode).toBe('M');
-    expect(poly.aminoAcids[1].data.singleLetterCode).toBe('K');
-    expect(poly.aminoAcids[2].data.singleLetterCode).toBe('P');
+    expect(at(poly.aminoAcids, 0).data.singleLetterCode).toBe('M');
+    expect(at(poly.aminoAcids, 1).data.singleLetterCode).toBe('K');
+    expect(at(poly.aminoAcids, 2).data.singleLetterCode).toBe('P');
   });
 
   describe('getSequence', () => {
@@ -34,59 +40,44 @@ describe('Polypeptide', () => {
     });
   });
 
-  describe('contains / startsWith / endsWith', () => {
-    const mRNA = parseMRNA('AUGAAACCCUAG', 0, 12).unwrap();
-    const poly = translate(mRNA).unwrap();
+  describe('contains / startsWith / endsWith (Polypeptide-only)', () => {
+    const mkp = poly('AUGAAACCCUAG'); // 'MKP'
 
     test('contains finds an interior subsequence', () => {
-      expect(poly.contains('KP')).toBe(true);
-      expect(poly.contains('XX')).toBe(false);
+      expect(mkp.contains(poly('AAACCCUAG'))).toBe(true); // 'KP'
+      expect(mkp.contains(poly('GGGUAG'))).toBe(false); // 'G' not in 'MKP'
     });
 
-    test('contains accepts a Polypeptide argument', () => {
-      const other = translate(parseMRNA('AUGUAG', 0, 6).unwrap()).unwrap();
-      expect(poly.contains(other)).toBe(true);
+    test('contains is true for an empty polypeptide', () => {
+      expect(mkp.contains(poly('UAG'))).toBe(true);
     });
 
     test('startsWith matches a prefix', () => {
-      expect(poly.startsWith('M')).toBe(true);
-      expect(poly.startsWith('MK')).toBe(true);
-      expect(poly.startsWith('K')).toBe(false);
+      expect(mkp.startsWith(poly('AUGUAG'))).toBe(true); // 'M'
+      expect(mkp.startsWith(poly('AUGAAAUAG'))).toBe(true); // 'MK'
+      expect(mkp.startsWith(poly('AAAUAG'))).toBe(false); // 'K' does not start 'MKP'
     });
 
     test('endsWith matches a suffix', () => {
-      expect(poly.endsWith('P')).toBe(true);
-      expect(poly.endsWith('KP')).toBe(true);
-      expect(poly.endsWith('M')).toBe(false);
-    });
-
-    test('startsWith / endsWith accept Polypeptide arguments', () => {
-      const prefix = translate(parseMRNA('AUGUAG', 0, 6).unwrap()).unwrap();
-      const suffix = translate(parseMRNA('CCCUAG', 0, 6).unwrap()).unwrap();
-      expect(poly.startsWith(prefix)).toBe(true);
-      expect(poly.endsWith(suffix)).toBe(true);
+      expect(mkp.endsWith(poly('CCCUAG'))).toBe(true); // 'P'
+      expect(mkp.endsWith(poly('AAACCCUAG'))).toBe(true); // 'KP'
+      expect(mkp.endsWith(poly('AUGUAG'))).toBe(false); // 'M' does not end 'MKP'
     });
   });
 
-  describe('indexOf', () => {
-    const poly = translate(parseMRNA('AUGAAAGGGAAAUAG', 0, 15).unwrap()).unwrap();
-    // single-letter sequence: 'MKGK'
+  describe('indexOf (Polypeptide-only)', () => {
+    const mkgk = poly('AUGAAAGGGAAAUAG'); // 'MKGK'
 
     test('finds the first occurrence', () => {
-      expect(poly.indexOf('K')).toBe(1);
+      expect(mkgk.indexOf(poly('AAAUAG'))).toBe(1); // 'K'
     });
 
     test('respects the startPosition argument', () => {
-      expect(poly.indexOf('K', 2)).toBe(3);
+      expect(mkgk.indexOf(poly('AAAUAG'), 2)).toBe(3); // 'K' from position 2
     });
 
     test('returns -1 for a missing subsequence', () => {
-      expect(poly.indexOf('XY')).toBe(-1);
-    });
-
-    test('accepts a Polypeptide argument', () => {
-      const target = translate(parseMRNA('AAAUAG', 0, 6).unwrap()).unwrap();
-      expect(poly.indexOf(target)).toBe(1);
+      expect(mkgk.indexOf(poly('CCCUAG'))).toBe(-1); // 'P' not in 'MKGK'
     });
   });
 

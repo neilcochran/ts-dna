@@ -3,9 +3,8 @@ import { CODON_LENGTH, isStopCodon } from '../sequence/index.js';
 import type { MRNA } from '../processing/index.js';
 import type { AminoAcid } from './AminoAcid.js';
 import { AMINO_ACID_BY_CODON } from './amino-acids.js';
-import { unsafeAminoAcidFromString } from './parse.js';
-import { Polypeptide } from './Polypeptide.js';
-import { UNSAFE_POLYPEPTIDE_KEY } from './internal-keys.js';
+import { unsafeAminoAcidFromString, unsafePolypeptide } from './internal-factories.js';
+import type { Polypeptide } from './Polypeptide.js';
 import type { TranslationError } from './errors.js';
 
 /**
@@ -55,5 +54,5 @@ export function translate(mRNA: MRNA): Result<Polypeptide, TranslationError> {
     aminoAcids.push(unsafeAminoAcidFromString(codonString, data));
   }
 
-  return success(new Polypeptide(mRNA, aminoAcids, UNSAFE_POLYPEPTIDE_KEY));
+  return success(unsafePolypeptide(mRNA, aminoAcids));
 }

@@ -54,49 +54,44 @@ export class Polypeptide {
   }
 
   /**
-   * Reports whether this polypeptide contains the given single-letter amino-acid
-   * subsequence.
+   * Reports whether this polypeptide contains the given amino-acid subsequence.
    *
-   * @param subsequence - The subsequence to search for (string or {@link Polypeptide})
+   * @param subsequence - The polypeptide subsequence to search for
    * @returns `true` if the subsequence appears anywhere in the single-letter sequence
    */
-  contains(subsequence: string | Polypeptide): boolean {
-    const search = typeof subsequence === 'string' ? subsequence : subsequence.getSequence();
-    return this.getSequence().includes(search);
+  contains(subsequence: Polypeptide): boolean {
+    return this.getSequence().includes(subsequence.getSequence());
   }
 
   /**
-   * Reports whether this polypeptide starts with the given single-letter amino-acid prefix.
+   * Reports whether this polypeptide starts with the given amino-acid prefix.
    *
-   * @param prefix - The prefix to test (string or {@link Polypeptide})
+   * @param prefix - The polypeptide prefix to test
    * @returns `true` if the single-letter sequence starts with `prefix`
    */
-  startsWith(prefix: string | Polypeptide): boolean {
-    const value = typeof prefix === 'string' ? prefix : prefix.getSequence();
-    return this.getSequence().startsWith(value);
+  startsWith(prefix: Polypeptide): boolean {
+    return this.getSequence().startsWith(prefix.getSequence());
   }
 
   /**
-   * Reports whether this polypeptide ends with the given single-letter amino-acid suffix.
+   * Reports whether this polypeptide ends with the given amino-acid suffix.
    *
-   * @param suffix - The suffix to test (string or {@link Polypeptide})
+   * @param suffix - The polypeptide suffix to test
    * @returns `true` if the single-letter sequence ends with `suffix`
    */
-  endsWith(suffix: string | Polypeptide): boolean {
-    const value = typeof suffix === 'string' ? suffix : suffix.getSequence();
-    return this.getSequence().endsWith(value);
+  endsWith(suffix: Polypeptide): boolean {
+    return this.getSequence().endsWith(suffix.getSequence());
   }
 
   /**
-   * Returns the first index of the given single-letter amino-acid subsequence, or `-1` if
-   * the subsequence does not appear.
+   * Returns the first index of the given amino-acid subsequence, or `-1` if the subsequence
+   * does not appear.
    *
-   * @param subsequence - The subsequence to search for (string or {@link Polypeptide})
+   * @param subsequence - The polypeptide subsequence to search for
    * @param startPosition - 0-based position to start searching from (default `0`)
    * @returns Index of the first match, or `-1`
    */
-  indexOf(subsequence: string | Polypeptide, startPosition: number = 0): number {
-    const search = typeof subsequence === 'string' ? subsequence : subsequence.getSequence();
-    return this.getSequence().indexOf(search, startPosition);
+  indexOf(subsequence: Polypeptide, startPosition: number = 0): number {
+    return this.getSequence().indexOf(subsequence.getSequence(), startPosition);
   }
 }

@@ -78,3 +78,20 @@ export function parseNucleotidePatternSymbol(
   }
   return success(unsafeNucleotidePatternSymbol(upper));
 }
+
+/**
+ * Compiles a known-valid IUPAC pattern literal into a {@link NucleotidePattern}. Intended for
+ * module-load constants where the input is a hard-coded string and a malformed literal is a
+ * programmer error rather than a runtime failure. Throws if `pattern` fails to parse.
+ *
+ * Use {@link parseNucleotidePattern} for untrusted input that needs structured failure
+ * handling.
+ *
+ * @param pattern - A hard-coded IUPAC pattern string
+ * @returns The compiled `NucleotidePattern`
+ * @throws Error when `pattern` is not a valid IUPAC pattern (the parser's failure rendered as
+ * an Error)
+ */
+export function compileLiteralPattern(pattern: string): NucleotidePattern {
+  return parseNucleotidePattern(pattern).unwrap();
+}

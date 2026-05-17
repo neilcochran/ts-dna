@@ -1,6 +1,6 @@
 import { DNA } from './DNA.js';
 import { RNA } from './RNA.js';
-import { unsafeDNA, unsafeRNA } from './parse.js';
+import { unsafeDNA, unsafeRNA } from './internal-factories.js';
 
 /**
  * Converts a {@link DNA} sequence to its {@link RNA} equivalent at the sequence level

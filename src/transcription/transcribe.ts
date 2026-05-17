@@ -1,5 +1,5 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
-import { unsafeDNA, unsafeRNA } from '../sequence/parse.js';
+import { unsafeDNA, unsafeRNA } from '../sequence/internal-factories.js';
 import type { Gene } from '../gene/index.js';
 import {
   geneCoord,
@@ -8,20 +8,17 @@ import {
   type GenomicRegion,
   type TranscriptCoord,
 } from '../coordinates/index.js';
-import { NucleotidePattern, parseNucleotidePattern } from '../pattern/index.js';
+import { NucleotidePattern, compileLiteralPattern } from '../pattern/index.js';
 import type { TranscriptionError } from './errors.js';
 import type { PreMRNA } from './PreMRNA.js';
-import { unsafePreMRNA } from './parse.js';
+import { unsafePreMRNA } from './internal-factories.js';
 import { findPromoters, identifyTSS, type PromoterSearchOptions } from './promoter-recognition.js';
 import {
   DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE,
   DEFAULT_DOWNSTREAM_SEARCH_DISTANCE,
   DEFAULT_MIN_PROMOTER_STRENGTH,
 } from './biological-constants.js';
-import {
-  POLYA_SIGNAL_OFFSET,
-  CANONICAL_POLYA_SIGNAL_DNA,
-} from '../processing/biological-constants.js';
+import { POLYA_SIGNAL_OFFSET, CANONICAL_POLYA_SIGNAL_DNA } from '../processing/biology.js';
 
 /**
  * Configuration options for {@link transcribe}.
@@ -47,9 +44,9 @@ export interface TranscriptionOptions {
  * (`AATAAA`, which becomes `AAUAAA` in RNA). Hoisted out of the per-call hot path so the
  * regex is not rebuilt on every transcription.
  */
-const CANONICAL_POLYA_PATTERN: NucleotidePattern = parseNucleotidePattern(
+const CANONICAL_POLYA_PATTERN: NucleotidePattern = compileLiteralPattern(
   CANONICAL_POLYA_SIGNAL_DNA,
-).unwrap();
+);
 
 /**
  * Transcribes a {@link Gene} into a {@link PreMRNA}.
@@ -156,6 +153,9 @@ function findTranscriptionStartSite(
   minPromoterStrength: number,
 ): Result<number, TranscriptionError> {
   const firstExon = gene.exons[0];
+  if (firstExon === undefined) {
+    return failure({ kind: 'gene-has-no-exons' });
+  }
   const searchStart = Math.max(0, firstExon.start - maxPromoterSearchDistance);
   const searchEnd = Math.min(
     gene.sequence.sequence.length,
@@ -185,12 +185,16 @@ function findTranscriptionStartSite(
   }
 
   const bestPromoter = promoters[0];
+  if (bestPromoter === undefined) {
+    return failure({ kind: 'tss-not-identifiable' });
+  }
   const tssPositions = identifyTSS(bestPromoter, searchDNA);
-  if (tssPositions.length === 0) {
+  const firstTss = tssPositions[0];
+  if (firstTss === undefined) {
     return failure({ kind: 'tss-not-identifiable' });
   }
 
-  return success(searchStart + tssPositions[0]);
+  return success(searchStart + firstTss);
 }
 
 /**
@@ -204,8 +208,9 @@ function findTranscriptionStartSite(
 function findPolyadenylationSite(geneSequence: string, tss: number): number | undefined {
   const searchRegion = unsafeDNA(geneSequence.substring(tss));
   const matches = CANONICAL_POLYA_PATTERN.findAll(searchRegion);
-  if (matches.length === 0) {
+  const firstMatch = matches[0];
+  if (firstMatch === undefined) {
     return undefined;
   }
-  return tss + matches[0].start + POLYA_SIGNAL_OFFSET;
+  return tss + firstMatch.start + POLYA_SIGNAL_OFFSET;
 }

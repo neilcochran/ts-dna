@@ -1,21 +1,21 @@
 /**
- * Canonical splice-site consensus sequences for both the DNA and RNA strands.
- *
- * The GT-AG rule covers ~99% of mammalian introns. DNA-side variants (`GT` donor, `AG`
- * acceptor) are useful for splice-site search over gene sequences; the RNA-side variants
- * (`GU` donor, `AG` acceptor) are useful when validating transcript-coordinate introns on the
- * pre-mRNA. Both sides live together so callers don't have to know which to import; pick the
- * pair matching the molecule type being inspected.
+ * Canonical splice-site consensus dinucleotides. The GT-AG rule covers ~99% of mammalian
+ * introns. Inspect `SPLICE_CONSENSUS.dna` when scanning over gene sequences; inspect
+ * `SPLICE_CONSENSUS.rna` when validating transcript-coordinate introns on pre-mRNA.
  */
-
-/** Canonical 5' splice-site donor consensus on the DNA strand. */
-export const DNA_DONOR_SPLICE_CONSENSUS = 'GT';
-
-/** Canonical 3' splice-site acceptor consensus on the DNA strand. */
-export const DNA_ACCEPTOR_SPLICE_CONSENSUS = 'AG';
-
-/** Canonical 5' splice-site donor consensus on the RNA strand (U replaces T). */
-export const RNA_DONOR_SPLICE_CONSENSUS = 'GU';
-
-/** Canonical 3' splice-site acceptor consensus on the RNA strand. */
-export const RNA_ACCEPTOR_SPLICE_CONSENSUS = 'AG';
+export const SPLICE_CONSENSUS = {
+  /** DNA-strand consensus (T-based alphabet). */
+  dna: {
+    /** Canonical 5' splice-site donor (`GT`). */
+    donor: 'GT',
+    /** Canonical 3' splice-site acceptor (`AG`). */
+    acceptor: 'AG',
+  },
+  /** RNA-strand consensus (U-based alphabet). */
+  rna: {
+    /** Canonical 5' splice-site donor (`GU`). */
+    donor: 'GU',
+    /** Canonical 3' splice-site acceptor (`AG`). */
+    acceptor: 'AG',
+  },
+} as const;

@@ -6,8 +6,9 @@
 
 import { parseGene } from '../../src/gene';
 import { transcribe } from '../../src/transcription';
-import { processRNA, findPolyadenylationSites, isFullyProcessed } from '../../src/processing';
+import { processRNA, findPolyadenylationSites } from '../../src/processing';
 import { isSuccess } from '../../src/result/Result';
+import { at } from '../utils/test-utils';
 
 describe('Polyadenylation Integration Tests', () => {
   test('basic polyadenylation integration with RNA processing', () => {
@@ -37,7 +38,7 @@ describe('Polyadenylation Integration Tests', () => {
         const mRNA = processingResult.data;
 
         // Verify basic mRNA structure
-        expect(isFullyProcessed(mRNA)).toBe(true);
+        expect(mRNA.isFullyProcessed()).toBe(true);
         expect(mRNA.fivePrimeCap).toBe(true);
         expect(mRNA.polyATailLength).toBeGreaterThanOrEqual(0); // Allow for any poly-A tail length
 
@@ -72,9 +73,10 @@ describe('Polyadenylation Integration Tests', () => {
 
       // If sites are found, they should have basic structure
       if (sites.length > 0) {
-        expect(typeof sites[0].position).toBe('number');
-        expect(typeof sites[0].signal).toBe('string');
-        expect(typeof sites[0].strength).toBe('number');
+        const first = at(sites, 0);
+        expect(typeof first.position).toBe('number');
+        expect(typeof first.signal).toBe('string');
+        expect(typeof first.strength).toBe('number');
       }
     }
   });
@@ -116,7 +118,7 @@ describe('Polyadenylation Integration Tests', () => {
         // Should either succeed or fail gracefully
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          expect(isFullyProcessed(mRNA)).toBe(true);
+          expect(mRNA.isFullyProcessed()).toBe(true);
         } else {
           expect(typeof processingResult.error.kind).toBe('string');
           expect(processingResult.error.kind).toMatch(

@@ -6,10 +6,6 @@ function dna(sequence: string): DNA {
 
 describe('DNA', () => {
   describe('basic shape', () => {
-    test('nucleicAcidType is the DNA literal', () => {
-      expect(dna('ATCG').nucleicAcidType).toBe('DNA');
-    });
-
     test('getSequence returns the validated upper-case sequence', () => {
       expect(dna('atcggatcctagg').getSequence()).toBe('ATCGGATCCTAGG');
     });

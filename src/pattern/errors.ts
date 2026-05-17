@@ -5,6 +5,7 @@
  * and full-pattern (`parseNucleotidePattern`) failures. Human-readable messages are produced by
  * the {@link describePatternError} renderer rather than carried alongside the structured payload.
  */
+import { assertUnreachable } from '../result/index.js';
 
 /**
  * Error variants produced by `parseNucleotidePattern` and `parseNucleotidePatternSymbol`.
@@ -68,5 +69,7 @@ export function describePatternError(error: PatternError): string {
       return `Invalid IUPAC nucleotide symbol: '${error.symbol}'`;
     case 'invalid-regex-construction':
       return `Invalid nucleotide pattern '${error.pattern}': ${error.cause}`;
+    default:
+      return assertUnreachable(error);
   }
 }

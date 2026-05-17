@@ -9,7 +9,11 @@
 export { NucleotidePattern } from './NucleotidePattern.js';
 export type { NucleotideMatch } from './NucleotidePattern.js';
 export { NucleotidePatternSymbol } from './NucleotidePatternSymbol.js';
-export { parseNucleotidePattern, parseNucleotidePatternSymbol } from './parse.js';
+export {
+  parseNucleotidePattern,
+  parseNucleotidePatternSymbol,
+  compileLiteralPattern,
+} from './parse.js';
 export type { PatternError } from './errors.js';
 export { describePatternError } from './errors.js';
 export { NUCLEOTIDE_PATTERN_SYMBOLS } from './iupac-symbols.js';

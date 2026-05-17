@@ -1,8 +1,8 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import type { RNA } from '../sequence/index.js';
-import { unsafeRNA } from '../sequence/parse.js';
+import { unsafeRNA } from '../sequence/internal-factories.js';
 import { PreMRNA } from '../transcription/index.js';
-import { RNA_DONOR_SPLICE_CONSENSUS, RNA_ACCEPTOR_SPLICE_CONSENSUS } from './splice-consensus.js';
+import { SPLICE_CONSENSUS } from './splice-consensus.js';
 import type { SplicingError } from './errors.js';
 
 /**
@@ -43,6 +43,9 @@ export function spliceRNA(
 
   for (let i = 0; i < exonRegions.length; i++) {
     const exon = exonRegions[i];
+    if (exon === undefined) {
+      continue;
+    }
     if (exon.start < 0 || exon.end > sequenceLength) {
       return failure({
         kind: 'exon-out-of-bounds',
@@ -81,9 +84,12 @@ export function validateTranscriptSpliceSites(preMRNA: PreMRNA): Result<void, Sp
   const introns = preMRNA.intronRegions;
   for (let i = 0; i < introns.length; i++) {
     const intron = introns[i];
+    if (intron === undefined) {
+      continue;
+    }
     if (intron.start + 1 < transcriptSequence.length) {
       const donor = transcriptSequence.substring(intron.start, intron.start + 2);
-      if (donor !== RNA_DONOR_SPLICE_CONSENSUS) {
+      if (donor !== SPLICE_CONSENSUS.rna.donor) {
         return failure({
           kind: 'invalid-donor-site',
           intronIndex: i,
@@ -94,7 +100,7 @@ export function validateTranscriptSpliceSites(preMRNA: PreMRNA): Result<void, Sp
     }
     if (intron.end >= 2) {
       const acceptor = transcriptSequence.substring(intron.end - 2, intron.end);
-      if (acceptor !== RNA_ACCEPTOR_SPLICE_CONSENSUS) {
+      if (acceptor !== SPLICE_CONSENSUS.rna.acceptor) {
         return failure({
           kind: 'invalid-acceptor-site',
           intronIndex: i,

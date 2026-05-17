@@ -5,6 +5,7 @@ import {
   AminoAcidSideChainType,
 } from '../../src/translation';
 import { RNA } from '../../src/sequence';
+import { at } from '../utils/test-utils';
 
 describe('AminoAcid (via parseAminoAcid)', () => {
   test('exposes biochemical data via the composed data field', () => {
@@ -41,7 +42,7 @@ describe('AminoAcid (via parseAminoAcid)', () => {
       const met = parseAminoAcid('AUG').unwrap();
       const codons = met.getAllAlternateCodons();
       expect(codons).toHaveLength(1);
-      expect(codons[0].sequence).toBe('AUG');
+      expect(at(codons, 0).sequence).toBe('AUG');
     });
 
     test('returns six codons for leucine', () => {

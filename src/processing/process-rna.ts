@@ -1,10 +1,11 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
-import { unsafeRNA } from '../sequence/parse.js';
+import { unsafeRNA } from '../sequence/internal-factories.js';
 import type { PreMRNA } from '../transcription/index.js';
 import { START_CODON, CODON_LENGTH, isStopCodon } from '../sequence/index.js';
-import { DEFAULT_POLY_A_TAIL_LENGTH, DEFAULT_CLEAVAGE_OFFSET } from './biological-constants.js';
+import { DEFAULT_POLY_A_TAIL_LENGTH } from './biology.js';
+import { DEFAULT_CLEAVAGE_OFFSET } from './scoring.js';
 import type { MRNA } from './MRNA.js';
-import { unsafeMRNA } from './parse.js';
+import { unsafeMRNA } from './internal-factories.js';
 import { spliceRNA } from './splicing.js';
 import { findPolyadenylationSites, getStrongestPolyadenylationSite } from './polyadenylation.js';
 import type { ProcessingError } from './errors.js';

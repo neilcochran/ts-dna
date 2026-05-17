@@ -1,5 +1,6 @@
 import type { RNA } from '../sequence/index.js';
 import { UNSAFE_MRNA_KEY } from './internal-keys.js';
+import { MIN_POLY_A_DETECTION_LENGTH } from './biology.js';
 
 /**
  * Mature mRNA: a validated {@link RNA} sequence together with coding-region boundaries, a
@@ -92,6 +93,71 @@ export class MRNA {
     const length = this.sequence.sequence.length;
     const tailStart = length - this.polyATailLength;
     return this.sequence.sequence.substring(this.codingEnd, tailStart);
+  }
+
+  /**
+   * Reports whether the mRNA carries a 5' methylguanosine cap. Thin accessor over the
+   * {@link fivePrimeCap} field, provided for API symmetry with {@link withCap} /
+   * {@link isFullyProcessed}.
+   *
+   * @returns `true` when the mRNA is marked capped
+   */
+  hasCap(): boolean {
+    return this.fivePrimeCap;
+  }
+
+  /**
+   * Returns a new {@link MRNA} marked as carrying a 5' methylguanosine cap. The sequence is
+   * unchanged; the cap is metadata only.
+   *
+   * @returns A new `MRNA` identical to this one except with `fivePrimeCap` set to `true`;
+   * returns `this` when the mRNA is already capped
+   */
+  withCap(): MRNA {
+    if (this.fivePrimeCap) {
+      return this;
+    }
+    return new MRNA(
+      this.sequence,
+      this.codingStart,
+      this.codingEnd,
+      true,
+      this.polyATailLength,
+      UNSAFE_MRNA_KEY,
+    );
+  }
+
+  /**
+   * Returns a new {@link MRNA} with the supplied poly-A tail length recorded as metadata. The
+   * sequence is unchanged; callers who need to actually rewrite the sequence with appended
+   * `A`'s should compose `add3PrimePolyATail` (sequence-level) with `parseMRNA`.
+   *
+   * @param tailLength - The poly-A tail length to record (non-negative integer)
+   * @returns A new `MRNA` with `polyATailLength` updated; returns `this` when the recorded
+   * length already equals `tailLength`
+   */
+  withPolyATail(tailLength: number): MRNA {
+    if (this.polyATailLength === tailLength) {
+      return this;
+    }
+    return new MRNA(
+      this.sequence,
+      this.codingStart,
+      this.codingEnd,
+      this.fivePrimeCap,
+      tailLength,
+      UNSAFE_MRNA_KEY,
+    );
+  }
+
+  /**
+   * Reports whether this mRNA is fully processed: carries a 5' cap and a poly-A tail of at
+   * least {@link MIN_POLY_A_DETECTION_LENGTH} nucleotides.
+   *
+   * @returns `true` when both cap and minimum tail are present
+   */
+  isFullyProcessed(): boolean {
+    return this.fivePrimeCap && this.polyATailLength >= MIN_POLY_A_DETECTION_LENGTH;
   }
 
   /**

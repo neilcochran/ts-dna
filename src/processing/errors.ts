@@ -10,6 +10,7 @@
 
 import type { RNAError } from '../sequence/index.js';
 import { describeRNAError } from '../sequence/index.js';
+import { assertUnreachable } from '../result/index.js';
 
 /**
  * Error variants produced by `spliceRNA`, `spliceRNAWithVariant`, and the splice-variant
@@ -255,6 +256,8 @@ export function describeSplicingError(error: SplicingError): string {
       return 'Gene does not have an alternative splicing profile';
     case 'no-default-variant':
       return 'Gene does not have a default splice variant defined';
+    default:
+      return assertUnreachable(error);
   }
 }
 
@@ -270,6 +273,8 @@ export function describePolyadenylationError(error: PolyadenylationError): strin
       return `Invalid cleavage site ${error.cleavageSite}: must be a non-negative integer`;
     case 'invalid-tail-length':
       return `Invalid poly-A tail length ${error.tailLength}: must be between 0 and ${error.max}`;
+    default:
+      return assertUnreachable(error);
   }
 }
 
@@ -293,5 +298,7 @@ export function describeProcessingError(error: ProcessingError): string {
       return 'No start codon (AUG) found in spliced sequence';
     case 'no-in-frame-stop':
       return 'No in-frame stop codon found after start codon';
+    default:
+      return assertUnreachable(error);
   }
 }

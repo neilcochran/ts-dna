@@ -90,13 +90,13 @@ describe('DNA/RNA explicit conversion', () => {
     });
   });
 
-  describe('runtime tag is preserved', () => {
-    test('transcribed RNA carries the RNA tag', () => {
-      expect(transcribeSequence(dna(DNA_SEQ)).nucleicAcidType).toBe('RNA');
+  describe('return type is the expected sibling class', () => {
+    test('transcribed value is an RNA instance', () => {
+      expect(transcribeSequence(dna(DNA_SEQ))).toBeInstanceOf(RNA);
     });
 
-    test('reverse-transcribed DNA carries the DNA tag', () => {
-      expect(reverseTranscribeSequence(rna(RNA_SEQ)).nucleicAcidType).toBe('DNA');
+    test('reverse-transcribed value is a DNA instance', () => {
+      expect(reverseTranscribeSequence(rna(RNA_SEQ))).toBeInstanceOf(DNA);
     });
   });
 });

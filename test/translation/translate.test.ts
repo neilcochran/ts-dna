@@ -7,6 +7,7 @@ import {
   MRNA_ALL_AMINO_ACIDS_2,
   ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ,
   isCorrectAminoAcidSequence,
+  at,
 } from '../utils/test-utils';
 
 describe('translate', () => {
@@ -27,8 +28,8 @@ describe('translate', () => {
     if (isSuccess(result)) {
       const aas = result.data.aminoAcids;
       expect(aas).toHaveLength(2);
-      expect(aas[0].data.singleLetterCode).toBe('M');
-      expect(aas[1].data.singleLetterCode).toBe('K');
+      expect(at(aas, 0).data.singleLetterCode).toBe('M');
+      expect(at(aas, 1).data.singleLetterCode).toBe('K');
     }
   });
 

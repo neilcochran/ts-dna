@@ -10,8 +10,7 @@
  * fluent methods (`map`, `chain`, `unwrap`, etc.) for callers who prefer chaining over the
  * free-function equivalents exported alongside.
  *
- * Construct via {@link success} / {@link failure} (free functions) or {@link Result.success}
- * / {@link Result.failure} (static-factory style).
+ * Construct via {@link success} / {@link failure} (free functions).
  *
  * @typeParam T - Type of the data carried on success
  * @typeParam E - Type of the error carried on failure (defaults to `string`)
@@ -198,14 +197,20 @@ export class FailureResult<T, E> {
   }
 
   /**
-   * Throws an Error built from the failure payload.
+   * Throws an Error built from the failure payload. When the payload is a non-string
+   * (typically a structured tagged-union error), the original payload is preserved on the
+   * thrown Error's `cause` so callers catching the throw can recover the structured data.
    *
    * @returns Never; always throws.
    * @throws Always. The thrown Error's message is the string form of the error payload, or a
-   * generic "Result is a failure" message if the payload is not a string.
+   * generic "Result is a failure" message if the payload is not a string; in the latter case
+   * the structured payload is attached as the thrown Error's `cause`.
    */
   unwrap(): never {
-    throw new Error(typeof this.error === 'string' ? this.error : 'Result is a failure');
+    if (typeof this.error === 'string') {
+      throw new Error(this.error);
+    }
+    throw new Error('Result is a failure', { cause: this.error });
   }
 
   /**
@@ -361,18 +366,3 @@ export function match<T, E, R>(
 ): R {
   return result.match(handlers);
 }
-
-/**
- * Static-factory namespace for {@link Result}. `Result.success(data)` and `Result.failure(error)`
- * are equivalent to the free-function {@link success} and {@link failure}.
- *
- * Note: in TypeScript, the identifier `Result` simultaneously refers to the {@link Result | Result type}
- * (in type position) and this object (in value position). Both spellings are first-class entry
- * points; pick whichever reads better at the call site.
- */
-export const Result = {
-  /** Equivalent to the free-function {@link success}. */
-  success,
-  /** Equivalent to the free-function {@link failure}. */
-  failure,
-} as const;

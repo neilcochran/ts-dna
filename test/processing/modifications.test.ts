@@ -1,14 +1,11 @@
 import { RNA, parseRNA } from '../../src/sequence';
 import {
-  add5PrimeCap,
   add3PrimePolyATail,
   add3PrimePolyATailAtSite,
   remove3PrimePolyATail,
-  has5PrimeCap,
   has3PrimePolyATail,
   get3PrimePolyATailLength,
   getCoreSequence,
-  isFullyProcessed,
   parseMRNA,
   DEFAULT_POLY_A_TAIL_LENGTH,
   MAX_POLY_A_TAIL_LENGTH,
@@ -20,10 +17,10 @@ function rna(sequence: string): RNA {
   return parseRNA(sequence).unwrap();
 }
 
-describe('add5PrimeCap', () => {
+describe('MRNA.withCap', () => {
   test('marks an uncapped MRNA capped', () => {
     const mrna = parseMRNA('AUGAAACCCGGG', 0, 12, false, 0).unwrap();
-    const capped = add5PrimeCap(mrna);
+    const capped = mrna.withCap();
     expect(capped.fivePrimeCap).toBe(true);
     expect(capped.sequence.sequence).toBe(mrna.sequence.sequence);
     expect(capped.codingStart).toBe(0);
@@ -32,7 +29,7 @@ describe('add5PrimeCap', () => {
 
   test('returns the same instance when already capped', () => {
     const mrna = parseMRNA('AUGAAACCCGGG', 0, 12, true, 0).unwrap();
-    expect(add5PrimeCap(mrna)).toBe(mrna);
+    expect(mrna.withCap()).toBe(mrna);
   });
 });
 
@@ -134,13 +131,13 @@ describe('remove3PrimePolyATail', () => {
   });
 });
 
-describe('has5PrimeCap', () => {
+describe('MRNA.hasCap', () => {
   test('returns true when the MRNA carries a cap', () => {
-    expect(has5PrimeCap(parseMRNA('AUGAAACCCGGG', 0, 12, true, 0).unwrap())).toBe(true);
+    expect(parseMRNA('AUGAAACCCGGG', 0, 12, true, 0).unwrap().hasCap()).toBe(true);
   });
 
   test('returns false when the MRNA is uncapped', () => {
-    expect(has5PrimeCap(parseMRNA('AUGAAACCCGGG', 0, 12, false, 0).unwrap())).toBe(false);
+    expect(parseMRNA('AUGAAACCCGGG', 0, 12, false, 0).unwrap().hasCap()).toBe(false);
   });
 });
 
@@ -177,14 +174,14 @@ describe('getCoreSequence', () => {
   });
 });
 
-describe('isFullyProcessed', () => {
+describe('MRNA.isFullyProcessed', () => {
   test('requires both cap and minimum poly-A tail length', () => {
-    expect(isFullyProcessed(parseMRNA('AUGAAACCCGGGAAAAAAAAAA', 0, 12, true, 10).unwrap())).toBe(
+    expect(parseMRNA('AUGAAACCCGGGAAAAAAAAAA', 0, 12, true, 10).unwrap().isFullyProcessed()).toBe(
       true,
     );
-    expect(isFullyProcessed(parseMRNA('AUGAAACCCGGGAAAAAAAAAA', 0, 12, false, 10).unwrap())).toBe(
+    expect(parseMRNA('AUGAAACCCGGGAAAAAAAAAA', 0, 12, false, 10).unwrap().isFullyProcessed()).toBe(
       false,
     );
-    expect(isFullyProcessed(parseMRNA('AUGAAACCCGGGAAAAA', 0, 12, true, 5).unwrap())).toBe(false);
+    expect(parseMRNA('AUGAAACCCGGGAAAAA', 0, 12, true, 5).unwrap().isFullyProcessed()).toBe(false);
   });
 });

@@ -1,4 +1,6 @@
 import {
+  DNA,
+  RNA,
   parseDNA,
   parseRNA,
   complement,
@@ -24,9 +26,9 @@ describe('complement (free function)', () => {
     expect(complement(rna('AUCG')).sequence).toBe('UAGC');
   });
 
-  test('preserves the runtime tag', () => {
-    expect(complement(dna('ATCG')).nucleicAcidType).toBe('DNA');
-    expect(complement(rna('AUCG')).nucleicAcidType).toBe('RNA');
+  test('return type is the expected sibling class', () => {
+    expect(complement(dna('ATCG'))).toBeInstanceOf(DNA);
+    expect(complement(rna('AUCG'))).toBeInstanceOf(RNA);
   });
 });
 

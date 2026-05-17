@@ -2,6 +2,31 @@ import { parseDNA, parseRNA } from '../../src/sequence';
 import { AminoAcid } from '../../src/translation';
 import { parseMRNA } from '../../src/processing';
 
+/**
+ * Indexed access helper for test code. With `noUncheckedIndexedAccess` enabled, `arr[i]` /
+ * `rec[k]` widens to `T | undefined`; the test's contract is that the index exists, so this
+ * helper throws with a precise out-of-bounds message rather than letting a downstream
+ * `.field` access blow up with the generic `Cannot read properties of undefined`.
+ *
+ * Two overloads cover the common cases: array-style numeric index, and record-style string
+ * key.
+ *
+ * @param target - The array or record to index into
+ * @param key - The numeric index (arrays) or string key (records)
+ * @returns The element at `target[key]`
+ * @throws If `target[key]` is `undefined`
+ */
+export function at<T>(arr: readonly T[], i: number): T;
+export function at<T>(rec: Readonly<Record<string, T>>, key: string): T;
+export function at<T>(target: readonly T[] | Readonly<Record<string, T>>, key: number | string): T {
+  const value = (target as Readonly<Record<string | number, T | undefined>>)[key];
+  if (value === undefined) {
+    const length = Array.isArray(target) ? target.length : Object.keys(target).length;
+    throw new Error(`Test expected target[${String(key)}] to exist, but length is ${length}`);
+  }
+  return value;
+}
+
 //ensure RNA and DNA sequences are the same (excluding base differences) since some tests rely it
 export const RNA_SEQ = 'AUCGGCUA';
 export const RNA_SEQ_COMP = 'UAGCCGAU';
@@ -85,7 +110,7 @@ export const isCorrectAminoAcidSequence = (
     return false;
   }
   for (let i = 0; i < correctSingleLetterCodeSequence.length; i++) {
-    if (aminoAcidSequence[i].data.singleLetterCode !== correctSingleLetterCodeSequence[i]) {
+    if (at(aminoAcidSequence, i).data.singleLetterCode !== correctSingleLetterCodeSequence[i]) {
       return false;
     }
   }

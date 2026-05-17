@@ -9,6 +9,7 @@
 import type { GeneCoord, GenomicRegion } from '../coordinates/index.js';
 import type { RNAError } from '../sequence/index.js';
 import { describeRNAError } from '../sequence/index.js';
+import { assertUnreachable } from '../result/index.js';
 
 /**
  * Error variants produced by `transcribe` and `parsePreMRNA`.
@@ -86,5 +87,7 @@ export function describeTranscriptionError(error: TranscriptionError): string {
       return `Transcription start site ${error.tss} is outside gene bounds (sequence length ${error.sequenceLength})`;
     case 'tss-conflicts-with-exons':
       return `TSS at position ${error.tss} conflicts with gene exon structure; exons ${error.conflictingExons.join(', ')} start upstream of the TSS`;
+    default:
+      return assertUnreachable(error);
   }
 }

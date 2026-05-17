@@ -1,5 +1,5 @@
 import type { RNA } from '../sequence/index.js';
-import { unsafeRNA } from '../sequence/parse.js';
+import { unsafeRNA } from '../sequence/internal-factories.js';
 import type { AminoAcidData } from './AminoAcidData.js';
 import { UNSAFE_AMINO_ACID_KEY } from './internal-keys.js';
 

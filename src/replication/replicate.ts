@@ -1,6 +1,6 @@
 import { Result, success, failure } from '../result/index.js';
 import type { DoubleStrandedDNA } from '../sequence/index.js';
-import { unsafeDNA, unsafeDoubleStrandedDNA } from '../sequence/parse.js';
+import { unsafeDNA, unsafeDoubleStrandedDNA } from '../sequence/internal-factories.js';
 import type {
   ReplicationEvent,
   ReplicationOutput,
@@ -133,6 +133,9 @@ export function replicate(
 
   for (let i = 0; i < fragments.length; i++) {
     const fragment = fragments[i];
+    if (fragment === undefined) {
+      continue;
+    }
     events.push({
       kind: 'primer-removal',
       position: fragment.startPosition,
@@ -145,6 +148,9 @@ export function replicate(
 
   for (let i = 0; i < fragments.length; i++) {
     const fragment = fragments[i];
+    if (fragment === undefined) {
+      continue;
+    }
     events.push({
       kind: 'ligation',
       position: fragment.startPosition,
@@ -175,42 +181,41 @@ export function replicate(
  * Simulates DNA replication step by step, yielding an immutable snapshot of the replication
  * state after each molecular event.
  *
- * Behavior is otherwise identical to {@link replicate}; consumers who want both the final
- * daughters and the intermediate snapshots should call this generator and consume it to
- * completion, or use {@link replicate} for the aggregated output. Failures (template too
- * short etc.) cause the generator to yield zero snapshots and throw the corresponding
- * {@link ReplicationError} via the thrown sentinel value - call {@link replicate} first if
- * you need to distinguish failures.
+ * Validation runs up-front: a {@link ReplicationError} (e.g. template too short for the
+ * chosen organism) appears on the failure branch before any snapshot is produced. The success
+ * branch carries a {@link Generator} that yields {@link ReplicationSnapshot} values.
  *
  * The first yielded snapshot represents the initial state (step 0, no events yet). Each
  * subsequent snapshot corresponds to one molecular event.
  *
  * @param template - The parental duplex to replicate
  * @param options - Optional organism profile and RNG
- * @returns Generator yielding {@link ReplicationSnapshot} values; throws if the template is
- * too short for replication
- *
- * @throws Error if the template is shorter than the organism's maximum primer length
+ * @returns `Result.success` carrying a snapshot generator, or `Result.failure` with a
+ * {@link ReplicationError}
  *
  * @example
  * ```typescript
  * const parent = doubleStrandedDNA(parseDNA('ATCGATCGATCG').unwrap());
- * for (const snapshot of replicateSteps(parent)) {
- *   console.log(snapshot.step, snapshot.lastEvent?.kind);
+ * const stepsResult = replicateSteps(parent);
+ * if (stepsResult.success) {
+ *   for (const snapshot of stepsResult.data) {
+ *     console.log(snapshot.step, snapshot.lastEvent?.kind);
+ *   }
  * }
  * ```
  */
-export function* replicateSteps(
+export function replicateSteps(
   template: DoubleStrandedDNA,
   options?: ReplicationOptions,
-): Generator<ReplicationSnapshot, void, void> {
+): Result<Generator<ReplicationSnapshot, void, void>, ReplicationError> {
   const planResult = buildPlan(template, options);
   if (planResult.success === false) {
-    throw new Error(
-      `Cannot replicate template: ${planResult.error.kind} (length ${planResult.error.length} < minimum ${planResult.error.minimum})`,
-    );
+    return failure(planResult.error);
   }
-  const plan = planResult.data;
+  return success(yieldSnapshots(planResult.data));
+}
+
+function* yieldSnapshots(plan: ReplicationPlan): Generator<ReplicationSnapshot, void, void> {
   let step = 0;
   const fragments: OkazakiFragment[] = [];
   let forkPosition = 0;
@@ -285,7 +290,10 @@ export function* replicateSteps(
 
     const fragmentSequence = unsafeDNA(fragmentPlan.synthesizedDNA);
     const lastIndex = fragments.length - 1;
-    fragments[lastIndex] = fragments[lastIndex].withSequence(fragmentSequence);
+    const lastFragment = fragments[lastIndex];
+    if (lastFragment !== undefined) {
+      fragments[lastIndex] = lastFragment.withSequence(fragmentSequence);
+    }
     yield freezeSnapshot({
       step: step++,
       forkPosition,
@@ -303,6 +311,9 @@ export function* replicateSteps(
 
   for (let i = 0; i < fragments.length; i++) {
     const fragment = fragments[i];
+    if (fragment === undefined) {
+      continue;
+    }
     fragments[i] = fragment.withPrimerRemoved();
     yield freezeSnapshot({
       step: step++,
@@ -321,6 +332,9 @@ export function* replicateSteps(
 
   for (let i = 0; i < fragments.length; i++) {
     const fragment = fragments[i];
+    if (fragment === undefined) {
+      continue;
+    }
     fragments[i] = fragment.withLigated();
     yield freezeSnapshot({
       step: step++,
@@ -441,7 +455,7 @@ function complementDNASegment(
   let result = '';
   for (let i = startPosition; i < endPosition; i++) {
     const base = template[i];
-    const comp = DNA_COMPLEMENTS[base];
+    const comp = base === undefined ? undefined : DNA_COMPLEMENTS[base];
     if (comp === undefined) {
       throw new Error(`Internal error: invalid DNA base '${base}' at template index ${i}`);
     }
@@ -457,7 +471,10 @@ function randomInRange(rng: () => number, min: number, max: number): number {
 function randomRNASequence(rng: () => number, length: number): string {
   let result = '';
   for (let i = 0; i < length; i++) {
-    result += RNA_BASES[Math.floor(rng() * RNA_BASES.length)];
+    const base = RNA_BASES[Math.floor(rng() * RNA_BASES.length)];
+    if (base !== undefined) {
+      result += base;
+    }
   }
   return result;
 }

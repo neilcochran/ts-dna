@@ -1,7 +1,7 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import { parseRNA } from '../sequence/index.js';
 import type { RNA } from '../sequence/index.js';
-import { unsafeRNA } from '../sequence/parse.js';
+import { unsafeRNA } from '../sequence/internal-factories.js';
 import { MIN_RNA_PRIMER_LENGTH, MAX_RNA_PRIMER_LENGTH } from './biological-constants.js';
 import type { RNAPrimerError } from './errors.js';
 import { UNSAFE_PRIMER_KEY } from './internal-keys.js';

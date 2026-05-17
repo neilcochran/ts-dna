@@ -13,6 +13,7 @@ import { parseGene, type AlternativeSplicingProfile, type SpliceVariant } from '
 import { parsePreMRNA } from '../../src/transcription';
 import { isSuccess, isFailure } from '../../src/result';
 import { FOUR_EXON_GENE } from '../test-genes';
+import { at } from '../utils/test-utils';
 
 const testSequence = FOUR_EXON_GENE.dnaSequence;
 const testExons = FOUR_EXON_GENE.exons;
@@ -199,7 +200,7 @@ describe('processAllSplicingVariants', () => {
     expect(isSuccess(result)).toBe(true);
     if (isSuccess(result)) {
       expect(result.data).toHaveLength(1);
-      expect(result.data[0].variant.name).toBe('full');
+      expect(at(result.data, 0).variant.name).toBe('full');
     }
   });
 });
@@ -277,7 +278,7 @@ describe('enumerateSpliceVariants', () => {
     const singleGene = parseGene('ATGAAATAG', [{ start: 0, end: 9, name: 'exon1' }]).unwrap();
     const variants = [...enumerateSpliceVariants(singleGene, { validateCodons: false })];
     expect(variants).toHaveLength(1);
-    expect(variants[0].includedExons).toEqual([0]);
+    expect(at(variants, 0).includedExons).toEqual([0]);
   });
 
   test('is lazy: callers can break out without paying for all combinations', () => {

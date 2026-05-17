@@ -1,6 +1,6 @@
 import { parseNucleotidePattern } from '../pattern/index.js';
 import type { PromoterElement } from './PromoterElement.js';
-import { unsafePromoterElement } from './parse.js';
+import { unsafePromoterElement } from './internal-factories.js';
 
 /**
  * Constructs a {@link PromoterElement} from a validated consensus-sequence string and a

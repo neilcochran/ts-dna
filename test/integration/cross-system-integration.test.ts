@@ -9,7 +9,7 @@
 
 import { parseGene } from '../../src/gene';
 import { transcribe } from '../../src/transcription';
-import { processRNA, isFullyProcessed } from '../../src/processing';
+import { processRNA } from '../../src/processing';
 import { translate } from '../../src/translation';
 import { replicate } from '../../src/replication';
 import { isSuccess, isFailure } from '../../src/result/Result';
@@ -46,7 +46,7 @@ describe('Cross-System Integration Tests', () => {
 
         if (isSuccess(processingResult)) {
           const mRNA = processingResult.data;
-          expect(isFullyProcessed(mRNA)).toBe(true);
+          expect(mRNA.isFullyProcessed()).toBe(true);
 
           // Step 3: Translation
           const protein = translate(mRNA).unwrap();

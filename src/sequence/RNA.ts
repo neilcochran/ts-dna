@@ -14,12 +14,6 @@ export class RNA {
   public readonly sequence: string;
 
   /**
-   * Runtime tag identifying this as RNA. Used by code paths that need to branch on alphabet
-   * (e.g. pattern complement) without instanceof checks.
-   */
-  public readonly nucleicAcidType = 'RNA' as const;
-
-  /**
    * Constructs an `RNA`. Module-private; public callers must go through {@link parseRNA}.
    *
    * @param sequence - A pre-validated, normalized (upper-case) RNA sequence
@@ -147,7 +141,7 @@ function complementRNAString(sequence: string): string {
   let result = '';
   for (let i = 0; i < sequence.length; i++) {
     const base = sequence[i];
-    const complement = RNA_COMPLEMENT_MAP[base];
+    const complement = base === undefined ? undefined : RNA_COMPLEMENT_MAP[base];
     if (complement === undefined) {
       throw new Error(`RNA complement encountered invalid base '${base}' at index ${i}`);
     }
@@ -160,7 +154,7 @@ function reverseComplementRNAString(sequence: string): string {
   let result = '';
   for (let i = sequence.length - 1; i >= 0; i--) {
     const base = sequence[i];
-    const complement = RNA_COMPLEMENT_MAP[base];
+    const complement = base === undefined ? undefined : RNA_COMPLEMENT_MAP[base];
     if (complement === undefined) {
       throw new Error(`RNA complement encountered invalid base '${base}' at index ${i}`);
     }

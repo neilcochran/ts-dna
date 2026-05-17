@@ -6,10 +6,6 @@ function rna(sequence: string): RNA {
 
 describe('RNA', () => {
   describe('basic shape', () => {
-    test('nucleicAcidType is the RNA literal', () => {
-      expect(rna('AUCG').nucleicAcidType).toBe('RNA');
-    });
-
     test('getSequence returns the validated upper-case sequence', () => {
       expect(rna('aucgaucgaucg').getSequence()).toBe('AUCGAUCGAUCG');
     });

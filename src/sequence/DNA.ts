@@ -14,12 +14,6 @@ export class DNA {
   public readonly sequence: string;
 
   /**
-   * Runtime tag identifying this as DNA. Used by code paths that need to branch on alphabet
-   * (e.g. pattern complement) without instanceof checks.
-   */
-  public readonly nucleicAcidType = 'DNA' as const;
-
-  /**
    * Constructs a `DNA`. Module-private; public callers must go through {@link parseDNA}.
    *
    * @param sequence - A pre-validated, normalized (upper-case) DNA sequence
@@ -147,7 +141,7 @@ function complementDNAString(sequence: string): string {
   let result = '';
   for (let i = 0; i < sequence.length; i++) {
     const base = sequence[i];
-    const complement = DNA_COMPLEMENT_MAP[base];
+    const complement = base === undefined ? undefined : DNA_COMPLEMENT_MAP[base];
     if (complement === undefined) {
       throw new Error(`DNA complement encountered invalid base '${base}' at index ${i}`);
     }
@@ -160,7 +154,7 @@ function reverseComplementDNAString(sequence: string): string {
   let result = '';
   for (let i = sequence.length - 1; i >= 0; i--) {
     const base = sequence[i];
-    const complement = DNA_COMPLEMENT_MAP[base];
+    const complement = base === undefined ? undefined : DNA_COMPLEMENT_MAP[base];
     if (complement === undefined) {
       throw new Error(`DNA complement encountered invalid base '${base}' at index ${i}`);
     }

@@ -1,8 +1,11 @@
-import { RNA } from '../sequence/index.js';
-import { unsafeRNA } from '../sequence/parse.js';
-import { NucleotidePattern, parseNucleotidePattern } from '../pattern/index.js';
+import type { RNA } from '../sequence/index.js';
 import {
-  POLYA_SIGNALS,
+  NucleotidePattern,
+  parseNucleotidePattern,
+  compileLiteralPattern,
+} from '../pattern/index.js';
+import { POLYA_SIGNALS } from './biology.js';
+import {
   DEFAULT_POLYA_SIGNAL_STRENGTH,
   MIN_RNA_SEQUENCE_FOR_POLYA_SEARCH,
   USE_ELEMENT_MAX_BOOST,
@@ -18,7 +21,7 @@ import {
   HIGH_USE_SCORE,
   PERFECT_DSE_SCORE,
   MIN_POLYA_SITE_STRENGTH,
-} from './biological-constants.js';
+} from './scoring.js';
 import type { GenomicRegion } from '../coordinates/index.js';
 import {
   PolyadenylationSite,
@@ -43,21 +46,16 @@ const DSE_SEARCH_DOWNSTREAM_BP = 80;
  */
 const MAX_POLYA_SITE_STRENGTH_WITH_BOOST = 150;
 
-/** Compiles a known-valid IUPAC pattern at module load. Throws if the literal is malformed. */
-function compilePatternLiteral(pattern: string): NucleotidePattern {
-  return parseNucleotidePattern(pattern).unwrap();
-}
-
 /**
  * Static priority-ranked USE (upstream sequence element) patterns, compiled once at module
  * load. Higher priority indicates a stronger biological signal.
  */
 const USE_PATTERNS: readonly { readonly pattern: NucleotidePattern; readonly priority: number }[] =
   [
-    { pattern: compilePatternLiteral('UGUA'), priority: 3 },
-    { pattern: compilePatternLiteral('U[CU]U'), priority: 2 },
-    { pattern: compilePatternLiteral('UUU[UG]'), priority: 2 },
-    { pattern: compilePatternLiteral('U{4,}'), priority: 1 },
+    { pattern: compileLiteralPattern('UGUA'), priority: 3 },
+    { pattern: compileLiteralPattern('U[CU]U'), priority: 2 },
+    { pattern: compileLiteralPattern('UUU[UG]'), priority: 2 },
+    { pattern: compileLiteralPattern('U{4,}'), priority: 1 },
   ];
 
 /**
@@ -66,29 +64,29 @@ const USE_PATTERNS: readonly { readonly pattern: NucleotidePattern; readonly pri
  */
 const DSE_PATTERNS: readonly { readonly pattern: NucleotidePattern; readonly priority: number }[] =
   [
-    { pattern: compilePatternLiteral('GU{2,}[ACGU]{0,3}U{2,}'), priority: 3 },
-    { pattern: compilePatternLiteral('GU{3,}'), priority: 2 },
-    { pattern: compilePatternLiteral('U{4,}G'), priority: 2 },
-    { pattern: compilePatternLiteral('U{5,}'), priority: 1 },
+    { pattern: compileLiteralPattern('GU{2,}[ACGU]{0,3}U{2,}'), priority: 3 },
+    { pattern: compileLiteralPattern('GU{3,}'), priority: 2 },
+    { pattern: compileLiteralPattern('U{4,}G'), priority: 2 },
+    { pattern: compileLiteralPattern('U{5,}'), priority: 1 },
   ];
 
 /** USE quality scoring: a UYU-style motif inside a USE region. */
-const USE_QUALITY_UYU_PATTERN = compilePatternLiteral('U[CU]U');
+const USE_QUALITY_UYU_PATTERN = compileLiteralPattern('U[CU]U');
 
 /** DSE quality scoring: GU-rich region followed by a U-cluster. */
-const DSE_QUALITY_GU_U_PATTERN = compilePatternLiteral('GU{2,}.*U{2,}');
+const DSE_QUALITY_GU_U_PATTERN = compileLiteralPattern('GU{2,}.*U{2,}');
 
 /** DSE quality scoring: simple GU-rich region. */
-const DSE_QUALITY_GU3_PATTERN = compilePatternLiteral('GU{3,}');
+const DSE_QUALITY_GU3_PATTERN = compileLiteralPattern('GU{3,}');
 
 /** Cleavage-site context: poly-G run that inhibits cleavage. */
-const POLY_G3_CONTEXT_PATTERN = compilePatternLiteral('G{3,}');
+const POLY_G3_CONTEXT_PATTERN = compileLiteralPattern('G{3,}');
 
 /** Cleavage-site context: A/U-rich region that favors cleavage. */
-const AU_RICH_CONTEXT_PATTERN = compilePatternLiteral('[AU]{2,}');
+const AU_RICH_CONTEXT_PATTERN = compileLiteralPattern('[AU]{2,}');
 
 /** Cleavage-site rejection: extended poly-G run that disqualifies a cleavage site. */
-const POLY_G4_CONTEXT_PATTERN = compilePatternLiteral('G{4,}');
+const POLY_G4_CONTEXT_PATTERN = compileLiteralPattern('G{4,}');
 
 /**
  * Compiles a polyadenylation-signal RNA string into a {@link NucleotidePattern}, or returns
@@ -98,15 +96,6 @@ const POLY_G4_CONTEXT_PATTERN = compilePatternLiteral('G{4,}');
 function tryCompileSignal(signal: string): NucleotidePattern | undefined {
   const result = parseNucleotidePattern(signal);
   return result.success ? result.data : undefined;
-}
-
-/**
- * Wraps an RNA-region substring (already normalized to the RNA alphabet by the caller via
- * `.replace(/T/g, 'U')`) in a typed {@link RNA} so the pattern API can match against it.
- * Uses the internal `unsafeRNA` factory since the caller guarantees the alphabet contract.
- */
-function rnaFromRegion(rnaRegion: string): RNA {
-  return unsafeRNA(rnaRegion);
 }
 
 /**
@@ -130,9 +119,9 @@ export function findPolyadenylationSites(
   }
 
   const sites: PolyadenylationSite[] = [];
-  const opts = { ...DEFAULT_CLEAVAGE_OPTIONS, ...options };
+  const opts: Required<CleavageSiteOptions> = { ...DEFAULT_CLEAVAGE_OPTIONS, ...options };
 
-  for (const signal of opts.polyASignal!) {
+  for (const signal of opts.polyASignal) {
     const pattern = tryCompileSignal(signal);
     if (pattern === undefined) {
       continue;
@@ -194,7 +183,7 @@ function analyzePolyadenylationSite(
   sequence: string,
   position: number,
   signal: string,
-  options: CleavageSiteOptions,
+  options: Required<CleavageSiteOptions>,
 ): PolyadenylationSite | null {
   const baseStrength = getSignalStrength(signal);
   let totalStrength = baseStrength;
@@ -214,8 +203,8 @@ function analyzePolyadenylationSite(
   const cleavageSite = predictCleavageSite(
     sequence,
     position + signal.length,
-    [...options.distanceRange!] as [number, number],
-    [...options.cleavagePreference!],
+    [...options.distanceRange] as [number, number],
+    [...options.cleavagePreference],
   );
 
   if (!validateCleavageSiteConstraints(sequence, position, signal.length, cleavageSite, options)) {
@@ -259,11 +248,10 @@ function findUpstreamUSE(sequence: string, position: number): GenomicRegion | un
   if (rnaRegion === '') {
     return undefined;
   }
-  const rna = rnaFromRegion(rnaRegion);
 
   let bestMatch: { start: number; end: number; priority: number } | undefined;
   for (const { pattern, priority } of USE_PATTERNS) {
-    for (const match of pattern.findAll(rna)) {
+    for (const match of pattern.findAll(rnaRegion)) {
       if (!bestMatch || priority > bestMatch.priority) {
         bestMatch = {
           start: searchStart + match.start,
@@ -291,11 +279,10 @@ function findDownstreamDSE(sequence: string, position: number): GenomicRegion | 
   if (rnaRegion === '') {
     return undefined;
   }
-  const rna = rnaFromRegion(rnaRegion);
 
   let bestMatch: { start: number; end: number; priority: number } | undefined;
   for (const { pattern, priority } of DSE_PATTERNS) {
-    for (const match of pattern.findAll(rna)) {
+    for (const match of pattern.findAll(rnaRegion)) {
       if (!bestMatch || priority > bestMatch.priority) {
         bestMatch = {
           start: searchStart + match.start,
@@ -320,7 +307,7 @@ function analyzeUSEQuality(sequence: string, useRegion: GenomicRegion): number {
   let score = BASE_POLYA_SCORE;
   if (useSequence.includes('UGUA')) {
     score = PERFECT_USE_SCORE;
-  } else if (USE_QUALITY_UYU_PATTERN.matches(unsafeRNA(useSequence))) {
+  } else if (USE_QUALITY_UYU_PATTERN.matches(useSequence)) {
     score = HIGH_USE_SCORE;
   } else if (
     (useSequence.match(/U/g) ?? []).length / useSequence.length >
@@ -340,11 +327,10 @@ function analyzeDSEQuality(sequence: string, dseRegion: GenomicRegion): number {
   if (dseSequence === '') {
     return BASE_POLYA_SCORE;
   }
-  const dseRNA = unsafeRNA(dseSequence);
   let score = BASE_POLYA_SCORE;
-  if (DSE_QUALITY_GU_U_PATTERN.matches(dseRNA)) {
+  if (DSE_QUALITY_GU_U_PATTERN.matches(dseSequence)) {
     score = PERFECT_DSE_SCORE;
-  } else if (DSE_QUALITY_GU3_PATTERN.matches(dseRNA)) {
+  } else if (DSE_QUALITY_GU3_PATTERN.matches(dseSequence)) {
     score = HIGH_DSE_SCORE;
   } else if (
     (dseSequence.match(/U/g) ?? []).length / dseSequence.length >
@@ -375,10 +361,11 @@ function predictCleavageSite(
   let bestScore = -1;
 
   for (let pos = searchStart; pos < searchEnd; pos++) {
-    if (pos >= sequence.length) {
+    const rawNucleotide = sequence[pos];
+    if (rawNucleotide === undefined) {
       break;
     }
-    const nucleotide = sequence[pos].toUpperCase().replace('T', 'U');
+    const nucleotide = rawNucleotide.toUpperCase().replace('T', 'U');
     const preferenceIndex = preferences.indexOf(nucleotide);
     if (preferenceIndex === -1) {
       continue;
@@ -386,11 +373,11 @@ function predictCleavageSite(
     let score = preferences.length - preferenceIndex;
     const context = sequence.substring(Math.max(0, pos - 2), Math.min(sequence.length, pos + 3));
     if (context !== '') {
-      if (POLY_G3_CONTEXT_PATTERN.matches(unsafeRNA(context))) {
+      if (POLY_G3_CONTEXT_PATTERN.matches(context)) {
         score *= INHIBITORY_G_RUN_PENALTY;
       } else {
         const auContext = context.replace(/T/g, 'U');
-        if (auContext !== '' && AU_RICH_CONTEXT_PATTERN.matches(unsafeRNA(auContext))) {
+        if (auContext !== '' && AU_RICH_CONTEXT_PATTERN.matches(auContext)) {
           score *= AU_RICH_CONTEXT_BOOST;
         }
       }
@@ -417,13 +404,13 @@ function validateCleavageSiteConstraints(
   signalPosition: number,
   signalLength: number,
   cleavagePosition: number | undefined,
-  options: CleavageSiteOptions,
+  options: Required<CleavageSiteOptions>,
 ): boolean {
   if (cleavagePosition === undefined) {
     return false;
   }
   const distance = cleavagePosition - (signalPosition + signalLength);
-  const [minDist, maxDist] = options.distanceRange!;
+  const [minDist, maxDist] = options.distanceRange;
   if (distance < minDist || distance > maxDist) {
     return false;
   }
@@ -434,7 +421,7 @@ function validateCleavageSiteConstraints(
   if (context === '') {
     return true;
   }
-  if (POLY_G4_CONTEXT_PATTERN.matches(unsafeRNA(context))) {
+  if (POLY_G4_CONTEXT_PATTERN.matches(context)) {
     return false;
   }
   return true;

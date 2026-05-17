@@ -1,5 +1,5 @@
+import type { Result } from '../../src/result/Result';
 import {
-  Result,
   SuccessResult,
   FailureResult,
   success,
@@ -52,22 +52,6 @@ describe('Result module', () => {
       const err: CustomError = { code: 42, message: 'nope' };
       const result = failure(err);
       expect(result.error).toEqual(err);
-    });
-  });
-
-  describe('Result.success / Result.failure static factories', () => {
-    test('Result.success is equivalent to the free function', () => {
-      const fromStatic = Result.success(7);
-      const fromFree = success(7);
-      expect(fromStatic.data).toBe(fromFree.data);
-      expect(fromStatic.success).toBe(true);
-    });
-
-    test('Result.failure is equivalent to the free function', () => {
-      const fromStatic = Result.failure('oops');
-      const fromFree = failure('oops');
-      expect(fromStatic.error).toBe(fromFree.error);
-      expect(fromStatic.success).toBe(false);
     });
   });
 
@@ -188,6 +172,19 @@ describe('Result module', () => {
     test('throws with generic message for non-string errors', () => {
       const result = failure({ code: 1 });
       expect(() => unwrap(result)).toThrow('Result is a failure');
+    });
+
+    test('preserves the structured payload on Error.cause for non-string errors', () => {
+      const payload = { kind: 'invalid-input', field: 'name' } as const;
+      const result = failure(payload);
+      try {
+        unwrap(result);
+        throw new Error('unwrap was expected to throw but did not');
+      } catch (caught) {
+        expect(caught).toBeInstanceOf(Error);
+        expect((caught as Error).message).toBe('Result is a failure');
+        expect((caught as Error).cause).toEqual(payload);
+      }
     });
   });
 

@@ -5,7 +5,7 @@ import {
   DEFAULT_DOWNSTREAM_DSE_PATTERN,
   DEFAULT_CLEAVAGE_PREFERENCE,
   DEFAULT_CLEAVAGE_DISTANCE_RANGE,
-} from './biological-constants.js';
+} from './biology.js';
 
 /**
  * A detected polyadenylation site, with the signal sequence, its strength score, and any
@@ -60,9 +60,11 @@ export interface CleavageSiteOptions {
 }
 
 /**
- * Default {@link CleavageSiteOptions} based on the canonical biological signals.
+ * Default {@link CleavageSiteOptions} based on the canonical biological signals. Typed as
+ * `Required<CleavageSiteOptions>` so internal helpers receive a known-populated shape after
+ * merging with the caller's partial overrides.
  */
-export const DEFAULT_CLEAVAGE_OPTIONS: CleavageSiteOptions = {
+export const DEFAULT_CLEAVAGE_OPTIONS: Required<CleavageSiteOptions> = {
   polyASignal: DEFAULT_POLYA_SIGNALS,
   upstreamUSE: DEFAULT_UPSTREAM_USE_PATTERN,
   downstreamDSE: DEFAULT_DOWNSTREAM_DSE_PATTERN,

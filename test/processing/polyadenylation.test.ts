@@ -6,6 +6,7 @@ import {
   DEFAULT_CLEAVAGE_OPTIONS,
   POLYA_SIGNAL_OFFSET,
 } from '../../src/processing';
+import { at } from '../utils/test-utils';
 
 function rna(sequence: string): RNA {
   return parseRNA(sequence).unwrap();
@@ -15,16 +16,16 @@ describe('findPolyadenylationSites', () => {
   test('finds the canonical AAUAAA signal', () => {
     const sites = findPolyadenylationSites(rna('AUGAAACCCAAUAAAGGGCCCAAAUUUCCCGGG'));
     expect(sites).toHaveLength(1);
-    expect(sites[0].position).toBe(9);
-    expect(sites[0].signal).toBe('AAUAAA');
-    expect(sites[0].strength).toBe(100);
+    expect(at(sites, 0).position).toBe(9);
+    expect(at(sites, 0).signal).toBe('AAUAAA');
+    expect(at(sites, 0).strength).toBe(100);
   });
 
   test('finds the AUUAAA alternative signal', () => {
     const sites = findPolyadenylationSites(rna('AUGAAACCCAUUAAAGGGCCCAAAUUUCCCGGG'));
     expect(sites).toHaveLength(1);
-    expect(sites[0].signal).toBe('AUUAAA');
-    expect(sites[0].strength).toBeGreaterThanOrEqual(80);
+    expect(at(sites, 0).signal).toBe('AUUAAA');
+    expect(at(sites, 0).strength).toBeGreaterThanOrEqual(80);
   });
 
   test('sorts by strength then by position', () => {
@@ -33,10 +34,12 @@ describe('findPolyadenylationSites', () => {
     );
     expect(sites.length).toBeGreaterThan(1);
     for (let i = 1; i < sites.length; i++) {
-      if (sites[i - 1].strength === sites[i].strength) {
-        expect(sites[i - 1].position).toBeLessThanOrEqual(sites[i].position);
+      const prev = at(sites, i - 1);
+      const curr = at(sites, i);
+      if (prev.strength === curr.strength) {
+        expect(prev.position).toBeLessThanOrEqual(curr.position);
       } else {
-        expect(sites[i - 1].strength).toBeGreaterThanOrEqual(sites[i].strength);
+        expect(prev.strength).toBeGreaterThanOrEqual(curr.strength);
       }
     }
   });
@@ -52,23 +55,27 @@ describe('findPolyadenylationSites', () => {
   test('boosts strength when an upstream USE element is present', () => {
     const sites = findPolyadenylationSites(rna('AUGUUUUUUAGUAAAGGGCCCAAAUCCCGGGUUUAAAA'));
     expect(sites).toHaveLength(1);
-    expect(sites[0].strength).toBeGreaterThan(30);
-    expect(sites[0].upstreamUSE).toBeDefined();
+    expect(at(sites, 0).strength).toBeGreaterThan(30);
+    expect(at(sites, 0).upstreamUSE).toBeDefined();
   });
 
   test('boosts strength when a downstream DSE element is present', () => {
     const sites = findPolyadenylationSites(rna('AUGAGUAAAUUUUUUGGGCCC'));
     expect(sites).toHaveLength(1);
-    expect(sites[0].downstreamDSE).toBeDefined();
-    expect(sites[0].strength).toBeGreaterThan(30);
+    expect(at(sites, 0).downstreamDSE).toBeDefined();
+    expect(at(sites, 0).strength).toBeGreaterThan(30);
   });
 
   test('predicts a cleavage site downstream of the signal in the configured distance range', () => {
     const sites = findPolyadenylationSites(rna('AAUAAAGGGCCCAAAUUUCCC'));
     expect(sites).toHaveLength(1);
-    const cleavage = sites[0].cleavageSite!;
-    expect(cleavage).toBeGreaterThan(sites[0].position + POLYA_SIGNAL_OFFSET);
-    expect(cleavage).toBeLessThan(sites[0].position + 30);
+    const first = at(sites, 0);
+    const cleavage = first.cleavageSite;
+    expect(cleavage).toBeDefined();
+    if (cleavage !== undefined) {
+      expect(cleavage).toBeGreaterThan(first.position + POLYA_SIGNAL_OFFSET);
+      expect(cleavage).toBeLessThan(first.position + 30);
+    }
   });
 
   test('tolerates an unparseable signal string in the options list', () => {
@@ -96,8 +103,10 @@ describe('getStrongestPolyadenylationSite', () => {
     const sites = findPolyadenylationSites(rna('AGUAAAGGGAAUAAACCCAUUAAACCCAAAAAACCCGGGAAAA'));
     const strongest = getStrongestPolyadenylationSite(sites);
     expect(strongest).toBeDefined();
-    expect(strongest!.signal).toBe('AAUAAA');
-    expect(strongest!.strength).toBe(100);
+    if (strongest !== undefined) {
+      expect(strongest.signal).toBe('AAUAAA');
+      expect(strongest.strength).toBe(100);
+    }
   });
 
   test('returns undefined for an empty array', () => {

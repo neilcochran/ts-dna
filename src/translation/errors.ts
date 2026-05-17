@@ -1,5 +1,6 @@
 import type { RNAError } from '../sequence/index.js';
 import { describeRNAError } from '../sequence/index.js';
+import { assertUnreachable } from '../result/index.js';
 
 /**
  * Tagged-union errors produced by `parseAminoAcid` and the `translate` pipeline.
@@ -77,5 +78,7 @@ export function describeTranslationError(error: TranslationError): string {
       return `Codon '${error.codon}' at position ${error.position} does not code for any amino acid`;
     case 'invalid-reading-frame':
       return `Coding sequence length ${error.codingLength} is not a multiple of codon length ${error.codonLength}`;
+    default:
+      return assertUnreachable(error);
   }
 }

@@ -9,6 +9,7 @@
 
 import type { DNAError } from '../sequence/index.js';
 import { describeDNAError } from '../sequence/index.js';
+import { assertUnreachable } from '../result/index.js';
 
 /**
  * Error variants produced by `parseGene` and the validators it composes.
@@ -168,6 +169,8 @@ export function describeGeneError(error: GeneError): string {
       return `Intron ${error.intronIndex} is unrealistically large: ${error.length} bp (maximum ${error.max} bp)`;
     case 'invalid-splicing-profile':
       return error.reason;
+    default:
+      return assertUnreachable(error);
   }
 }
 
@@ -198,5 +201,7 @@ export function describePromoterElementError(error: PromoterElementError): strin
       return `Promoter element position must be a finite integer; received ${error.position}`;
     case 'invalid-score-weight':
       return `Promoter element score weight must be a finite number; received ${error.scoreWeight}`;
+    default:
+      return assertUnreachable(error);
   }
 }

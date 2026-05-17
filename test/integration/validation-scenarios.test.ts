@@ -8,6 +8,7 @@
 import { parseGene } from '../../src/gene';
 import { DNA, RNA, parseDNA, parseRNA, transcribeSequence } from '../../src/sequence';
 import { parseNucleotidePattern } from '../../src/pattern';
+import { at } from '../utils/test-utils';
 import { transcribe } from '../../src/transcription';
 import { processRNA } from '../../src/processing';
 import { parseMRNA } from '../../src/processing';
@@ -224,7 +225,7 @@ describe('Validation Scenarios Integration Tests', () => {
         const mRNA = parseMRNA(sequence, 0, sequence.length).unwrap();
         const polypeptide = translate(mRNA).unwrap();
         expect(polypeptide.aminoAcids.length).toBeGreaterThan(0);
-        expect(polypeptide.aminoAcids[0].data.singleLetterCode).toBe('M');
+        expect(at(polypeptide.aminoAcids, 0).data.singleLetterCode).toBe('M');
       }
     });
 

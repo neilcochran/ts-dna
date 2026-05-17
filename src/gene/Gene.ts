@@ -92,6 +92,11 @@ export class Gene {
       );
     }
     const exon = this.exons[exonIndex];
+    if (exon === undefined) {
+      throw new RangeError(
+        `Exon index ${exonIndex} out of bounds. Gene has ${this.exons.length} exons.`,
+      );
+    }
     return this.sequence.getSequence().substring(exon.start, exon.end);
   }
 
@@ -110,6 +115,11 @@ export class Gene {
       );
     }
     const intron = this.introns[intronIndex];
+    if (intron === undefined) {
+      throw new RangeError(
+        `Intron index ${intronIndex} out of bounds. Gene has ${this.introns.length} introns.`,
+      );
+    }
     return this.sequence.getSequence().substring(intron.start, intron.end);
   }
 
@@ -156,17 +166,18 @@ export class Gene {
    * @throws {@link RangeError} if the variant references an exon index outside this gene
    */
   getVariantSequence(variant: SpliceVariant): string {
+    const selectedExons: GenomicRegion<GeneCoord>[] = [];
     for (const exonIndex of variant.includedExons) {
-      if (exonIndex < 0 || exonIndex >= this.exons.length) {
+      const exon = this.exons[exonIndex];
+      if (exon === undefined) {
         throw new RangeError(
           `Variant '${variant.name}' references invalid exon index ${exonIndex}. Gene has ${this.exons.length} exons.`,
         );
       }
+      selectedExons.push(exon);
     }
+    selectedExons.sort((a, b) => a.start - b.start);
     const sequence = this.sequence.getSequence();
-    const selectedExons = variant.includedExons
-      .map(index => this.exons[index])
-      .sort((a, b) => a.start - b.start);
     return selectedExons.map(exon => sequence.substring(exon.start, exon.end)).join('');
   }
 

@@ -7,6 +7,8 @@
  * work uniformly across coordinate spaces.
  */
 
+import { Result, success, failure, assertUnreachable } from '../result/index.js';
+
 /**
  * A region within a sequence, expressed in 0-based half-open coordinates `[start, end)`.
  *
@@ -30,18 +32,79 @@ export interface GenomicRegion<C extends number = number> {
 }
 
 /**
+ * Tagged-union failure raised by {@link validateGenomicRegion}.
+ *
+ * - `negative-start`: `start` is below zero.
+ * - `negative-end`: `end` is below zero.
+ * - `start-not-before-end`: `start >= end`, leaving an empty or inverted interval.
+ */
+export type RegionError =
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'negative-start';
+      /** The `start` value the caller supplied. */
+      readonly start: number;
+    }
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'negative-end';
+      /** The `end` value the caller supplied. */
+      readonly end: number;
+    }
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'start-not-before-end';
+      /** The `start` value the caller supplied. */
+      readonly start: number;
+      /** The `end` value the caller supplied. */
+      readonly end: number;
+    };
+
+/**
  * Validates a {@link GenomicRegion} for basic positional sanity: non-negative coordinates and
  * `start < end`.
  *
  * Biological constraints (minimum sizes, splice-site shape, etc.) are enforced separately by
- * the domain modules that own them.
+ * the domain modules that own them. The structured `RegionError` payload identifies which
+ * specific rule failed, letting callers either surface that reason or substitute their own
+ * domain-specific error.
  *
  * @param region - The region to validate
- * @returns `true` if `start >= 0`, `end >= 0`, and `start < end`; otherwise `false`
+ * @returns `Result<void, RegionError>`
  * @typeParam C - The coordinate-space brand (inferred)
  */
-export function isValidGenomicRegion<C extends number>(region: GenomicRegion<C>): boolean {
-  return region.start >= 0 && region.end >= 0 && region.start < region.end;
+export function validateGenomicRegion<C extends number>(
+  region: GenomicRegion<C>,
+): Result<void, RegionError> {
+  if (region.start < 0) {
+    return failure({ kind: 'negative-start', start: region.start });
+  }
+  if (region.end < 0) {
+    return failure({ kind: 'negative-end', end: region.end });
+  }
+  if (region.start >= region.end) {
+    return failure({ kind: 'start-not-before-end', start: region.start, end: region.end });
+  }
+  return success(undefined);
+}
+
+/**
+ * Renders a {@link RegionError} as a human-readable message.
+ *
+ * @param error - The structured error payload
+ * @returns A short human-readable description
+ */
+export function describeRegionError(error: RegionError): string {
+  switch (error.kind) {
+    case 'negative-start':
+      return `Region start ${error.start} must be non-negative`;
+    case 'negative-end':
+      return `Region end ${error.end} must be non-negative`;
+    case 'start-not-before-end':
+      return `Region start (${error.start}) must be strictly less than end (${error.end})`;
+    default:
+      return assertUnreachable(error);
+  }
 }
 
 /**
@@ -82,7 +145,12 @@ export function validateNonOverlappingRegions<C extends number>(
   const sorted = [...regions].sort((a, b) => a.start - b.start);
 
   for (let i = 0; i < sorted.length - 1; i++) {
-    if (sorted[i].end > sorted[i + 1].start) {
+    const current = sorted[i];
+    const next = sorted[i + 1];
+    if (current === undefined || next === undefined) {
+      continue;
+    }
+    if (current.end > next.start) {
       return false;
     }
   }

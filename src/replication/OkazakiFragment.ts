@@ -18,7 +18,11 @@ import { UNSAFE_OKAZAKI_KEY } from './internal-keys.js';
  * mutators. Public callers construct fragments via {@link parseOkazakiFragment}.
  */
 export class OkazakiFragment {
-  /** Stable identifier for cross-referencing events that target this fragment. */
+  /**
+   * Stable identifier for cross-referencing events that target this fragment. Unique within
+   * the output of a single `replicate` / `replicateSteps` call; not guaranteed unique across
+   * separate calls (a fresh counter starts each call).
+   */
   public readonly id: string;
 
   /** 0-based start position on the lagging-strand template (inclusive). */

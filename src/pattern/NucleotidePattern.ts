@@ -4,6 +4,11 @@ import type { IUPACSymbol } from './iupac-symbols.js';
 import type { PatternError } from './errors.js';
 import { UNSAFE_NUCLEOTIDE_PATTERN_KEY } from './internal-keys.js';
 
+/** Acceptable input shape for pattern matching: a raw string or a validated `DNA` / `RNA`. */
+function asString(sequence: string | DNA | RNA): string {
+  return typeof sequence === 'string' ? sequence : sequence.sequence;
+}
+
 /**
  * A single match of a {@link NucleotidePattern} against a nucleic-acid sequence.
  *
@@ -27,10 +32,12 @@ export interface NucleotideMatch {
  * grouping) are preserved as-is, so quantified expressions like `'GU{3,}'` and grouped
  * expressions like `'(GT|AG)'` are supported.
  *
- * Pattern methods operate on validated {@link DNA} or {@link RNA} sequences only; consumers
- * with raw strings should call `parseDNA(str).map(seq => pattern.matches(seq))` or use a native
- * `RegExp` directly. Public callers construct instances via {@link parseNucleotidePattern}; the
- * constructor is gated by a module-private sentinel.
+ * Pattern methods accept either a validated {@link DNA} / {@link RNA} sequence or a raw
+ * string; the alphabet-agnostic IUPAC regex compilation already case-folds, so a string input
+ * is treated as a sequence of nucleotide characters without re-validation. Use the typed
+ * inputs when the caller already holds a parsed sequence; the string overload is a convenience
+ * for one-off matches. Public callers construct instances via {@link parseNucleotidePattern};
+ * the constructor is gated by a module-private sentinel.
  *
  * @see {@link NucleotidePatternSymbol}
  * @see {@link https://en.wikipedia.org/wiki/Nucleic_acid_notation#IUPAC_notation|IUPAC notation}
@@ -83,8 +90,8 @@ export class NucleotidePattern {
    * pattern.matches(parseDNA('CCCC').unwrap()); // false
    * ```
    */
-  matches(sequence: DNA | RNA): boolean {
-    return this.patternRegex.test(sequence.getSequence());
+  matches(sequence: string | DNA | RNA): boolean {
+    return this.patternRegex.test(asString(sequence));
   }
 
   /**
@@ -101,9 +108,9 @@ export class NucleotidePattern {
    * // [{ start: 0, end: 2, matched: 'AT' }, { start: 4, end: 6, matched: 'GC' }, { start: 6, end: 8, matched: 'AT' }]
    * ```
    */
-  findAll(sequence: DNA | RNA): readonly NucleotideMatch[] {
+  findAll(sequence: string | DNA | RNA): readonly NucleotideMatch[] {
     const matches: NucleotideMatch[] = [];
-    for (const match of sequence.getSequence().matchAll(this.patternRegexGlobal)) {
+    for (const match of asString(sequence).matchAll(this.patternRegexGlobal)) {
       const start = match.index;
       const matched = match[0];
       matches.push({ start, end: start + matched.length, matched });
@@ -118,8 +125,8 @@ export class NucleotidePattern {
    * @param sequence - The DNA or RNA sequence to search
    * @returns A {@link NucleotideMatch} for the first match, or `undefined`
    */
-  findFirst(sequence: DNA | RNA): NucleotideMatch | undefined {
-    const result = this.patternRegex.exec(sequence.getSequence());
+  findFirst(sequence: string | DNA | RNA): NucleotideMatch | undefined {
+    const result = this.patternRegex.exec(asString(sequence));
     if (result === null) {
       return undefined;
     }
@@ -152,7 +159,7 @@ export class NucleotidePattern {
       return false;
     }
     try {
-      return new RegExp(rcOutcome.source).test(sequence.getSequence());
+      return new RegExp(rcOutcome.source).test(sequence.sequence);
     } catch {
       return false;
     }
@@ -219,6 +226,9 @@ export function compilePatternRegexSource(pattern: string): CompiledPatternSourc
   let source = '';
   for (let i = 0; i < pattern.length; i++) {
     const character = pattern[i];
+    if (character === undefined) {
+      continue;
+    }
     if (/[a-zA-Z]/.test(character)) {
       const isEscapeSequence = i > 0 && pattern[i - 1] === '\\';
       if (isEscapeSequence) {
@@ -301,6 +311,9 @@ function complementPatternString(pattern: string): string {
   let result = '';
   for (let i = 0; i < pattern.length; i++) {
     const character = pattern[i];
+    if (character === undefined) {
+      continue;
+    }
     if (/[a-zA-Z]/.test(character)) {
       const isEscapeSequence = i > 0 && pattern[i - 1] === '\\';
       if (isEscapeSequence) {

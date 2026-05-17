@@ -1,19 +1,14 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import { parseDNA } from '../sequence/index.js';
-import type { DNA } from '../sequence/index.js';
 import { geneCoord, type GeneCoord, type GenomicRegion } from '../coordinates/index.js';
 import type { NucleotidePattern } from '../pattern/index.js';
 import type { AlternativeSplicingProfile } from './splice-variants.js';
-import { Gene } from './Gene.js';
-import { Promoter } from './Promoter.js';
-import { PromoterElement } from './PromoterElement.js';
-import {
-  UNSAFE_GENE_KEY,
-  UNSAFE_PROMOTER_KEY,
-  UNSAFE_PROMOTER_ELEMENT_KEY,
-} from './internal-keys.js';
+import type { Gene } from './Gene.js';
+import type { Promoter } from './Promoter.js';
+import type { PromoterElement } from './PromoterElement.js';
 import type { GeneError, PromoterError, PromoterElementError } from './errors.js';
 import { validateExons } from './validate-exons.js';
+import { unsafeGene, unsafePromoter, unsafePromoterElement } from './internal-factories.js';
 
 /**
  * Parses an untrusted DNA-sequence string and exon list into a {@link Gene}.
@@ -140,56 +135,6 @@ export function parsePromoterElement(
  *
  * @internal
  */
-export function unsafeGene(
-  sequence: DNA,
-  exons: readonly GenomicRegion<GeneCoord>[],
-  introns: readonly GenomicRegion<GeneCoord>[],
-  name: string | undefined,
-  splicingProfile: AlternativeSplicingProfile | undefined,
-): Gene {
-  return new Gene(sequence, exons, introns, name, splicingProfile, UNSAFE_GENE_KEY);
-}
-
-/**
- * Constructs a {@link Promoter} without re-running validation. Reserved for `gene/`-internal
- * callers. Not exported from the package barrel.
- *
- * @param transcriptionStartSite - Validated TSS position
- * @param elements - Validated promoter elements
- * @param name - Optional promoter name
- * @returns A new `Promoter`
- *
- * @internal
- */
-export function unsafePromoter(
-  transcriptionStartSite: number,
-  elements: readonly PromoterElement[],
-  name: string | undefined,
-): Promoter {
-  return new Promoter(transcriptionStartSite, elements, name, UNSAFE_PROMOTER_KEY);
-}
-
-/**
- * Constructs a {@link PromoterElement} without re-running validation. Reserved for
- * `gene/`-internal callers (parsers, the consensus-table module). Not exported from the
- * package barrel.
- *
- * @param name - Validated element name
- * @param pattern - IUPAC nucleotide pattern
- * @param position - Validated TSS-relative position
- * @param scoreWeight - Validated score weight
- * @returns A new `PromoterElement`
- *
- * @internal
- */
-export function unsafePromoterElement(
-  name: string,
-  pattern: NucleotidePattern,
-  position: number,
-  scoreWeight: number,
-): PromoterElement {
-  return new PromoterElement(name, pattern, position, scoreWeight, UNSAFE_PROMOTER_ELEMENT_KEY);
-}
 
 /**
  * Validates an alternative-splicing profile against the gene's exon count.
@@ -279,6 +224,9 @@ function deriveIntrons(exons: readonly GenomicRegion<GeneCoord>[]): GenomicRegio
   for (let i = 0; i < sorted.length - 1; i++) {
     const current = sorted[i];
     const next = sorted[i + 1];
+    if (current === undefined || next === undefined) {
+      continue;
+    }
     if (current.end < next.start) {
       introns.push({
         start: current.end,

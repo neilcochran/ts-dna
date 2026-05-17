@@ -1,8 +1,8 @@
 import { Result, success, failure } from '../result/index.js';
 import type { GenomicRegion } from '../coordinates/index.js';
-import { MIN_INTRON_LENGTH_FOR_SPLICING } from './biological-constants.js';
+import { MIN_INTRON_LENGTH_FOR_SPLICING } from './biology.js';
 import { DEFAULT_MAX_INTRON_SEARCH } from '../gene/biological-constants.js';
-import { DNA_DONOR_SPLICE_CONSENSUS, DNA_ACCEPTOR_SPLICE_CONSENSUS } from './splice-consensus.js';
+import { SPLICE_CONSENSUS } from './splice-consensus.js';
 import type { SplicingError } from './errors.js';
 
 /**
@@ -27,6 +27,9 @@ export function validateSpliceSites(
 ): Result<void, SplicingError> {
   for (let i = 0; i < introns.length; i++) {
     const intron = introns[i];
+    if (intron === undefined) {
+      continue;
+    }
     const intronSequence = sequence.substring(intron.start, intron.end);
 
     if (intronSequence.length < MIN_INTRON_LENGTH_FOR_SPLICING) {
@@ -39,7 +42,7 @@ export function validateSpliceSites(
     }
 
     const donor = intronSequence.substring(0, 2);
-    if (donor !== DNA_DONOR_SPLICE_CONSENSUS) {
+    if (donor !== SPLICE_CONSENSUS.dna.donor) {
       return failure({
         kind: 'invalid-donor-site',
         intronIndex: i,
@@ -49,7 +52,7 @@ export function validateSpliceSites(
     }
 
     const acceptor = intronSequence.substring(intronSequence.length - 2);
-    if (acceptor !== DNA_ACCEPTOR_SPLICE_CONSENSUS) {
+    if (acceptor !== SPLICE_CONSENSUS.dna.acceptor) {
       return failure({
         kind: 'invalid-acceptor-site',
         intronIndex: i,
@@ -85,14 +88,14 @@ export function findPotentialSpliceSites(
 
   const gtPositions: number[] = [];
   for (let i = 0; i <= sequence.length - 2; i++) {
-    if (sequence.substring(i, i + 2) === DNA_DONOR_SPLICE_CONSENSUS) {
+    if (sequence.substring(i, i + 2) === SPLICE_CONSENSUS.dna.donor) {
       gtPositions.push(i);
     }
   }
 
   const agPositions: number[] = [];
   for (let i = 0; i <= sequence.length - 2; i++) {
-    if (sequence.substring(i, i + 2) === DNA_ACCEPTOR_SPLICE_CONSENSUS) {
+    if (sequence.substring(i, i + 2) === SPLICE_CONSENSUS.dna.acceptor) {
       agPositions.push(i);
     }
   }

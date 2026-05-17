@@ -237,8 +237,11 @@ function removeDuplicatePromoters(
     );
     if (duplicateIndex === -1) {
       filtered.push(candidate);
-    } else if (candidate.elements.length > filtered[duplicateIndex].elements.length) {
-      filtered[duplicateIndex] = candidate;
+    } else {
+      const duplicate = filtered[duplicateIndex];
+      if (duplicate !== undefined && candidate.elements.length > duplicate.elements.length) {
+        filtered[duplicateIndex] = candidate;
+      }
     }
   }
   return filtered;
