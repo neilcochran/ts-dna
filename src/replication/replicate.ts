@@ -392,7 +392,9 @@ function buildPlan(
     const endPosition = cursor + fragmentSize;
     const primerLength = randomInRange(rng, organism.primerLength[0], organism.primerLength[1]);
     const primerSequence = randomRNASequence(rng, primerLength);
-    const synthesizedDNA = complementDNASegment(laggingTemplate, startPosition, endPosition);
+    const synthesizedDNA = unsafeDNA(
+      laggingTemplate.substring(startPosition, endPosition),
+    ).getComplement().sequence;
 
     fragmentPlans.push({
       id: `okazaki-${++fragmentCounter}`,
@@ -438,30 +440,6 @@ function computeStatistics(input: {
     averageOkazakiFragmentSize,
     simulatedTimeSeconds,
   };
-}
-
-const DNA_COMPLEMENTS: Readonly<Record<string, string>> = Object.freeze({
-  A: 'T',
-  T: 'A',
-  C: 'G',
-  G: 'C',
-});
-
-function complementDNASegment(
-  template: string,
-  startPosition: number,
-  endPosition: number,
-): string {
-  let result = '';
-  for (let i = startPosition; i < endPosition; i++) {
-    const base = template[i];
-    const comp = base === undefined ? undefined : DNA_COMPLEMENTS[base];
-    if (comp === undefined) {
-      throw new Error(`Internal error: invalid DNA base '${base}' at template index ${i}`);
-    }
-    result += comp;
-  }
-  return result;
 }
 
 function randomInRange(rng: () => number, min: number, max: number): number {

@@ -13,6 +13,7 @@
 import type { RNA } from '../sequence/index.js';
 import {
   transcriptCoord,
+  deriveIntronsFromExons,
   type GeneCoord,
   type GenomicRegion,
   type TranscriptCoord,
@@ -46,7 +47,7 @@ export function unsafePreMRNA(
     transcriptionStartSite,
     transcriptLength,
   );
-  const intronRegions = deriveTranscriptIntrons(exonRegions);
+  const intronRegions = deriveIntronsFromExons(exonRegions);
   return new PreMRNA(
     sequence,
     sourceGene,
@@ -80,32 +81,4 @@ function translateExonsToTranscript(
     }
   }
   return translated;
-}
-
-/**
- * Derives intron regions from a transcript-coordinate exon list.
- *
- * Sorts the exons by `start`, then emits an intron for each adjacent pair where the gap is
- * positive. Intron `name` is left undefined (the historical convention; downstream RNA
- * processing identifies introns by position, not name).
- */
-function deriveTranscriptIntrons(
-  exons: readonly GenomicRegion<TranscriptCoord>[],
-): GenomicRegion<TranscriptCoord>[] {
-  if (exons.length <= 1) {
-    return [];
-  }
-  const sorted = [...exons].sort((a, b) => a.start - b.start);
-  const introns: GenomicRegion<TranscriptCoord>[] = [];
-  for (let i = 0; i < sorted.length - 1; i++) {
-    const current = sorted[i];
-    const next = sorted[i + 1];
-    if (current === undefined || next === undefined) {
-      continue;
-    }
-    if (current.end < next.start) {
-      introns.push({ start: current.end, end: next.start, name: undefined });
-    }
-  }
-  return introns;
 }

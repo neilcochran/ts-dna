@@ -12,12 +12,7 @@ export { DNA } from './DNA.js';
 export { RNA } from './RNA.js';
 export { DoubleStrandedDNA } from './DoubleStrandedDNA.js';
 export { parseDNA, parseRNA, parseDoubleStrandedDNA, doubleStrandedDNA } from './parse.js';
-export {
-  complement,
-  reverseComplement,
-  complementDNABase,
-  complementRNABase,
-} from './complement.js';
+export { complement, reverseComplement } from './complement.js';
 export { transcribeSequence, reverseTranscribeSequence } from './conversion.js';
 export {
   CODON_LENGTH,

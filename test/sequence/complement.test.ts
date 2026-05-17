@@ -1,13 +1,4 @@
-import {
-  DNA,
-  RNA,
-  parseDNA,
-  parseRNA,
-  complement,
-  reverseComplement,
-  complementDNABase,
-  complementRNABase,
-} from '../../src/sequence';
+import { DNA, RNA, parseDNA, parseRNA, complement, reverseComplement } from '../../src/sequence';
 
 function dna(sequence: string) {
   return parseDNA(sequence).unwrap();
@@ -43,41 +34,5 @@ describe('reverseComplement (free function)', () => {
 
   test('palindromic restriction site equals its reverse complement', () => {
     expect(reverseComplement(dna('GAATTC')).sequence).toBe('GAATTC');
-  });
-});
-
-describe('complementDNABase', () => {
-  test.each([
-    ['A', 'T'],
-    ['T', 'A'],
-    ['C', 'G'],
-    ['G', 'C'],
-  ])('complements %s to %s', (input, expected) => {
-    expect(complementDNABase(input)).toBe(expected);
-  });
-
-  test('returns undefined for invalid base', () => {
-    expect(complementDNABase('U')).toBeUndefined();
-    expect(complementDNABase('X')).toBeUndefined();
-    expect(complementDNABase('a')).toBeUndefined();
-    expect(complementDNABase('')).toBeUndefined();
-  });
-});
-
-describe('complementRNABase', () => {
-  test.each([
-    ['A', 'U'],
-    ['U', 'A'],
-    ['C', 'G'],
-    ['G', 'C'],
-  ])('complements %s to %s', (input, expected) => {
-    expect(complementRNABase(input)).toBe(expected);
-  });
-
-  test('returns undefined for invalid base', () => {
-    expect(complementRNABase('T')).toBeUndefined();
-    expect(complementRNABase('X')).toBeUndefined();
-    expect(complementRNABase('a')).toBeUndefined();
-    expect(complementRNABase('')).toBeUndefined();
   });
 });

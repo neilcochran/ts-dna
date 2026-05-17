@@ -126,6 +126,44 @@ export function regionsOverlap<C extends number>(
 }
 
 /**
+ * Derives intron regions from an exon list by emitting one region for each adjacent pair of
+ * sorted exons where the gap is strictly positive.
+ *
+ * The returned regions inherit the input exons' coordinate brand `C`; the helper performs no
+ * naming or validation. Touching exons (`prev.end === next.start`) produce no intron;
+ * overlapping exons are not checked here (the caller should run
+ * {@link validateNonOverlappingRegions} or the domain-specific equivalent before calling).
+ *
+ * Used by gene-coordinate intron derivation in {@link parseGene} (which maps the result to add
+ * `intron${n}` names) and by transcript-coordinate intron derivation in `unsafePreMRNA`.
+ *
+ * @param exons - Exon regions in any single coordinate space; order does not matter (the
+ * algorithm sorts internally)
+ * @returns Intron regions, in sorted-exon-pair order, with `name` left undefined
+ * @typeParam C - The coordinate-space brand (inferred)
+ */
+export function deriveIntronsFromExons<C extends number>(
+  exons: readonly GenomicRegion<C>[],
+): GenomicRegion<C>[] {
+  if (exons.length <= 1) {
+    return [];
+  }
+  const sorted = [...exons].sort((a, b) => a.start - b.start);
+  const introns: GenomicRegion<C>[] = [];
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const current = sorted[i];
+    const next = sorted[i + 1];
+    if (current === undefined || next === undefined) {
+      continue;
+    }
+    if (current.end < next.start) {
+      introns.push({ start: current.end, end: next.start, name: undefined });
+    }
+  }
+  return introns;
+}
+
+/**
  * Tests whether a list of regions are pairwise non-overlapping.
  *
  * Sorts a copy of the list by `start` and then scans adjacent pairs. Touching boundaries

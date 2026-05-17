@@ -4,6 +4,7 @@ import {
   describeRegionError,
   regionsOverlap,
   validateNonOverlappingRegions,
+  deriveIntronsFromExons,
 } from '../../src/coordinates';
 import { isFailure, isSuccess } from '../../src/result';
 
@@ -187,6 +188,55 @@ describe('GenomicRegion utilities', () => {
         { start: 5, end: 10 },
       ];
       expect(validateNonOverlappingRegions(regions)).toBe(false);
+    });
+  });
+
+  describe('deriveIntronsFromExons', () => {
+    test('returns no introns when fewer than two exons are supplied', () => {
+      expect(deriveIntronsFromExons([])).toEqual([]);
+      expect(deriveIntronsFromExons([{ start: 0, end: 10 }])).toEqual([]);
+    });
+
+    test('emits one intron per positive gap between sorted exons', () => {
+      const exons: GenomicRegion[] = [
+        { start: 0, end: 6 },
+        { start: 12, end: 18 },
+        { start: 24, end: 30 },
+      ];
+      expect(deriveIntronsFromExons(exons)).toEqual([
+        { start: 6, end: 12, name: undefined },
+        { start: 18, end: 24, name: undefined },
+      ]);
+    });
+
+    test('sorts unsorted input by start before emitting introns', () => {
+      const exons: GenomicRegion[] = [
+        { start: 24, end: 30 },
+        { start: 0, end: 6 },
+        { start: 12, end: 18 },
+      ];
+      expect(deriveIntronsFromExons(exons)).toEqual([
+        { start: 6, end: 12, name: undefined },
+        { start: 18, end: 24, name: undefined },
+      ]);
+    });
+
+    test('skips zero-length gaps where adjacent exons touch', () => {
+      const exons: GenomicRegion[] = [
+        { start: 0, end: 10 },
+        { start: 10, end: 20 },
+      ];
+      expect(deriveIntronsFromExons(exons)).toEqual([]);
+    });
+
+    test('leaves the intron name field undefined', () => {
+      const exons: GenomicRegion[] = [
+        { start: 0, end: 6, name: 'exon1' },
+        { start: 12, end: 18, name: 'exon2' },
+      ];
+      const introns = deriveIntronsFromExons(exons);
+      expect(introns).toHaveLength(1);
+      expect(introns[0]?.name).toBeUndefined();
     });
   });
 });

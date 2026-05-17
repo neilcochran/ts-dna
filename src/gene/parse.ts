@@ -1,6 +1,11 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import { parseDNA } from '../sequence/index.js';
-import { geneCoord, type GeneCoord, type GenomicRegion } from '../coordinates/index.js';
+import {
+  geneCoord,
+  deriveIntronsFromExons,
+  type GeneCoord,
+  type GenomicRegion,
+} from '../coordinates/index.js';
 import type { NucleotidePattern } from '../pattern/index.js';
 import type { AlternativeSplicingProfile } from './splice-variants.js';
 import type { Gene } from './Gene.js';
@@ -70,7 +75,11 @@ export function parseGene(
     end: geneCoord(exon.end),
     name: exon.name,
   }));
-  const brandedIntrons = deriveIntrons(brandedExons);
+  const brandedIntrons = deriveIntronsFromExons(brandedExons).map((intron, i) => ({
+    start: intron.start,
+    end: intron.end,
+    name: `intron${i + 1}`,
+  }));
 
   return success(unsafeGene(dna, brandedExons, brandedIntrons, name, splicingProfile));
 }
@@ -121,20 +130,6 @@ export function parsePromoterElement(
   }
   return success(unsafePromoterElement(name, pattern, position, scoreWeight));
 }
-
-/**
- * Constructs a {@link Gene} without re-running validation. Reserved for `gene/`-internal
- * callers (parsers, the consensus-table module). Not exported from the package barrel.
- *
- * @param sequence - Validated DNA backing this gene
- * @param exons - Validated, branded exon regions
- * @param introns - Validated, branded intron regions
- * @param name - Optional gene name
- * @param splicingProfile - Optional alternative-splicing profile
- * @returns A new `Gene`
- *
- * @internal
- */
 
 /**
  * Validates an alternative-splicing profile against the gene's exon count.
@@ -203,37 +198,4 @@ function validateSplicingProfile(
   }
 
   return success(undefined);
-}
-
-/**
- * Derives intron regions from a validated exon list.
- *
- * Sorts the exons by `start`, then emits an intron for each adjacent pair where the gap is
- * positive. Naming follows the historical convention (`intron1`, `intron2`, ...).
- *
- * @param exons - Validated, branded exon regions
- * @returns Branded intron regions in gene-coordinate order
- */
-function deriveIntrons(exons: readonly GenomicRegion<GeneCoord>[]): GenomicRegion<GeneCoord>[] {
-  if (exons.length <= 1) {
-    return [];
-  }
-  const sorted = [...exons].sort((a, b) => a.start - b.start);
-  const introns: GenomicRegion<GeneCoord>[] = [];
-  let intronCount = 1;
-  for (let i = 0; i < sorted.length - 1; i++) {
-    const current = sorted[i];
-    const next = sorted[i + 1];
-    if (current === undefined || next === undefined) {
-      continue;
-    }
-    if (current.end < next.start) {
-      introns.push({
-        start: current.end,
-        end: next.start,
-        name: `intron${intronCount++}`,
-      });
-    }
-  }
-  return introns;
 }

@@ -1,18 +1,26 @@
+import { NucleicAcidImpl } from './internal-nucleic-acid-impl.js';
 import { UNSAFE_DNA_KEY } from './internal-keys.js';
+
+const DNA_COMPLEMENT_MAP: Readonly<Record<string, string>> = Object.freeze({
+  A: 'T',
+  T: 'A',
+  C: 'G',
+  G: 'C',
+});
 
 /**
  * A double-helix-strand DNA sequence over the alphabet `{A, C, G, T}`.
  *
  * Instances are immutable: the `sequence` field is `readonly` and every transformation
- * (`getSubsequence`, `getComplement`, `getReverseComplement`) returns a new `DNA`.
+ * (`getSubsequence`, `getComplement`, `getReverseComplement`) returns a new `DNA`. All the
+ * methods (substring / complement / containment / equality) come from the shared
+ * {@link NucleicAcidImpl} base; `DNA` only contributes the alphabet-specific complement table
+ * and a sentinel-gated constructor.
  *
  * Public callers construct instances via {@link parseDNA}; the constructor is gated by a
  * module-private sentinel.
  */
-export class DNA {
-  /** Validated, normalized (upper-case) DNA sequence. */
-  public readonly sequence: string;
-
+export class DNA extends NucleicAcidImpl<DNA> {
   /**
    * Constructs a `DNA`. Module-private; public callers must go through {@link parseDNA}.
    *
@@ -25,140 +33,20 @@ export class DNA {
     if (trustedKey !== UNSAFE_DNA_KEY) {
       throw new Error('DNA must be constructed via parseDNA');
     }
-    this.sequence = sequence;
+    super(sequence, DNA_COMPLEMENT_MAP);
   }
 
   /**
-   * Returns the validated DNA sequence string.
+   * Builds a new `DNA` over a pre-validated sequence. Implements the base class's abstract
+   * factory so Self-returning methods (`getSubsequence`, `getComplement`,
+   * `getReverseComplement`) produce a `DNA` without re-running validation.
    *
-   * @returns The DNA sequence, upper-case
-   */
-  getSequence(): string {
-    return this.sequence;
-  }
-
-  /**
-   * Returns the length of this DNA sequence in nucleotides.
+   * @param sequence - Pre-validated, normalized (upper-case) DNA sequence
+   * @returns A new `DNA` over the sequence
    *
-   * @returns Sequence length
+   * @internal
    */
-  length(): number {
-    return this.sequence.length;
+  protected clone(sequence: string): DNA {
+    return new DNA(sequence, UNSAFE_DNA_KEY);
   }
-
-  /**
-   * Returns a new DNA carrying the substring `[start, end)` of this sequence.
-   *
-   * @param start - 0-based start position (inclusive)
-   * @param end - 0-based end position (exclusive); defaults to the end of the sequence
-   * @returns A new DNA over the substring
-   */
-  getSubsequence(start: number, end?: number): DNA {
-    return new DNA(this.sequence.substring(start, end), UNSAFE_DNA_KEY);
-  }
-
-  /**
-   * Returns a new DNA carrying the Watson-Crick complement of this sequence
-   * (A&lt;-&gt;T, C&lt;-&gt;G), preserving order.
-   *
-   * @returns A new DNA over the complement
-   */
-  getComplement(): DNA {
-    return new DNA(complementDNAString(this.sequence), UNSAFE_DNA_KEY);
-  }
-
-  /**
-   * Returns a new DNA carrying the reverse complement of this sequence
-   * (Watson-Crick complement, then reversed). Represents the opposite strand of a duplex.
-   *
-   * @returns A new DNA over the reverse complement
-   */
-  getReverseComplement(): DNA {
-    return new DNA(reverseComplementDNAString(this.sequence), UNSAFE_DNA_KEY);
-  }
-
-  /**
-   * Reports whether this DNA sequence contains a given subsequence.
-   *
-   * @param subsequence - Subsequence to search for
-   * @returns `true` if the subsequence appears anywhere in this sequence
-   */
-  contains(subsequence: DNA): boolean {
-    return this.sequence.includes(subsequence.sequence);
-  }
-
-  /**
-   * Reports whether this DNA sequence starts with a given prefix.
-   *
-   * @param prefix - Prefix to test
-   * @returns `true` if the sequence starts with `prefix`
-   */
-  startsWith(prefix: DNA): boolean {
-    return this.sequence.startsWith(prefix.sequence);
-  }
-
-  /**
-   * Reports whether this DNA sequence ends with a given suffix.
-   *
-   * @param suffix - Suffix to test
-   * @returns `true` if the sequence ends with `suffix`
-   */
-  endsWith(suffix: DNA): boolean {
-    return this.sequence.endsWith(suffix.sequence);
-  }
-
-  /**
-   * Returns the first index of a subsequence in this DNA, or `-1` if not present.
-   *
-   * @param subsequence - Subsequence to search for
-   * @param startPosition - Position to start the search from (default `0`)
-   * @returns Index of the first match, or `-1`
-   */
-  indexOf(subsequence: DNA, startPosition: number = 0): number {
-    return this.sequence.indexOf(subsequence.sequence, startPosition);
-  }
-
-  /**
-   * Reports structural equality with another DNA instance. Two DNAs are equal when their
-   * sequence strings match.
-   *
-   * @param other - The DNA to compare against
-   * @returns `true` if both sequences are identical
-   */
-  equals(other: DNA): boolean {
-    return this.sequence === other.sequence;
-  }
-}
-
-const DNA_COMPLEMENT_MAP: Readonly<Record<string, string>> = Object.freeze({
-  A: 'T',
-  T: 'A',
-  C: 'G',
-  G: 'C',
-});
-
-function complementDNAString(sequence: string): string {
-  let result = '';
-  for (let i = 0; i < sequence.length; i++) {
-    const base = sequence[i];
-    const complement = base === undefined ? undefined : DNA_COMPLEMENT_MAP[base];
-    if (complement === undefined) {
-      throw new Error(`DNA complement encountered invalid base '${base}' at index ${i}`);
-    }
-    result += complement;
-  }
-  return result;
-}
-
-function reverseComplementDNAString(sequence: string): string {
-  let result = '';
-  for (let i = sequence.length - 1; i >= 0; i--) {
-    const base = sequence[i];
-    const complement = base === undefined ? undefined : DNA_COMPLEMENT_MAP[base];
-    if (complement === undefined) {
-      throw new Error(`DNA complement encountered invalid base '${base}' at index ${i}`);
-    }
-    result += complement;
-  }
-  return result;
 }
