@@ -36,6 +36,22 @@ export type TranscriptCoord = number & {
 };
 
 /**
+ * A position measured relative to the start of a mature mRNA (post-splicing and
+ * post-poly-A-cleavage). 0 is the first nucleotide of the mature transcript; the coding region
+ * boundaries on {@link MRNA} live in this space.
+ *
+ * Distinct at the type level from {@link TranscriptCoord} because intron removal and 3'
+ * cleavage shift every downstream index: a `TranscriptCoord` of 120 in the pre-mRNA may
+ * correspond to a `MatureMRNACoord` of 60 (or be absent) in the mature mRNA. No converter is
+ * exported today because no in-tree call site needs to cross the boundary; the brand exists
+ * purely to keep the two spaces from being conflated by accident.
+ */
+export type MatureMRNACoord = number & {
+  /** Type-level brand. Not present at runtime. */
+  readonly __brand: 'MatureMRNACoord';
+};
+
+/**
  * Brands a plain number as a {@link GeneCoord}.
  *
  * The function performs no validation; it is the caller's responsibility to ensure that `n`
@@ -59,6 +75,19 @@ export function geneCoord(n: number): GeneCoord {
  */
 export function transcriptCoord(n: number): TranscriptCoord {
   return n as TranscriptCoord;
+}
+
+/**
+ * Brands a plain number as a {@link MatureMRNACoord}.
+ *
+ * The function performs no validation; it is the caller's responsibility to ensure that `n`
+ * is a meaningful index in mature-mRNA coordinates (post-splicing, post-poly-A-cleavage).
+ *
+ * @param n - The numeric position
+ * @returns `n` with the {@link MatureMRNACoord} brand applied
+ */
+export function mRNACoord(n: number): MatureMRNACoord {
+  return n as MatureMRNACoord;
 }
 
 /**

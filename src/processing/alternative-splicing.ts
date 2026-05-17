@@ -1,6 +1,7 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import { CODON_LENGTH, START_CODON, isStopCodon, transcribeSequence } from '../sequence/index.js';
 import { unsafeDNA } from '../sequence/internal-factories.js';
+import { mRNACoord } from '../coordinates/index.js';
 import type { Gene, SpliceVariant } from '../gene/index.js';
 import type { PreMRNA } from '../transcription/index.js';
 import { unsafeMRNA } from './internal-factories.js';
@@ -124,7 +125,7 @@ export function spliceRNAWithVariant(
   const variantSequence = sourceGene.getVariantSequence(variant);
   const rnaSequence = transcribeSequence(unsafeDNA(variantSequence));
   const length = rnaSequence.sequence.length;
-  return success(unsafeMRNA(rnaSequence, 0, length, true, 0));
+  return success(unsafeMRNA(rnaSequence, mRNACoord(0), mRNACoord(length), true, 0));
 }
 
 /**

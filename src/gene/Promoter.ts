@@ -1,3 +1,4 @@
+import { geneCoord, type GeneCoord } from '../coordinates/index.js';
 import type { PromoterElement } from './PromoterElement.js';
 import { UNSAFE_PROMOTER_KEY } from './internal-keys.js';
 
@@ -22,8 +23,12 @@ export class Promoter {
   /** Promoter elements that comprise this promoter (immutable, in caller-supplied order). */
   public readonly elements: readonly PromoterElement[];
 
-  /** Position of the transcription start site (TSS) in the surrounding sequence, in base pairs. */
-  public readonly transcriptionStartSite: number;
+  /**
+   * Position of the transcription start site (TSS) in gene-relative coordinates. Branded as
+   * {@link GeneCoord} so it cannot be accidentally mixed with transcript-relative or
+   * mature-mRNA-relative positions.
+   */
+  public readonly transcriptionStartSite: GeneCoord;
 
   /** Optional name/identifier for this promoter (e.g. `'beta-globin-promoter'`). */
   public readonly name?: string;
@@ -31,7 +36,7 @@ export class Promoter {
   /**
    * Constructs a `Promoter`. Module-private; public callers must go through `parsePromoter`.
    *
-   * @param transcriptionStartSite - TSS position
+   * @param transcriptionStartSite - Validated, branded gene-coordinate TSS
    * @param elements - Promoter elements (the array is copied and frozen)
    * @param name - Optional identifier
    * @param trustedKey - Sentinel proving the caller is `gene/`-internal
@@ -39,7 +44,7 @@ export class Promoter {
    * @internal
    */
   constructor(
-    transcriptionStartSite: number,
+    transcriptionStartSite: GeneCoord,
     elements: readonly PromoterElement[],
     name: string | undefined,
     trustedKey: typeof UNSAFE_PROMOTER_KEY,
@@ -73,13 +78,14 @@ export class Promoter {
   }
 
   /**
-   * Returns the genomic position of an element (TSS-relative `position` added to the TSS).
+   * Returns the genomic position of an element by composing the TSS with the element's
+   * TSS-relative offset (`element.position`).
    *
    * @param element - The element whose position to compute
-   * @returns The element's position in the same coordinate frame as the TSS
+   * @returns The element's position in gene-relative coordinates
    */
-  getElementPosition(element: PromoterElement): number {
-    return this.transcriptionStartSite + element.position;
+  getElementPosition(element: PromoterElement): GeneCoord {
+    return geneCoord(this.transcriptionStartSite + element.position);
   }
 
   /**

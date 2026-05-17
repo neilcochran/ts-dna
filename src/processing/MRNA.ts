@@ -1,4 +1,5 @@
 import type { RNA } from '../sequence/index.js';
+import type { MatureMRNACoord } from '../coordinates/index.js';
 import { UNSAFE_MRNA_KEY } from './internal-keys.js';
 import { MIN_POLY_A_DETECTION_LENGTH } from './biology.js';
 
@@ -22,11 +23,16 @@ export class MRNA {
 
   /**
    * 0-based inclusive index where the coding sequence begins, relative to {@link sequence}.
+   * Branded as {@link MatureMRNACoord} so it cannot be confused with gene-relative or
+   * transcript-relative positions.
    */
-  public readonly codingStart: number;
+  public readonly codingStart: MatureMRNACoord;
 
-  /** 0-based exclusive index where the coding sequence ends, relative to {@link sequence}. */
-  public readonly codingEnd: number;
+  /**
+   * 0-based exclusive index where the coding sequence ends, relative to {@link sequence}.
+   * Branded as {@link MatureMRNACoord}; see {@link codingStart}.
+   */
+  public readonly codingEnd: MatureMRNACoord;
 
   /**
    * The substring `[codingStart, codingEnd)` of {@link sequence}. Computed once at
@@ -56,8 +62,8 @@ export class MRNA {
    */
   constructor(
     sequence: RNA,
-    codingStart: number,
-    codingEnd: number,
+    codingStart: MatureMRNACoord,
+    codingEnd: MatureMRNACoord,
     fivePrimeCap: boolean,
     polyATailLength: number,
     trustedKey: typeof UNSAFE_MRNA_KEY,

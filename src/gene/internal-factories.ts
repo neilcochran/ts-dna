@@ -51,7 +51,7 @@ export function unsafeGene(
  * Constructs a {@link Promoter} without re-running validation. Reserved for `gene/`-internal
  * callers.
  *
- * @param transcriptionStartSite - Validated TSS position
+ * @param transcriptionStartSite - Validated, branded gene-coordinate TSS
  * @param elements - Validated promoter elements
  * @param name - Optional promoter name
  * @returns A new `Promoter`
@@ -59,7 +59,7 @@ export function unsafeGene(
  * @internal
  */
 export function unsafePromoter(
-  transcriptionStartSite: number,
+  transcriptionStartSite: GeneCoord,
   elements: readonly PromoterElement[],
   name: string | undefined,
 ): Promoter {

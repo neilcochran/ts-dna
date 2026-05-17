@@ -1,5 +1,6 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import { parseRNA } from '../sequence/index.js';
+import { mRNACoord } from '../coordinates/index.js';
 import type { MRNA } from './MRNA.js';
 import { unsafeMRNA } from './internal-factories.js';
 import type { ProcessingError } from './errors.js';
@@ -74,5 +75,7 @@ export function parseMRNA(
     });
   }
 
-  return success(unsafeMRNA(rna, codingStart, codingEnd, fivePrimeCap, polyATailLength));
+  return success(
+    unsafeMRNA(rna, mRNACoord(codingStart), mRNACoord(codingEnd), fivePrimeCap, polyATailLength),
+  );
 }

@@ -2,6 +2,7 @@ import { Result, success, failure, isFailure } from '../result/index.js';
 import { unsafeRNA } from '../sequence/internal-factories.js';
 import type { PreMRNA } from '../transcription/index.js';
 import { START_CODON, CODON_LENGTH, isStopCodon } from '../sequence/index.js';
+import { mRNACoord } from '../coordinates/index.js';
 import { DEFAULT_POLY_A_TAIL_LENGTH } from './biology.js';
 import { DEFAULT_CLEAVAGE_OFFSET } from './scoring.js';
 import type { MRNA } from './MRNA.js';
@@ -130,8 +131,8 @@ export function processRNA(
   return success(
     unsafeMRNA(
       unsafeRNA(finalSequence),
-      codingStart,
-      codingEnd,
+      mRNACoord(codingStart),
+      mRNACoord(codingEnd),
       opts.addFivePrimeCap,
       polyATailLength,
     ),

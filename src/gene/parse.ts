@@ -100,7 +100,7 @@ export function parsePromoter(
   if (!Number.isFinite(transcriptionStartSite) || transcriptionStartSite < 0) {
     return failure({ kind: 'invalid-tss', tss: transcriptionStartSite });
   }
-  return success(unsafePromoter(transcriptionStartSite, elements, name));
+  return success(unsafePromoter(geneCoord(transcriptionStartSite), elements, name));
 }
 
 /**
