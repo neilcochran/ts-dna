@@ -10,8 +10,7 @@ import { DNA, RNA, parseDNA, parseRNA, transcribeSequence } from '../../src/sequ
 import { parseNucleotidePattern } from '../../src/pattern';
 import { at } from '../utils/test-utils';
 import { transcribe } from '../../src/transcription';
-import { processRNA } from '../../src/processing';
-import { parseMRNA } from '../../src/processing';
+import { processRNA, parseMRNA } from '../../src/modifications';
 import { translate } from '../../src/translation';
 import { isSuccess, isFailure } from '../../src/result/Result';
 

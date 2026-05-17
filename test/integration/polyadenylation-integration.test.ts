@@ -6,7 +6,8 @@
 
 import { parseGene } from '../../src/gene';
 import { transcribe } from '../../src/transcription';
-import { processRNA, findPolyadenylationSites } from '../../src/processing';
+import { processRNA } from '../../src/modifications';
+import { findPolyadenylationSites } from '../../src/polyadenylation';
 import { isSuccess } from '../../src/result/Result';
 import { at } from '../utils/test-utils';
 

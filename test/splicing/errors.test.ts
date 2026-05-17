@@ -1,11 +1,4 @@
-import {
-  describeProcessingError,
-  describeSplicingError,
-  describePolyadenylationError,
-  type ProcessingError,
-  type SplicingError,
-  type PolyadenylationError,
-} from '../../src/processing';
+import { describeSplicingError, type SplicingError } from '../../src/splicing';
 
 describe('describeSplicingError', () => {
   const cases: { error: SplicingError; expected: RegExp }[] = [
@@ -80,62 +73,6 @@ describe('describeSplicingError', () => {
   for (const { error, expected } of cases) {
     test(`renders ${error.kind}`, () => {
       expect(describeSplicingError(error)).toMatch(expected);
-    });
-  }
-});
-
-describe('describePolyadenylationError', () => {
-  const cases: { error: PolyadenylationError; expected: RegExp }[] = [
-    {
-      error: { kind: 'invalid-cleavage-site', cleavageSite: -1 },
-      expected: /Invalid cleavage site -1/,
-    },
-    {
-      error: { kind: 'invalid-tail-length', tailLength: 999_999, max: 1000 },
-      expected: /Invalid poly-A tail length 999999.*between 0 and 1000/,
-    },
-  ];
-
-  for (const { error, expected } of cases) {
-    test(`renders ${error.kind}`, () => {
-      expect(describePolyadenylationError(error)).toMatch(expected);
-    });
-  }
-});
-
-describe('describeProcessingError', () => {
-  const cases: { error: ProcessingError; expected: RegExp }[] = [
-    {
-      error: {
-        kind: 'invalid-sequence',
-        cause: { kind: 'empty-sequence' },
-      },
-      expected: /Invalid mRNA sequence/,
-    },
-    {
-      error: {
-        kind: 'invalid-coding-boundaries',
-        codingStart: -1,
-        codingEnd: 5,
-        sequenceLength: 10,
-      },
-      expected: /Invalid coding-sequence boundaries.*start=-1.*end=5.*length=10/,
-    },
-    {
-      error: { kind: 'invalid-polya-tail-length', polyATailLength: 50, sequenceLength: 30 },
-      expected: /Invalid poly-A tail length 50.*length \(30\)/,
-    },
-    {
-      error: { kind: 'splicing-failed', cause: { kind: 'no-exons' } },
-      expected: /Splicing failed.*no exons/i,
-    },
-    { error: { kind: 'no-start-codon' }, expected: /No start codon/ },
-    { error: { kind: 'no-in-frame-stop' }, expected: /No in-frame stop codon/ },
-  ];
-
-  for (const { error, expected } of cases) {
-    test(`renders ${error.kind}`, () => {
-      expect(describeProcessingError(error)).toMatch(expected);
     });
   }
 });

@@ -6,11 +6,11 @@ import {
   has3PrimePolyATail,
   get3PrimePolyATailLength,
   getCoreSequence,
-  parseMRNA,
   DEFAULT_POLY_A_TAIL_LENGTH,
   MAX_POLY_A_TAIL_LENGTH,
   type PolyadenylationSite,
-} from '../../src/processing';
+} from '../../src/polyadenylation';
+import { parseMRNA } from '../../src/modifications';
 import { isSuccess, isFailure } from '../../src/result';
 
 function rna(sequence: string): RNA {

@@ -1,7 +1,7 @@
 import type { RNA } from '../sequence/index.js';
 import type { MatureMRNACoord } from '../coordinates/index.js';
 import { UNSAFE_MRNA_KEY } from './internal-keys.js';
-import { MIN_POLY_A_DETECTION_LENGTH } from './biology.js';
+import { MIN_POLY_A_DETECTION_LENGTH } from '../polyadenylation/biology.js';
 
 /**
  * Mature mRNA: a validated {@link RNA} sequence together with coding-region boundaries, a
@@ -56,7 +56,7 @@ export class MRNA {
    * @param codingEnd - Validated coding-sequence end (0-based exclusive)
    * @param fivePrimeCap - Whether the mRNA carries a 5' cap
    * @param polyATailLength - Length of the 3' poly-A tail (0 means no tail)
-   * @param trustedKey - Sentinel proving the caller is `processing/`-internal
+   * @param trustedKey - Sentinel proving the caller is `modifications/`-internal
    *
    * @internal
    */

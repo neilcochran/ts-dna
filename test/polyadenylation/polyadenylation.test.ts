@@ -5,7 +5,7 @@ import {
   filterPolyadenylationSites,
   DEFAULT_CLEAVAGE_OPTIONS,
   POLYA_SIGNAL_OFFSET,
-} from '../../src/processing';
+} from '../../src/polyadenylation';
 import { at } from '../utils/test-utils';
 
 function rna(sequence: string): RNA {

@@ -1,5 +1,5 @@
 import { translate } from '../../src/translation';
-import { parseMRNA } from '../../src/processing';
+import { parseMRNA } from '../../src/modifications';
 import { isSuccess, isFailure } from '../../src/result';
 import { STOP_CODONS } from '../../src/sequence';
 import {

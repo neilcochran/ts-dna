@@ -4,8 +4,8 @@ import { unsafeDNA } from '../sequence/internal-factories.js';
 import { mRNACoord } from '../coordinates/index.js';
 import type { Gene } from '../gene/index.js';
 import type { PreMRNA } from '../transcription/index.js';
-import { unsafeMRNA } from './internal-factories.js';
-import type { MRNA } from './MRNA.js';
+import { unsafeMRNA } from '../modifications/internal-factories.js';
+import type { MRNA } from '../modifications/MRNA.js';
 import { SplicingOutcome } from './splicing-outcome.js';
 import {
   validateSpliceVariant,

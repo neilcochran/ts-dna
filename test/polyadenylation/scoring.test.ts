@@ -6,7 +6,7 @@ import {
   DSE_ELEMENT_MAX_BOOST,
   MIN_POLY_A_DETECTION_LENGTH,
   POLYA_SIGNALS,
-} from '../../src/processing';
+} from '../../src/polyadenylation';
 
 /**
  * Validates the tunable scoring heuristics. These thresholds shift which polyadenylation

@@ -1,6 +1,6 @@
 import { Result, success, failure } from '../result/index.js';
 import { CODON_LENGTH, isStopCodon } from '../sequence/index.js';
-import type { MRNA } from '../processing/index.js';
+import type { MRNA } from '../modifications/index.js';
 import type { AminoAcid } from './AminoAcid.js';
 import { AMINO_ACID_BY_CODON } from './amino-acids.js';
 import { unsafeAminoAcidFromString, unsafePolypeptide } from './internal-factories.js';

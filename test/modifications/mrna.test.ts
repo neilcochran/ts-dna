@@ -1,4 +1,4 @@
-import { parseMRNA, MRNA } from '../../src/processing';
+import { parseMRNA, MRNA } from '../../src/modifications';
 import { isSuccess, isFailure } from '../../src/result';
 
 describe('MRNA', () => {

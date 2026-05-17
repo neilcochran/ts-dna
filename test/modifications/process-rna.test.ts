@@ -1,9 +1,9 @@
 import {
   processRNA,
   DEFAULT_RNA_PROCESSING_OPTIONS,
-  DEFAULT_POLY_A_TAIL_LENGTH,
   type RNAProcessingOptions,
-} from '../../src/processing';
+} from '../../src/modifications';
+import { DEFAULT_POLY_A_TAIL_LENGTH } from '../../src/polyadenylation';
 import { parseGene } from '../../src/gene';
 import { parsePreMRNA } from '../../src/transcription';
 import { isSuccess, isFailure } from '../../src/result';

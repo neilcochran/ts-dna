@@ -1,7 +1,7 @@
 /**
- * Module-private trusted constructor for {@link MRNA}. Reserved for `processing/`-internal
- * callers (the {@link parseMRNA} parser, the `processRNA` pipeline, splice-variant
- * processors). Not re-exported from `src/processing/index.ts`.
+ * Module-private trusted constructor for {@link MRNA}. Reserved for `modifications/`-internal
+ * callers (the {@link parseMRNA} parser, the `processRNA` pipeline) and the splice-variant
+ * processors inside `splicing/`. Not re-exported from `src/modifications/index.ts`.
  *
  * @internal
  */

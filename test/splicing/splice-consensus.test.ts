@@ -1,4 +1,4 @@
-import { SPLICE_CONSENSUS } from '../../src/processing';
+import { SPLICE_CONSENSUS } from '../../src/splicing';
 
 describe('SPLICE_CONSENSUS', () => {
   test('DNA-strand donor is GT', () => {

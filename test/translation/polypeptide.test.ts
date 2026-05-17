@@ -1,6 +1,6 @@
 import { translate } from '../../src/translation';
 import type { Polypeptide } from '../../src/translation';
-import { parseMRNA } from '../../src/processing';
+import { parseMRNA } from '../../src/modifications';
 import {
   MRNA_ALL_AMINO_ACIDS_1,
   ALL_AMINO_ACIDS_SINGLE_LETTER_CODE_SEQ,

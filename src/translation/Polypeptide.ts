@@ -1,4 +1,4 @@
-import type { MRNA } from '../processing/index.js';
+import type { MRNA } from '../modifications/index.js';
 import type { AminoAcid } from './AminoAcid.js';
 import { UNSAFE_POLYPEPTIDE_KEY } from './internal-keys.js';
 

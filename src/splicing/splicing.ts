@@ -1,7 +1,7 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import type { RNA } from '../sequence/index.js';
 import { unsafeRNA } from '../sequence/internal-factories.js';
-import { PreMRNA } from '../transcription/index.js';
+import type { PreMRNA } from '../transcription/index.js';
 import { SPLICE_CONSENSUS } from './splice-consensus.js';
 import type { SplicingError } from './errors.js';
 

@@ -1,5 +1,5 @@
 /**
- * Fundamental biology of RNA processing - the constants that describe what cells actually
+ * Fundamental biology of polyadenylation - the constants that describe what cells actually
  * do. These values should not change without a corresponding change in biological
  * understanding. For tunable algorithm parameters (USE / DSE scoring weights, thresholds,
  * search cutoffs), see `scoring.ts`.
@@ -41,9 +41,6 @@ export const POLYA_SIGNALS = {
   AAAAAG: 12,
   AAAACA: 10,
 } as const;
-
-/** Minimum intron length permitting GT-AG recognition by the spliceosome. */
-export const MIN_INTRON_LENGTH_FOR_SPLICING = 4;
 
 /** Default ordered list of polyadenylation signals scanned during analysis. */
 export const DEFAULT_POLYA_SIGNALS = ['AAUAAA', 'AUUAAA', 'AGUAAA', 'AAUAUA', 'AAUACA'] as const;

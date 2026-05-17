@@ -3,7 +3,7 @@ import { parseRNA } from '../sequence/index.js';
 import { mRNACoord } from '../coordinates/index.js';
 import type { MRNA } from './MRNA.js';
 import { unsafeMRNA } from './internal-factories.js';
-import type { ProcessingError } from './errors.js';
+import type { MRNAError } from './errors.js';
 
 /**
  * Reconstructs an {@link MRNA} from saved data.
@@ -24,7 +24,7 @@ import type { ProcessingError } from './errors.js';
  * @param codingEnd - 0-based exclusive index where the coding sequence ends
  * @param fivePrimeCap - Whether the mRNA carries a 5' cap (default `true`)
  * @param polyATailLength - Length of the 3' poly-A tail in nucleotides (default `0`)
- * @returns `Result<MRNA, ProcessingError>`
+ * @returns `Result<MRNA, MRNAError>`
  *
  * @example
  * ```typescript
@@ -40,7 +40,7 @@ export function parseMRNA(
   codingEnd: number,
   fivePrimeCap: boolean = true,
   polyATailLength: number = 0,
-): Result<MRNA, ProcessingError> {
+): Result<MRNA, MRNAError> {
   const rnaResult = parseRNA(sequence);
   if (isFailure(rnaResult)) {
     return failure({ kind: 'invalid-sequence', cause: rnaResult.error });

@@ -1,6 +1,6 @@
 import { parseDNA, parseRNA } from '../../src/sequence';
 import { AminoAcid } from '../../src/translation';
-import { parseMRNA } from '../../src/processing';
+import { parseMRNA } from '../../src/modifications';
 
 /**
  * Indexed access helper for test code. With `noUncheckedIndexedAccess` enabled, `arr[i]` /

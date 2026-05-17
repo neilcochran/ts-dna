@@ -11,7 +11,7 @@
 import { parseGene } from '../../src/gene';
 import { translate } from '../../src/translation';
 import { transcribe } from '../../src/transcription';
-import { processRNA } from '../../src/processing';
+import { processRNA } from '../../src/modifications';
 import { isSuccess, isFailure } from '../../src/result/Result';
 
 describe('Gene Expression Pipeline Integration', () => {

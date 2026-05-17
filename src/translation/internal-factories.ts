@@ -8,7 +8,7 @@
 
 import { unsafeRNA } from '../sequence/internal-factories.js';
 import type { RNA } from '../sequence/index.js';
-import type { MRNA } from '../processing/index.js';
+import type { MRNA } from '../modifications/index.js';
 import { AminoAcid } from './AminoAcid.js';
 import type { AminoAcidData } from './AminoAcidData.js';
 import { Polypeptide } from './Polypeptide.js';

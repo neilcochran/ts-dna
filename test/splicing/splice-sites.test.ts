@@ -2,7 +2,7 @@ import {
   validateSpliceSites,
   findPotentialSpliceSites,
   SPLICE_CONSENSUS,
-} from '../../src/processing';
+} from '../../src/splicing';
 import { isSuccess, isFailure } from '../../src/result';
 import { GenomicRegion } from '../../src/coordinates';
 import { at } from '../utils/test-utils';

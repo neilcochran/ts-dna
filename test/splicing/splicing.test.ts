@@ -1,4 +1,4 @@
-import { spliceRNA } from '../../src/processing';
+import { spliceRNA } from '../../src/splicing';
 import { parsePreMRNA } from '../../src/transcription';
 import { parseGene } from '../../src/gene';
 import { isSuccess, isFailure } from '../../src/result';

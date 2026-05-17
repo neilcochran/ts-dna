@@ -3,22 +3,19 @@ import {
   MIN_POLY_A_DETECTION_LENGTH,
   MAX_POLY_A_TAIL_LENGTH,
   POLYA_SIGNALS,
-  MIN_INTRON_LENGTH_FOR_SPLICING,
   POLYA_SIGNAL_OFFSET,
   CANONICAL_POLYA_SIGNAL_DNA,
-} from '../../src/processing';
-import { MIN_INTRON_SIZE } from '../../src/gene';
+} from '../../src/polyadenylation';
 
 /**
- * Validates RNA-processing biological constants against known scientific literature.
+ * Validates polyadenylation biological constants against known scientific literature.
  *
  * References:
  * - Weill et al. (2012) Genome Research, "Translational control by changes in poly(A) tail length"
  * - Beaudoing et al. (2000) Genome Research, "Patterns of variant polyadenylation signal usage"
  * - Tian et al. (2005) Nucleic Acids Research, "A large-scale analysis of mRNA polyadenylation"
- * - Sheth et al. (2006) Science, "Comprehensive splice-site analysis using comparative genomics"
  */
-describe('Processing biology constants', () => {
+describe('Polyadenylation biology constants', () => {
   describe('Poly-A tail behaviour', () => {
     test('DEFAULT_POLY_A_TAIL_LENGTH matches mammalian mRNA', () => {
       expect(DEFAULT_POLY_A_TAIL_LENGTH).toBe(200);
@@ -70,13 +67,6 @@ describe('Processing biology constants', () => {
     test('POLYA_SIGNAL_OFFSET is the typical cleavage offset', () => {
       expect(POLYA_SIGNAL_OFFSET).toBe(6);
       expect(POLYA_SIGNAL_OFFSET).toBeGreaterThan(0);
-    });
-  });
-
-  describe('Splicing', () => {
-    test('MIN_INTRON_LENGTH_FOR_SPLICING permits GT-AG recognition', () => {
-      expect(MIN_INTRON_LENGTH_FOR_SPLICING).toBe(4);
-      expect(MIN_INTRON_LENGTH_FOR_SPLICING).toBeLessThanOrEqual(MIN_INTRON_SIZE);
     });
   });
 });

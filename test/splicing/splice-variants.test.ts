@@ -4,7 +4,8 @@ import {
   minimalVariant,
   fullLengthVariant,
 } from '../../src/variants';
-import { SplicingOutcome, parseMRNA } from '../../src/processing';
+import { SplicingOutcome } from '../../src/splicing';
+import { parseMRNA } from '../../src/modifications';
 
 describe('splice variant pattern free functions', () => {
   describe('exonSkippingVariant', () => {

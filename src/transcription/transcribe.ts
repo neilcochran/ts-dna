@@ -18,7 +18,7 @@ import {
   DEFAULT_DOWNSTREAM_SEARCH_DISTANCE,
   DEFAULT_MIN_PROMOTER_STRENGTH,
 } from './biological-constants.js';
-import { POLYA_SIGNAL_OFFSET, CANONICAL_POLYA_SIGNAL_DNA } from '../processing/biology.js';
+import { POLYA_SIGNAL_OFFSET, CANONICAL_POLYA_SIGNAL_DNA } from '../polyadenylation/biology.js';
 
 /**
  * Configuration options for {@link transcribe}.
