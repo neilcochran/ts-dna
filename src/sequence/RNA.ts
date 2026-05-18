@@ -1,5 +1,12 @@
 import { NucleicAcidImpl } from './internal-nucleic-acid-impl.js';
-import { UNSAFE_RNA_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link RNA} constructor. Not re-exported from
+ * the package barrel; only files inside `src/` reach it via {@link unsafeRNA}.
+ *
+ * @internal
+ */
+const UNSAFE_RNA_KEY: unique symbol = Symbol('unsafe-rna');
 
 const RNA_COMPLEMENT_MAP: Readonly<Record<string, string>> = Object.freeze({
   A: 'U',
@@ -49,4 +56,18 @@ export class RNA extends NucleicAcidImpl<RNA> {
   protected clone(sequence: string): RNA {
     return new RNA(sequence, UNSAFE_RNA_KEY);
   }
+}
+
+/**
+ * Constructs an {@link RNA} without re-validating the input. Reserved for in-tree callers
+ * that already know the input is well-formed (e.g. after slicing a validated RNA, after
+ * computing a complement). Package consumers must use {@link parseRNA} instead.
+ *
+ * @param sequence - A pre-validated, normalized (upper-case) RNA sequence
+ * @returns A new `RNA` wrapping the sequence with no validation
+ *
+ * @internal
+ */
+export function unsafeRNA(sequence: string): RNA {
+  return new RNA(sequence, UNSAFE_RNA_KEY);
 }

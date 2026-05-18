@@ -1,5 +1,13 @@
 import { DNA } from './DNA.js';
-import { UNSAFE_DSDNA_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link DoubleStrandedDNA} constructor. Not
+ * re-exported from the package barrel; only files inside `src/` reach it via
+ * {@link unsafeDoubleStrandedDNA}.
+ *
+ * @internal
+ */
+const UNSAFE_DSDNA_KEY: unique symbol = Symbol('unsafe-dsdna');
 
 /**
  * An immutable double-stranded DNA duplex modeled as a pair of complementary {@link DNA}
@@ -40,7 +48,7 @@ export class DoubleStrandedDNA {
    * `forward.getReverseComplement()`
    * @param trustedKey - Sequence-internal construction key. Module-private; public callers
    * must not pass this. When supplied with the matching key, the pair is stored verbatim with
-   * no complementarity validation. See {@link UNSAFE_DSDNA_KEY}.
+   * no complementarity validation.
    *
    * @throws Error if `trustedKey` is missing or does not match the sentinel
    */
@@ -76,4 +84,19 @@ export class DoubleStrandedDNA {
       this.reverse.sequence === other.reverse.sequence
     );
   }
+}
+
+/**
+ * Constructs a {@link DoubleStrandedDNA} without re-validating the pair. Reserved for
+ * in-tree callers that already know the two strands form a duplex. Package consumers must
+ * use {@link parseDoubleStrandedDNA} or `doubleStrandedDNA` instead.
+ *
+ * @param forward - Pre-validated forward strand
+ * @param reverse - Pre-validated reverse strand, complementary to `forward`
+ * @returns A new `DoubleStrandedDNA` with no validation
+ *
+ * @internal
+ */
+export function unsafeDoubleStrandedDNA(forward: DNA, reverse: DNA): DoubleStrandedDNA {
+  return new DoubleStrandedDNA(forward, reverse, UNSAFE_DSDNA_KEY);
 }

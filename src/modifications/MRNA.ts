@@ -1,7 +1,14 @@
 import type { RNA } from '../sequence/index.js';
 import type { MatureMRNACoord } from '../coordinates/index.js';
-import { UNSAFE_MRNA_KEY } from './internal-keys.js';
 import { MIN_POLY_A_DETECTION_LENGTH } from '../polyadenylation/biology.js';
+
+/**
+ * Module-private construction key gating the {@link MRNA} constructor. Not re-exported from
+ * the package barrel; in-tree callers reach it via {@link unsafeMRNA}.
+ *
+ * @internal
+ */
+const UNSAFE_MRNA_KEY: unique symbol = Symbol('unsafe-mrna');
 
 /**
  * Mature mRNA: a validated {@link RNA} sequence together with coding-region boundaries, a
@@ -175,4 +182,26 @@ export class MRNA {
     const capStr = this.fivePrimeCap ? ', capped' : '';
     return `MRNA(${this.sequence.sequence.length}nt, CDS ${this.codingStart}-${this.codingEnd}, polyA ${this.polyATailLength}${capStr})`;
   }
+}
+
+/**
+ * Constructs an {@link MRNA} without re-running validation.
+ *
+ * @param sequence - Validated RNA sequence
+ * @param codingStart - Validated, branded coding-sequence start (0-based inclusive)
+ * @param codingEnd - Validated, branded coding-sequence end (0-based exclusive)
+ * @param fivePrimeCap - 5'-cap flag
+ * @param polyATailLength - Poly-A tail length in nucleotides
+ * @returns A new `MRNA`
+ *
+ * @internal
+ */
+export function unsafeMRNA(
+  sequence: RNA,
+  codingStart: MatureMRNACoord,
+  codingEnd: MatureMRNACoord,
+  fivePrimeCap: boolean,
+  polyATailLength: number,
+): MRNA {
+  return new MRNA(sequence, codingStart, codingEnd, fivePrimeCap, polyATailLength, UNSAFE_MRNA_KEY);
 }

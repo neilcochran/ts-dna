@@ -4,6 +4,8 @@ import { assertUnreachable } from '../result/index.js';
  * Error variants produced by {@link validateSpliceVariant}: the per-variant rule checks
  * applied against a source gene's exon structure.
  *
+ * - `variant-no-included-exons`: a splice variant includes no exons at all.
+ * - `variant-duplicate-exon-indices`: a splice variant repeats one or more exon indices.
  * - `variant-invalid-exon-index`: a splice variant references an exon index outside the
  *   gene.
  * - `variant-skips-first-exon`: a splice variant excludes exon 0 when not permitted.
@@ -14,6 +16,20 @@ import { assertUnreachable } from '../result/index.js';
  * - `variant-missing-stop-codon`: a splice variant's last codon is not a stop codon.
  */
 export type VariantValidationError =
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'variant-no-included-exons';
+      /** Name of the offending splice variant. */
+      readonly variantName: string;
+    }
+  | {
+      /** Discriminator naming the failure mode. */
+      readonly kind: 'variant-duplicate-exon-indices';
+      /** Name of the offending splice variant. */
+      readonly variantName: string;
+      /** Distinct duplicate indices found in the variant (preserving first-seen order). */
+      readonly duplicateIndices: readonly number[];
+    }
   | {
       /** Discriminator naming the failure mode. */
       readonly kind: 'variant-invalid-exon-index';
@@ -79,6 +95,10 @@ export type VariantValidationError =
  */
 export function describeVariantValidationError(error: VariantValidationError): string {
   switch (error.kind) {
+    case 'variant-no-included-exons':
+      return `Variant '${error.variantName}' must include at least one exon`;
+    case 'variant-duplicate-exon-indices':
+      return `Variant '${error.variantName}' contains duplicate exon indices: ${error.duplicateIndices.join(', ')}`;
     case 'variant-invalid-exon-index':
       return `Variant '${error.variantName}' references invalid exon index ${error.exonIndex}. Gene has ${error.totalExons} exons.`;
     case 'variant-skips-first-exon':

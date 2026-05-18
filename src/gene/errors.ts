@@ -9,14 +9,17 @@
 
 import type { DNAError } from '../sequence/index.js';
 import { describeDNAError } from '../sequence/index.js';
+import type { VariantValidationError } from '../variants/errors.js';
+import { describeVariantValidationError } from '../variants/errors.js';
 import { assertUnreachable } from '../result/index.js';
 
 /**
  * Error variants produced by `parseGene` and the validators it composes.
  *
  * Covers DNA-sequence failures (`invalid-sequence`), the exon-structure rules enforced by
- * `validateExons` (`no-exons` through `intron-too-large`), and splicing-profile checks
- * (`invalid-splicing-profile`).
+ * `validateExons` (`no-exons` through `intron-too-large`), profile-level splicing checks
+ * (`invalid-splicing-profile`), and per-variant splicing checks (`invalid-variant`, which
+ * carries the structured {@link VariantValidationError} produced by `validateSpliceVariant`).
  */
 export type GeneError =
   | {
@@ -100,8 +103,19 @@ export type GeneError =
   | {
       /** Discriminator naming the failure mode. */
       readonly kind: 'invalid-splicing-profile';
-      /** Free-form reason describing what the splicing-profile validator rejected. */
+      /** Free-form reason describing what the profile-level validator rejected. */
       readonly reason: string;
+    }
+  | {
+      /**
+       * Discriminator naming the failure mode. Fires when a per-variant rule (index range,
+       * first/last exon presence, reading frame, codons, etc.) rejects one of the profile's
+       * variants. The structured cause is the {@link VariantValidationError} produced by
+       * `validateSpliceVariant`.
+       */
+      readonly kind: 'invalid-variant';
+      /** Underlying per-variant validation failure. */
+      readonly cause: VariantValidationError;
     };
 
 /**
@@ -169,6 +183,8 @@ export function describeGeneError(error: GeneError): string {
       return `Intron ${error.intronIndex} is unrealistically large: ${error.length} bp (maximum ${error.max} bp)`;
     case 'invalid-splicing-profile':
       return error.reason;
+    case 'invalid-variant':
+      return describeVariantValidationError(error.cause);
     default:
       return assertUnreachable(error);
   }

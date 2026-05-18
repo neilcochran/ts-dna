@@ -7,7 +7,7 @@
  * work uniformly across coordinate spaces.
  */
 
-import { Result, success, failure, assertUnreachable } from '../result/index.js';
+import { Result, success, failure, assertUnreachable, at } from '../result/index.js';
 
 /**
  * A region within a sequence, expressed in 0-based half-open coordinates `[start, end)`.
@@ -151,11 +151,8 @@ export function deriveIntronsFromExons<C extends number>(
   const sorted = [...exons].sort((a, b) => a.start - b.start);
   const introns: GenomicRegion<C>[] = [];
   for (let i = 0; i < sorted.length - 1; i++) {
-    const current = sorted[i];
-    const next = sorted[i + 1];
-    if (current === undefined || next === undefined) {
-      continue;
-    }
+    const current = at(sorted, i);
+    const next = at(sorted, i + 1);
     if (current.end < next.start) {
       introns.push({ start: current.end, end: next.start, name: undefined });
     }
@@ -183,11 +180,8 @@ export function validateNonOverlappingRegions<C extends number>(
   const sorted = [...regions].sort((a, b) => a.start - b.start);
 
   for (let i = 0; i < sorted.length - 1; i++) {
-    const current = sorted[i];
-    const next = sorted[i + 1];
-    if (current === undefined || next === undefined) {
-      continue;
-    }
+    const current = at(sorted, i);
+    const next = at(sorted, i + 1);
     if (current.end > next.start) {
       return false;
     }

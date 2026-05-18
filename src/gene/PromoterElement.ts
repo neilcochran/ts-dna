@@ -1,5 +1,13 @@
 import type { NucleotidePattern } from '../pattern/index.js';
-import { UNSAFE_PROMOTER_ELEMENT_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link PromoterElement} constructor. Not
+ * re-exported from the package barrel; in-tree callers reach it via
+ * {@link unsafePromoterElement}.
+ *
+ * @internal
+ */
+const UNSAFE_PROMOTER_ELEMENT_KEY: unique symbol = Symbol('unsafe-promoter-element');
 
 /**
  * A single regulatory element of a gene promoter.
@@ -86,4 +94,25 @@ export class PromoterElement {
       this.pattern.pattern === other.pattern.pattern
     );
   }
+}
+
+/**
+ * Constructs a {@link PromoterElement} without re-running validation. Reserved for
+ * `gene/`-internal callers (parsers, the consensus-table module).
+ *
+ * @param name - Validated element name
+ * @param pattern - IUPAC nucleotide pattern
+ * @param position - Validated TSS-relative position
+ * @param scoreWeight - Validated score weight
+ * @returns A new `PromoterElement`
+ *
+ * @internal
+ */
+export function unsafePromoterElement(
+  name: string,
+  pattern: NucleotidePattern,
+  position: number,
+  scoreWeight: number,
+): PromoterElement {
+  return new PromoterElement(name, pattern, position, scoreWeight, UNSAFE_PROMOTER_ELEMENT_KEY);
 }

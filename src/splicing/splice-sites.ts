@@ -1,4 +1,4 @@
-import { Result, success, failure } from '../result/index.js';
+import { Result, success, failure, at } from '../result/index.js';
 import type { GenomicRegion } from '../coordinates/index.js';
 import { MIN_INTRON_LENGTH_FOR_SPLICING } from './biology.js';
 import { DEFAULT_MAX_INTRON_SEARCH } from '../gene/biological-constants.js';
@@ -11,10 +11,9 @@ import type { SplicingError } from './errors.js';
  * Operates on DNA-side coordinates (T, not U). The matching transcript-coordinate validator
  * used internally by `spliceRNA` enforces the equivalent `GU...AG` rule on the RNA strand.
  *
- * The result carries the first failing splice-site rule (donor, acceptor, or length).
- * Returning a `Result` lets `processing/`-internal callers compose this with the other
- * tagged-union failure paths cleanly; previously this returned a bespoke
- * `{ isValid, invalidIntrons }` shape that callers had to translate every time.
+ * The result carries the first failing splice-site rule (donor, acceptor, or length), so
+ * callers can compose this validator with the other tagged-union failure paths in the
+ * splicing pipeline.
  *
  * @param sequence - The complete DNA sequence the introns are addressed against
  * @param introns - Intron regions to validate
@@ -26,10 +25,7 @@ export function validateSpliceSites(
   introns: readonly GenomicRegion[],
 ): Result<void, SplicingError> {
   for (let i = 0; i < introns.length; i++) {
-    const intron = introns[i];
-    if (intron === undefined) {
-      continue;
-    }
+    const intron = at(introns, i);
     const intronSequence = sequence.substring(intron.start, intron.end);
 
     if (intronSequence.length < MIN_INTRON_LENGTH_FOR_SPLICING) {

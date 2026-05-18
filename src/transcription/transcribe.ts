@@ -1,5 +1,6 @@
-import { Result, success, failure, isFailure } from '../result/index.js';
-import { unsafeDNA, unsafeRNA } from '../sequence/internal-factories.js';
+import { Result, success, failure, isFailure, at } from '../result/index.js';
+import { unsafeDNA } from '../sequence/DNA.js';
+import { unsafeRNA } from '../sequence/RNA.js';
 import type { Gene } from '../gene/index.js';
 import {
   geneCoord,
@@ -10,8 +11,7 @@ import {
 } from '../coordinates/index.js';
 import { NucleotidePattern, compileLiteralPattern } from '../pattern/index.js';
 import type { TranscriptionError } from './errors.js';
-import type { PreMRNA } from './PreMRNA.js';
-import { unsafePreMRNA } from './internal-factories.js';
+import { type PreMRNA, unsafePreMRNA } from './PreMRNA.js';
 import { findPromoters, identifyTSS, type PromoterSearchOptions } from './promoter-recognition.js';
 import {
   DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE,
@@ -82,10 +82,6 @@ export function transcribe(
   gene: Gene,
   options: TranscriptionOptions = {},
 ): Result<PreMRNA, TranscriptionError> {
-  if (gene.exons.length === 0) {
-    return failure({ kind: 'gene-has-no-exons' });
-  }
-
   const maxPromoterSearchDistance =
     options.maxPromoterSearchDistance ?? DEFAULT_MAX_PROMOTER_SEARCH_DISTANCE;
   const minPromoterStrength = options.minPromoterStrength ?? DEFAULT_MIN_PROMOTER_STRENGTH;
@@ -184,10 +180,7 @@ function findTranscriptionStartSite(
     });
   }
 
-  const bestPromoter = promoters[0];
-  if (bestPromoter === undefined) {
-    return failure({ kind: 'tss-not-identifiable' });
-  }
+  const bestPromoter = at(promoters, 0);
   const tssPositions = identifyTSS(bestPromoter, searchDNA);
   const firstTss = tssPositions[0];
   if (firstTss === undefined) {

@@ -1,6 +1,5 @@
 import { parseRNAPrimer, RNAPrimer } from '../../src/replication';
 import { unsafeRNAPrimer, unsafeRNAPrimerFromString } from '../../src/replication/RNAPrimer';
-import { UNSAFE_PRIMER_KEY } from '../../src/replication/internal-keys';
 import { parseRNA } from '../../src/sequence';
 import { isFailure, isSuccess } from '../../src/result/Result';
 
@@ -106,10 +105,6 @@ describe('RNAPrimer', () => {
       const primer = unsafeRNAPrimerFromString('AUCG', 12);
       expect(primer.sequence.sequence).toBe('AUCG');
       expect(primer.position).toBe(12);
-    });
-
-    test('UNSAFE_PRIMER_KEY is a unique symbol', () => {
-      expect(typeof UNSAFE_PRIMER_KEY).toBe('symbol');
     });
   });
 });

@@ -1,6 +1,6 @@
 import { Result, success, failure } from '../result/index.js';
 import { CODON_LENGTH, START_CODON, isStopCodon, transcribeSequence } from '../sequence/index.js';
-import { unsafeDNA } from '../sequence/internal-factories.js';
+import { unsafeDNA } from '../sequence/DNA.js';
 import type { Gene } from '../gene/Gene.js';
 import type { SpliceVariant, AlternativeSplicingOptions } from './splice-variant.js';
 import { DEFAULT_ALTERNATIVE_SPLICING_OPTIONS } from './splice-variant.js';
@@ -10,8 +10,13 @@ import type { VariantValidationError } from './errors.js';
  * Validates a splice variant against a gene's exon structure and the supplied
  * {@link AlternativeSplicingOptions}.
  *
- * Checks performed (in order): exon-index range, first-exon presence, last-exon presence,
- * minimum-exon count, reading-frame divisibility, start/stop codons.
+ * Checks performed (in order): empty-inclusion-list, duplicate exon indices, exon-index
+ * range, first-exon presence, last-exon presence, minimum-exon count, reading-frame
+ * divisibility, start/stop codons.
+ *
+ * This validator is the single canonical home for per-variant rules. Both
+ * `gene/parse.ts`'s splicing-profile validator and `splicing/alternative-splicing.ts`'s
+ * enumerator delegate the per-variant checks here so the rules stay in one place.
  *
  * @param variant - The splice variant to validate
  * @param gene - The source gene
@@ -26,6 +31,29 @@ export function validateSpliceVariant(
 ): Result<void, VariantValidationError> {
   const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
   const totalExons = gene.exons.length;
+
+  if (variant.includedExons.length === 0) {
+    return failure({ kind: 'variant-no-included-exons', variantName: variant.name });
+  }
+
+  const seen = new Set<number>();
+  const duplicates: number[] = [];
+  for (const exonIndex of variant.includedExons) {
+    if (seen.has(exonIndex)) {
+      if (!duplicates.includes(exonIndex)) {
+        duplicates.push(exonIndex);
+      }
+    } else {
+      seen.add(exonIndex);
+    }
+  }
+  if (duplicates.length > 0) {
+    return failure({
+      kind: 'variant-duplicate-exon-indices',
+      variantName: variant.name,
+      duplicateIndices: duplicates,
+    });
+  }
 
   for (const exonIndex of variant.includedExons) {
     if (exonIndex < 0 || exonIndex >= totalExons) {

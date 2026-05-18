@@ -47,6 +47,35 @@ export type RNAError =
     };
 
 /**
+ * Error variants raised by `parseCodon` when an {@link RNA} is not codon-length.
+ *
+ * Returned in the failure branch of `Result<Codon, CodonError>`.
+ */
+export type CodonError = {
+  /** Discriminator naming the failure mode. */
+  readonly kind: 'wrong-codon-length';
+  /** The length of the RNA the caller supplied. */
+  readonly length: number;
+  /** The required length (always `CODON_LENGTH` = 3 for the standard genetic code). */
+  readonly expected: number;
+};
+
+/**
+ * Renders a {@link CodonError} as a human-readable message.
+ *
+ * @param error - The structured error payload
+ * @returns A short human-readable description, suitable for logs or developer-facing messages
+ */
+export function describeCodonError(error: CodonError): string {
+  switch (error.kind) {
+    case 'wrong-codon-length':
+      return `Codon must be ${error.expected} nucleotides; received ${error.length}`;
+    default:
+      return assertUnreachable(error.kind);
+  }
+}
+
+/**
  * Error variants raised by `validateReadingFrame`.
  *
  * The `kind: 'frame-misaligned'` variant fires when the coding-region length is not a

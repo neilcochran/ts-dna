@@ -3,9 +3,9 @@
  * duplex, parsers, complement helpers, sequence-level transcription / reverse-transcription,
  * and codon primitives.
  *
- * The module-private `unsafeDNA` / `unsafeRNA` / `unsafeDoubleStrandedDNA` factories and the
- * `UNSAFE_*_KEY` symbols are deliberately excluded from this barrel. Other code under `src/`
- * may import them from `./parse.js` / `./internal-keys.js` when it can prove the input is
+ * The module-private `unsafeDNA` / `unsafeRNA` / `unsafeDoubleStrandedDNA` factories are
+ * deliberately excluded from this barrel. Other code under `src/` may import them from
+ * `./DNA.js` / `./RNA.js` / `./DoubleStrandedDNA.js` when it can prove the input is
  * well-formed; package consumers cannot reach them.
  */
 export { DNA } from './DNA.js';
@@ -20,12 +20,20 @@ export {
   STOP_CODONS,
   isStopCodon,
   validateReadingFrame,
+  parseCodon,
 } from './codons.js';
-export type { StopCodon } from './codons.js';
-export type { DNAError, RNAError, ReadingFrameError, DoubleStrandedError } from './errors.js';
+export type { StopCodon, Codon } from './codons.js';
+export type {
+  DNAError,
+  RNAError,
+  ReadingFrameError,
+  DoubleStrandedError,
+  CodonError,
+} from './errors.js';
 export {
   describeDNAError,
   describeRNAError,
   describeReadingFrameError,
   describeDoubleStrandedError,
+  describeCodonError,
 } from './errors.js';

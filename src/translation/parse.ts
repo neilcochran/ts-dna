@@ -1,8 +1,8 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import { parseRNA, CODON_LENGTH, isStopCodon } from '../sequence/index.js';
-import type { AminoAcid } from './AminoAcid.js';
+import { unsafeCodon } from '../sequence/codons.js';
+import { type AminoAcid, unsafeAminoAcid } from './AminoAcid.js';
 import { AMINO_ACID_BY_CODON } from './amino-acids.js';
-import { unsafeAminoAcid } from './internal-factories.js';
 import type { TranslationError } from './errors.js';
 
 /**
@@ -50,5 +50,5 @@ export function parseAminoAcid(codon: string): Result<AminoAcid, TranslationErro
     return failure({ kind: 'invalid-codon', codon: sequence, position: 0 });
   }
 
-  return success(unsafeAminoAcid(rna, data));
+  return success(unsafeAminoAcid(unsafeCodon(rna), data));
 }

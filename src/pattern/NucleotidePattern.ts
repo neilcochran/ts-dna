@@ -2,7 +2,35 @@ import type { DNA, RNA } from '../sequence/index.js';
 import { complementIUPACSymbol, isIUPACSymbol } from './iupac-symbols.js';
 import type { IUPACSymbol } from './iupac-symbols.js';
 import type { PatternError } from './errors.js';
-import { UNSAFE_NUCLEOTIDE_PATTERN_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link NucleotidePattern} constructor. Not
+ * re-exported from the package barrel; in-tree callers reach it via {@link unsafeNucleotidePattern}
+ * or `unsafeCompilePattern`.
+ *
+ * @internal
+ */
+const UNSAFE_NUCLEOTIDE_PATTERN_KEY: unique symbol = Symbol('unsafe-nucleotide-pattern');
+
+/**
+ * Constructs a {@link NucleotidePattern} from a pre-validated source string and its compiled
+ * regex forms, skipping all IUPAC validation. Reserved for `pattern/`-internal callers
+ * (the parser; the complement-pattern helper) that have already compiled the regex.
+ *
+ * @internal
+ */
+export function unsafeNucleotidePattern(
+  pattern: string,
+  patternRegex: RegExp,
+  patternRegexGlobal: RegExp,
+): NucleotidePattern {
+  return new NucleotidePattern(
+    pattern,
+    patternRegex,
+    patternRegexGlobal,
+    UNSAFE_NUCLEOTIDE_PATTERN_KEY,
+  );
+}
 
 /** Acceptable input shape for pattern matching: a raw string or a validated `DNA` / `RNA`. */
 function asString(sequence: string | DNA | RNA): string {
@@ -225,12 +253,9 @@ export function compilePatternRegexSource(pattern: string): CompiledPatternSourc
   }
   let source = '';
   for (let i = 0; i < pattern.length; i++) {
-    const character = pattern[i];
-    if (character === undefined) {
-      continue;
-    }
+    const character = pattern.charAt(i);
     if (/[a-zA-Z]/.test(character)) {
-      const isEscapeSequence = i > 0 && pattern[i - 1] === '\\';
+      const isEscapeSequence = pattern.charAt(i - 1) === '\\';
       if (isEscapeSequence) {
         source += character;
         continue;
@@ -310,12 +335,9 @@ function symbolRegexClassFor(symbol: IUPACSymbol): string {
 function complementPatternString(pattern: string): string {
   let result = '';
   for (let i = 0; i < pattern.length; i++) {
-    const character = pattern[i];
-    if (character === undefined) {
-      continue;
-    }
+    const character = pattern.charAt(i);
     if (/[a-zA-Z]/.test(character)) {
-      const isEscapeSequence = i > 0 && pattern[i - 1] === '\\';
+      const isEscapeSequence = pattern.charAt(i - 1) === '\\';
       if (isEscapeSequence) {
         result += character;
         continue;

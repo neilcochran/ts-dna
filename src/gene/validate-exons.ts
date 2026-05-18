@@ -5,7 +5,7 @@ import {
   MAX_INTRON_SIZE,
 } from './biological-constants.js';
 import { type GenomicRegion, validateGenomicRegion } from '../coordinates/index.js';
-import { Result, success, failure, isFailure } from '../result/index.js';
+import { Result, success, failure, isFailure, at } from '../result/index.js';
 import type { GeneError } from './errors.js';
 
 /**
@@ -37,10 +37,7 @@ export function validateExons(
 
   // Per-exon validation: coordinates, bounds, size.
   for (let i = 0; i < exons.length; i++) {
-    const exon = exons[i];
-    if (exon === undefined) {
-      continue;
-    }
+    const exon = at(exons, i);
 
     if (isFailure(validateGenomicRegion(exon))) {
       return failure({
@@ -89,10 +86,7 @@ export function validateExons(
 
     const events: SweepEvent[] = [];
     for (let i = 0; i < exons.length; i++) {
-      const exon = exons[i];
-      if (exon === undefined) {
-        continue;
-      }
+      const exon = at(exons, i);
       events.push({ position: exon.start, type: 'start', exonIndex: i });
       events.push({ position: exon.end, type: 'end', exonIndex: i });
     }
@@ -117,10 +111,7 @@ export function validateExons(
         if (activeExons > 0) {
           const overlapping: number[] = [];
           for (let i = 0; i < exons.length; i++) {
-            const exon = exons[i];
-            if (exon === undefined) {
-              continue;
-            }
+            const exon = at(exons, i);
             if (exon.start <= event.position && exon.end > event.position) {
               overlapping.push(i);
             }
@@ -143,11 +134,8 @@ export function validateExons(
   if (exons.length > 1) {
     const sortedExons = [...exons].sort((a, b) => a.start - b.start);
     for (let i = 0; i < sortedExons.length - 1; i++) {
-      const current = sortedExons[i];
-      const next = sortedExons[i + 1];
-      if (current === undefined || next === undefined) {
-        continue;
-      }
+      const current = at(sortedExons, i);
+      const next = at(sortedExons, i + 1);
       const intronLength = next.start - current.end;
       if (intronLength < MIN_INTRON_SIZE) {
         return failure({

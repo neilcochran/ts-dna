@@ -105,6 +105,8 @@ export function describeSplicingError(error: SplicingError): string {
       return 'Gene does not have an alternative splicing profile';
     case 'no-default-variant':
       return 'Gene does not have a default splice variant defined';
+    case 'variant-no-included-exons':
+    case 'variant-duplicate-exon-indices':
     case 'variant-invalid-exon-index':
     case 'variant-skips-first-exon':
     case 'variant-skips-last-exon':

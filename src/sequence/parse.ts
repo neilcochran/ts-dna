@@ -1,10 +1,9 @@
 import { Result, success, failure } from '../result/index.js';
-import type { DNA } from './DNA.js';
-import type { RNA } from './RNA.js';
-import type { DoubleStrandedDNA } from './DoubleStrandedDNA.js';
+import { type DNA, unsafeDNA } from './DNA.js';
+import { type RNA, unsafeRNA } from './RNA.js';
+import { type DoubleStrandedDNA, unsafeDoubleStrandedDNA } from './DoubleStrandedDNA.js';
 import type { DNAError, RNAError, DoubleStrandedError } from './errors.js';
 import { validateDNAString, validateRNAString } from './internal-validation.js';
-import { unsafeDNA, unsafeRNA, unsafeDoubleStrandedDNA } from './internal-factories.js';
 
 /**
  * Parses an untrusted string as a {@link DNA} sequence.
@@ -100,9 +99,9 @@ export function parseDoubleStrandedDNA(
   const expected = forward.getReverseComplement().sequence;
   if (expected !== reverse.sequence) {
     for (let i = 0; i < expected.length; i++) {
-      const expectedChar = expected[i];
-      const actualChar = reverse.sequence[i];
-      if (expectedChar !== actualChar && expectedChar !== undefined && actualChar !== undefined) {
+      const expectedChar = expected.charAt(i);
+      const actualChar = reverse.sequence.charAt(i);
+      if (expectedChar !== actualChar) {
         return failure({
           kind: 'not-complementary',
           firstMismatchAt: i,

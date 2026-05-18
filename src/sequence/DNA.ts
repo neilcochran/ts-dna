@@ -1,5 +1,12 @@
 import { NucleicAcidImpl } from './internal-nucleic-acid-impl.js';
-import { UNSAFE_DNA_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link DNA} constructor. Not re-exported from
+ * the package barrel; only files inside `src/` reach it via {@link unsafeDNA}.
+ *
+ * @internal
+ */
+const UNSAFE_DNA_KEY: unique symbol = Symbol('unsafe-dna');
 
 const DNA_COMPLEMENT_MAP: Readonly<Record<string, string>> = Object.freeze({
   A: 'T',
@@ -49,4 +56,18 @@ export class DNA extends NucleicAcidImpl<DNA> {
   protected clone(sequence: string): DNA {
     return new DNA(sequence, UNSAFE_DNA_KEY);
   }
+}
+
+/**
+ * Constructs a {@link DNA} without re-validating the input. Reserved for in-tree callers
+ * that already know the input is well-formed (e.g. after slicing a validated DNA, after
+ * computing a complement). Package consumers must use {@link parseDNA} instead.
+ *
+ * @param sequence - A pre-validated, normalized (upper-case) DNA sequence
+ * @returns A new `DNA` wrapping the sequence with no validation
+ *
+ * @internal
+ */
+export function unsafeDNA(sequence: string): DNA {
+  return new DNA(sequence, UNSAFE_DNA_KEY);
 }

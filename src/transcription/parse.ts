@@ -2,8 +2,7 @@ import { Result, success, failure, isFailure } from '../result/index.js';
 import { parseRNA } from '../sequence/index.js';
 import { geneCoord, transcriptCoord } from '../coordinates/index.js';
 import type { Gene } from '../gene/index.js';
-import type { PreMRNA } from './PreMRNA.js';
-import { unsafePreMRNA } from './internal-factories.js';
+import { type PreMRNA, unsafePreMRNA } from './PreMRNA.js';
 import type { TranscriptionError } from './errors.js';
 
 /**
@@ -46,7 +45,7 @@ export function parsePreMRNA(
   }
   const rna = rnaResult.data;
 
-  if (!Number.isFinite(transcriptionStartSite) || transcriptionStartSite < 0) {
+  if (!Number.isInteger(transcriptionStartSite) || transcriptionStartSite < 0) {
     return failure({
       kind: 'tss-out-of-bounds',
       tss: transcriptionStartSite,

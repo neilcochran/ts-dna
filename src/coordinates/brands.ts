@@ -42,9 +42,12 @@ export type TranscriptCoord = number & {
  *
  * Distinct at the type level from {@link TranscriptCoord} because intron removal and 3'
  * cleavage shift every downstream index: a `TranscriptCoord` of 120 in the pre-mRNA may
- * correspond to a `MatureMRNACoord` of 60 (or be absent) in the mature mRNA. No converter is
- * exported today because no in-tree call site needs to cross the boundary; the brand exists
- * purely to keep the two spaces from being conflated by accident.
+ * correspond to a `MatureMRNACoord` of 60 (or be absent if the position falls in a removed
+ * intron). There is intentionally no converter from `TranscriptCoord`: the conversion is not
+ * a fixed offset, it depends on the surrounding exon layout, so a caller that wants to cross
+ * the boundary must walk the relevant `exons: readonly GenomicRegion<TranscriptCoord>[]` list
+ * themselves and brand the result with {@link mRNACoord}. The brand exists to prevent
+ * accidentally treating one coordinate space as another, not to imply a one-line conversion.
  */
 export type MatureMRNACoord = number & {
   /** Type-level brand. Not present at runtime. */

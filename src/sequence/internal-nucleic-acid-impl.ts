@@ -168,8 +168,8 @@ function complementString(
 ): string {
   let result = '';
   for (let i = 0; i < sequence.length; i++) {
-    const base = sequence[i];
-    const complement = base === undefined ? undefined : complementMap[base];
+    const base = sequence.charAt(i);
+    const complement = complementMap[base];
     if (complement === undefined) {
       throw new Error(`Complement encountered invalid base '${base}' at index ${i}`);
     }
@@ -184,8 +184,8 @@ function reverseComplementString(
 ): string {
   let result = '';
   for (let i = sequence.length - 1; i >= 0; i--) {
-    const base = sequence[i];
-    const complement = base === undefined ? undefined : complementMap[base];
+    const base = sequence.charAt(i);
+    const complement = complementMap[base];
     if (complement === undefined) {
       throw new Error(`Complement encountered invalid base '${base}' at index ${i}`);
     }

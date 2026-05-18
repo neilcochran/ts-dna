@@ -1,7 +1,14 @@
 import type { DNA } from '../sequence/index.js';
 import type { GeneCoord, GenomicRegion } from '../coordinates/index.js';
 import type { AlternativeSplicingProfile, SpliceVariant } from '../variants/index.js';
-import { UNSAFE_GENE_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link Gene} constructor. Not re-exported from
+ * the package barrel; in-tree callers reach it via {@link unsafeGene}.
+ *
+ * @internal
+ */
+const UNSAFE_GENE_KEY: unique symbol = Symbol('unsafe-gene');
 
 /**
  * A gene: a `DNA` sequence together with its exon/intron structure, an optional name, and an
@@ -190,4 +197,27 @@ export class Gene {
     const nameStr = this.name ? ` (${this.name})` : '';
     return `Gene${nameStr}(${this.sequence.getSequence().length}nt, ${this.exons.length} exons, ${this.introns.length} introns)`;
   }
+}
+
+/**
+ * Constructs a {@link Gene} without re-running validation. Reserved for `gene/`-internal
+ * callers.
+ *
+ * @param sequence - Validated DNA sequence
+ * @param exons - Validated, branded exon regions
+ * @param introns - Validated, branded intron regions
+ * @param name - Optional gene name
+ * @param splicingProfile - Optional, validated alternative-splicing profile
+ * @returns A new `Gene`
+ *
+ * @internal
+ */
+export function unsafeGene(
+  sequence: DNA,
+  exons: readonly GenomicRegion<GeneCoord>[],
+  introns: readonly GenomicRegion<GeneCoord>[],
+  name: string | undefined,
+  splicingProfile: AlternativeSplicingProfile | undefined,
+): Gene {
+  return new Gene(sequence, exons, introns, name, splicingProfile, UNSAFE_GENE_KEY);
 }

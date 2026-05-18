@@ -1,8 +1,7 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import { parseRNA } from '../sequence/index.js';
 import { mRNACoord } from '../coordinates/index.js';
-import type { MRNA } from './MRNA.js';
-import { unsafeMRNA } from './internal-factories.js';
+import { type MRNA, unsafeMRNA } from './MRNA.js';
 import type { MRNAError } from './errors.js';
 
 /**

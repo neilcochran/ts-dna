@@ -1,10 +1,10 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import { CODON_LENGTH, transcribeSequence } from '../sequence/index.js';
-import { unsafeDNA } from '../sequence/internal-factories.js';
+import { unsafeDNA } from '../sequence/DNA.js';
 import { mRNACoord } from '../coordinates/index.js';
 import type { Gene } from '../gene/index.js';
 import type { PreMRNA } from '../transcription/index.js';
-import { unsafeMRNA } from '../modifications/internal-factories.js';
+import { unsafeMRNA } from '../modifications/MRNA.js';
 import type { MRNA } from '../modifications/MRNA.js';
 import { SplicingOutcome } from './splicing-outcome.js';
 import {
@@ -51,8 +51,7 @@ export function spliceRNAWithVariant(
  * {@link SplicingOutcome} per variant.
  *
  * Variants that fail processing are skipped silently in the output; if every variant fails
- * (and at least one was tried), the function still returns success with an empty array. The
- * old implementation used `console.warn` to surface partial failures; that behavior is gone.
+ * (and at least one was tried), the function still returns success with an empty array.
  *
  * @param preMRNA - The pre-mRNA whose source gene supplies the splicing profile
  * @param options - Validation options for each variant
@@ -130,7 +129,6 @@ export function* enumerateSpliceVariants(
   gene: Gene,
   options: AlternativeSplicingOptions = DEFAULT_ALTERNATIVE_SPLICING_OPTIONS,
 ): Generator<SpliceVariant, void, undefined> {
-  const opts = { ...DEFAULT_ALTERNATIVE_SPLICING_OPTIONS, ...options };
   const totalExons = gene.exons.length;
   if (totalExons === 0) {
     return;
@@ -144,26 +142,13 @@ export function* enumerateSpliceVariants(
       }
     }
 
-    if (!opts.allowSkipFirstExon && !includedExons.includes(0)) {
-      continue;
-    }
-    if (!opts.allowSkipLastExon && !includedExons.includes(totalExons - 1)) {
-      continue;
-    }
-    if (opts.requireMinimumExons && includedExons.length < (opts.minimumExonCount ?? 1)) {
-      continue;
-    }
-
     const variant: SpliceVariant = {
       name: `generated-variant-${includedExons.join('-')}`,
       includedExons,
     };
 
-    if (opts.validateReadingFrames === true || opts.validateCodons === true) {
-      const validation = validateSpliceVariant(variant, gene, opts);
-      if (isFailure(validation)) {
-        continue;
-      }
+    if (isFailure(validateSpliceVariant(variant, gene, options))) {
+      continue;
     }
 
     yield variant;

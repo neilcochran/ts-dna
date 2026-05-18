@@ -1,6 +1,7 @@
-import { Result, success, failure } from '../result/index.js';
+import { Result, success, failure, at } from '../result/index.js';
 import type { DoubleStrandedDNA } from '../sequence/index.js';
-import { unsafeDNA, unsafeDoubleStrandedDNA } from '../sequence/internal-factories.js';
+import { unsafeDNA } from '../sequence/DNA.js';
+import { unsafeDoubleStrandedDNA } from '../sequence/DoubleStrandedDNA.js';
 import type {
   ReplicationEvent,
   ReplicationOutput,
@@ -132,10 +133,7 @@ export function replicate(
   }
 
   for (let i = 0; i < fragments.length; i++) {
-    const fragment = fragments[i];
-    if (fragment === undefined) {
-      continue;
-    }
+    const fragment = at(fragments, i);
     events.push({
       kind: 'primer-removal',
       position: fragment.startPosition,
@@ -147,10 +145,7 @@ export function replicate(
   }
 
   for (let i = 0; i < fragments.length; i++) {
-    const fragment = fragments[i];
-    if (fragment === undefined) {
-      continue;
-    }
+    const fragment = at(fragments, i);
     events.push({
       kind: 'ligation',
       position: fragment.startPosition,
@@ -310,10 +305,7 @@ function* yieldSnapshots(plan: ReplicationPlan): Generator<ReplicationSnapshot, 
   }
 
   for (let i = 0; i < fragments.length; i++) {
-    const fragment = fragments[i];
-    if (fragment === undefined) {
-      continue;
-    }
+    const fragment = at(fragments, i);
     fragments[i] = fragment.withPrimerRemoved();
     yield freezeSnapshot({
       step: step++,
@@ -331,10 +323,7 @@ function* yieldSnapshots(plan: ReplicationPlan): Generator<ReplicationSnapshot, 
   }
 
   for (let i = 0; i < fragments.length; i++) {
-    const fragment = fragments[i];
-    if (fragment === undefined) {
-      continue;
-    }
+    const fragment = at(fragments, i);
     fragments[i] = fragment.withLigated();
     yield freezeSnapshot({
       step: step++,

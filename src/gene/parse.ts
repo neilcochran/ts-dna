@@ -7,13 +7,31 @@ import {
   type GenomicRegion,
 } from '../coordinates/index.js';
 import type { NucleotidePattern } from '../pattern/index.js';
-import type { AlternativeSplicingProfile } from '../variants/index.js';
-import type { Gene } from './Gene.js';
-import type { Promoter } from './Promoter.js';
-import type { PromoterElement } from './PromoterElement.js';
+import {
+  type AlternativeSplicingProfile,
+  type AlternativeSplicingOptions,
+  validateSpliceVariant,
+} from '../variants/index.js';
+import { type Gene, unsafeGene } from './Gene.js';
+import { type Promoter, unsafePromoter } from './Promoter.js';
+import { type PromoterElement, unsafePromoterElement } from './PromoterElement.js';
 import type { GeneError, PromoterError, PromoterElementError } from './errors.js';
 import { validateExons } from './validate-exons.js';
-import { unsafeGene, unsafePromoter, unsafePromoterElement } from './internal-factories.js';
+
+/**
+ * Permissive options used by `validateSplicingProfile` so that `parseGene` only enforces
+ * the always-on structural rules (empty inclusion list, duplicate exon indices, index
+ * range) and not the biological-realism rules (first/last exon presence, minimum count,
+ * reading frame, codons). The biological rules depend on runtime options the caller picks
+ * at processing time, so the strict checks belong there, not at construction time.
+ */
+const STRUCTURAL_VALIDATION_ONLY: AlternativeSplicingOptions = {
+  allowSkipFirstExon: true,
+  allowSkipLastExon: true,
+  requireMinimumExons: false,
+  validateReadingFrames: false,
+  validateCodons: false,
+};
 
 /**
  * Parses an untrusted DNA-sequence string and exon list into a {@link Gene}.
@@ -63,13 +81,6 @@ export function parseGene(
     return failure(exonValidation.error);
   }
 
-  if (splicingProfile !== undefined) {
-    const profileValidation = validateSplicingProfile(splicingProfile, exons.length);
-    if (isFailure(profileValidation)) {
-      return failure(profileValidation.error);
-    }
-  }
-
   const brandedExons: GenomicRegion<GeneCoord>[] = exons.map(exon => ({
     start: geneCoord(exon.start),
     end: geneCoord(exon.end),
@@ -81,7 +92,16 @@ export function parseGene(
     name: `intron${i + 1}`,
   }));
 
-  return success(unsafeGene(dna, brandedExons, brandedIntrons, name, splicingProfile));
+  const gene = unsafeGene(dna, brandedExons, brandedIntrons, name, splicingProfile);
+
+  if (splicingProfile !== undefined) {
+    const profileValidation = validateSplicingProfile(splicingProfile, gene);
+    if (isFailure(profileValidation)) {
+      return failure(profileValidation.error);
+    }
+  }
+
+  return success(gene);
 }
 
 /**
@@ -97,7 +117,7 @@ export function parsePromoter(
   elements: readonly PromoterElement[],
   name?: string,
 ): Result<Promoter, PromoterError> {
-  if (!Number.isFinite(transcriptionStartSite) || transcriptionStartSite < 0) {
+  if (!Number.isInteger(transcriptionStartSite) || transcriptionStartSite < 0) {
     return failure({ kind: 'invalid-tss', tss: transcriptionStartSite });
   }
   return success(unsafePromoter(geneCoord(transcriptionStartSite), elements, name));
@@ -109,7 +129,8 @@ export function parsePromoter(
  *
  * @param name - Element name (must be non-empty)
  * @param pattern - IUPAC nucleotide pattern matching the element
- * @param position - Position relative to TSS, in base pairs (must be a finite integer)
+ * @param position - Position relative to TSS, in base pairs (must be an integer; may be
+ * negative for elements upstream of the TSS)
  * @param scoreWeight - Score contribution for promoter-strength calculation (must be finite)
  * @returns `Result<PromoterElement, PromoterElementError>`
  */
@@ -122,7 +143,7 @@ export function parsePromoterElement(
   if (name.length === 0) {
     return failure({ kind: 'empty-name' });
   }
-  if (!Number.isFinite(position)) {
+  if (!Number.isInteger(position)) {
     return failure({ kind: 'invalid-position', position });
   }
   if (!Number.isFinite(scoreWeight)) {
@@ -132,23 +153,26 @@ export function parsePromoterElement(
 }
 
 /**
- * Validates an alternative-splicing profile against the gene's exon count.
+ * Validates an alternative-splicing profile against a gene.
  *
- * Enforces:
+ * Profile-level rules (owned by this function):
  * - profile must contain at least one variant
  * - the named default variant must exist in the list
- * - each variant must include at least one exon
- * - each variant's exon indices must be in range
- * - exon indices within a variant must be unique
  * - variant names within the profile must be unique
  *
+ * Per-variant rules (delegated to {@link validateSpliceVariant} so the rules live in one
+ * place): empty inclusion list, duplicate exon indices, index range, first/last exon
+ * presence, minimum count, reading frame, start/stop codons. Per-variant failures are
+ * surfaced as `'invalid-variant'` carrying the structured `VariantValidationError`.
+ *
  * @param profile - The splicing profile to validate
- * @param totalExons - The gene's total exon count
+ * @param gene - The gene the profile is attached to (used by `validateSpliceVariant` to
+ * compute variant sequences and check ranges)
  * @returns `Result<void, GeneError>`
  */
 function validateSplicingProfile(
   profile: AlternativeSplicingProfile,
-  totalExons: number,
+  gene: Gene,
 ): Result<void, GeneError> {
   if (profile.variants.length === 0) {
     return failure({
@@ -165,36 +189,19 @@ function validateSplicingProfile(
     });
   }
 
-  for (const variant of profile.variants) {
-    if (variant.includedExons.length === 0) {
-      return failure({
-        kind: 'invalid-splicing-profile',
-        reason: `Variant '${variant.name}' must include at least one exon`,
-      });
-    }
-    for (const exonIndex of variant.includedExons) {
-      if (exonIndex < 0 || exonIndex >= totalExons) {
-        return failure({
-          kind: 'invalid-splicing-profile',
-          reason: `Variant '${variant.name}' references invalid exon index ${exonIndex}. Gene has ${totalExons} exons.`,
-        });
-      }
-    }
-    const unique = new Set(variant.includedExons);
-    if (unique.size !== variant.includedExons.length) {
-      return failure({
-        kind: 'invalid-splicing-profile',
-        reason: `Variant '${variant.name}' contains duplicate exon indices`,
-      });
-    }
-  }
-
   const variantNames = profile.variants.map(v => v.name);
   if (new Set(variantNames).size !== variantNames.length) {
     return failure({
       kind: 'invalid-splicing-profile',
       reason: 'Splicing profile contains duplicate variant names',
     });
+  }
+
+  for (const variant of profile.variants) {
+    const variantValidation = validateSpliceVariant(variant, gene, STRUCTURAL_VALIDATION_ONLY);
+    if (isFailure(variantValidation)) {
+      return failure({ kind: 'invalid-variant', cause: variantValidation.error });
+    }
   }
 
   return success(undefined);

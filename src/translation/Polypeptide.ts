@@ -1,6 +1,14 @@
 import type { MRNA } from '../modifications/index.js';
 import type { AminoAcid } from './AminoAcid.js';
-import { UNSAFE_POLYPEPTIDE_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link Polypeptide} constructor. Not
+ * re-exported from the package barrel; only files inside `src/translation/` reach it via
+ * {@link unsafePolypeptide}.
+ *
+ * @internal
+ */
+const UNSAFE_POLYPEPTIDE_KEY: unique symbol = Symbol('unsafe-polypeptide');
 
 /**
  * A polypeptide: the ordered amino-acid product of translating an mRNA's coding sequence.
@@ -94,4 +102,18 @@ export class Polypeptide {
   indexOf(subsequence: Polypeptide, startPosition: number = 0): number {
     return this.getSequence().indexOf(subsequence.getSequence(), startPosition);
   }
+}
+
+/**
+ * Constructs a {@link Polypeptide} without re-running validation. Provides symmetry with the
+ * other gated types' unsafe factories.
+ *
+ * @param mRNA - The mRNA whose coding sequence produced this polypeptide
+ * @param aminoAcids - The validated, in-order amino-acid sequence
+ * @returns A new `Polypeptide`
+ *
+ * @internal
+ */
+export function unsafePolypeptide(mRNA: MRNA, aminoAcids: readonly AminoAcid[]): Polypeptide {
+  return new Polypeptide(mRNA, aminoAcids, UNSAFE_POLYPEPTIDE_KEY);
 }

@@ -1,7 +1,16 @@
-import type { RNA } from '../sequence/index.js';
-import { unsafeRNA } from '../sequence/internal-factories.js';
+import type { Codon } from '../sequence/index.js';
+import { unsafeCodon } from '../sequence/codons.js';
+import { unsafeRNA } from '../sequence/RNA.js';
 import type { AminoAcidData } from './AminoAcidData.js';
-import { UNSAFE_AMINO_ACID_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link AminoAcid} constructor. Not re-exported
+ * from the package barrel; only files inside `src/translation/` reach it via
+ * {@link unsafeAminoAcid} / {@link unsafeAminoAcidFromString}.
+ *
+ * @internal
+ */
+const UNSAFE_AMINO_ACID_KEY: unique symbol = Symbol('unsafe-amino-acid');
 
 /**
  * A proteinogenic amino acid as encoded by a specific RNA codon.
@@ -15,8 +24,8 @@ import { UNSAFE_AMINO_ACID_KEY } from './internal-keys.js';
  * constructor is gated by a module-private sentinel.
  */
 export class AminoAcid {
-  /** The validated RNA codon that codes for this amino acid in this instance. */
-  public readonly codon: RNA;
+  /** The validated, length-3 RNA codon that codes for this amino acid in this instance. */
+  public readonly codon: Codon;
 
   /**
    * Biochemical data shared by every amino-acid instance of this type. Lookup is by codon;
@@ -29,13 +38,13 @@ export class AminoAcid {
    * Constructs an `AminoAcid`. Module-private; public callers must go through `parseAminoAcid`
    * or `translate`.
    *
-   * @param codon - The validated RNA codon
+   * @param codon - The validated, codon-length RNA
    * @param data - The validated amino-acid data (codon must appear in `data.codons`)
    * @param trustedKey - Sentinel proving the caller is `translation/`-internal
    *
    * @internal
    */
-  constructor(codon: RNA, data: AminoAcidData, trustedKey: typeof UNSAFE_AMINO_ACID_KEY) {
+  constructor(codon: Codon, data: AminoAcidData, trustedKey: typeof UNSAFE_AMINO_ACID_KEY) {
     if (trustedKey !== UNSAFE_AMINO_ACID_KEY) {
       throw new Error('AminoAcid must be constructed via parseAminoAcid or translate');
     }
@@ -44,11 +53,11 @@ export class AminoAcid {
   }
 
   /**
-   * Returns every RNA codon that codes for this amino acid (including the one carried by
-   * this instance), as fresh `RNA` instances. Alternate codons are the silent third-base
+   * Returns every codon that codes for this amino acid (including the one carried by this
+   * instance), as fresh {@link Codon} instances. Alternate codons are the silent third-base
    * substitutions of degenerate codes.
    *
-   * @returns Array of `RNA` codons, in canonical order matching `data.codons`
+   * @returns Array of `Codon` values, in canonical order matching `data.codons`
    *
    * @example
    * ```typescript
@@ -56,8 +65,8 @@ export class AminoAcid {
    * alanine.getAllAlternateCodons().map(c => c.sequence); // ['GCA', 'GCC', 'GCG', 'GCU']
    * ```
    */
-  getAllAlternateCodons(): RNA[] {
-    return this.data.codons.map(codon => unsafeRNA(codon));
+  getAllAlternateCodons(): Codon[] {
+    return this.data.codons.map(codon => unsafeCodon(unsafeRNA(codon)));
   }
 
   /**
@@ -105,4 +114,34 @@ export class AminoAcid {
       this.data.singleLetterCode === other.data.singleLetterCode
     );
   }
+}
+
+/**
+ * Constructs an {@link AminoAcid} without re-running validation. Reserved for
+ * `translation/`-internal callers (the {@link parseAminoAcid} parser, the `translate`
+ * pipeline).
+ *
+ * @param codon - The validated, codon-length RNA
+ * @param data - The validated amino-acid data
+ * @returns A new `AminoAcid`
+ *
+ * @internal
+ */
+export function unsafeAminoAcid(codon: Codon, data: AminoAcidData): AminoAcid {
+  return new AminoAcid(codon, data, UNSAFE_AMINO_ACID_KEY);
+}
+
+/**
+ * Constructs an {@link AminoAcid} from a trusted codon string and the matching data entry.
+ * Skips RNA parsing, length validation, and codon-table lookup; the caller is asserting all
+ * three are already known to be consistent.
+ *
+ * @param codonString - A validated RNA codon string (3 characters over `{A, C, G, U}`)
+ * @param data - The validated amino-acid data for that codon
+ * @returns A new `AminoAcid`
+ *
+ * @internal
+ */
+export function unsafeAminoAcidFromString(codonString: string, data: AminoAcidData): AminoAcid {
+  return unsafeAminoAcid(unsafeCodon(unsafeRNA(codonString)), data);
 }

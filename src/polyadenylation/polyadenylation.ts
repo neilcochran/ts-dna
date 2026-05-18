@@ -176,15 +176,15 @@ export function filterPolyadenylationSites(
 
 /**
  * Scores a candidate polyadenylation site at `position` using the supplied options. Returns
- * `null` when biological constraints reject the candidate or when its total strength falls
- * below {@link MIN_POLYA_SITE_STRENGTH}.
+ * `undefined` when biological constraints reject the candidate or when its total strength
+ * falls below {@link MIN_POLYA_SITE_STRENGTH}.
  */
 function analyzePolyadenylationSite(
   sequence: string,
   position: number,
   signal: string,
   options: Required<CleavageSiteOptions>,
-): PolyadenylationSite | null {
+): PolyadenylationSite | undefined {
   const baseStrength = getSignalStrength(signal);
   let totalStrength = baseStrength;
 
@@ -203,16 +203,16 @@ function analyzePolyadenylationSite(
   const cleavageSite = predictCleavageSite(
     sequence,
     position + signal.length,
-    [...options.distanceRange] as [number, number],
-    [...options.cleavagePreference],
+    options.distanceRange,
+    options.cleavagePreference,
   );
 
   if (!validateCleavageSiteConstraints(sequence, position, signal.length, cleavageSite, options)) {
-    return null;
+    return undefined;
   }
 
   if (totalStrength < MIN_POLYA_SITE_STRENGTH) {
-    return null;
+    return undefined;
   }
 
   return {
@@ -226,11 +226,18 @@ function analyzePolyadenylationSite(
 }
 
 /**
+ * Module-private lookup table mapping recognized polyadenylation-signal strings to their
+ * canonical strength scores. Built once at module load from {@link POLYA_SIGNALS} so the
+ * lookup avoids an unsafe `as` cast against the publicly-exported `const` object.
+ */
+const POLYA_SIGNAL_STRENGTHS: ReadonlyMap<string, number> = new Map(Object.entries(POLYA_SIGNALS));
+
+/**
  * Returns the strength score for a recognized polyadenylation signal, or the default fallback
  * for unrecognized signals.
  */
 function getSignalStrength(signal: string): number {
-  return POLYA_SIGNALS[signal as keyof typeof POLYA_SIGNALS] ?? DEFAULT_POLYA_SIGNAL_STRENGTH;
+  return POLYA_SIGNAL_STRENGTHS.get(signal) ?? DEFAULT_POLYA_SIGNAL_STRENGTH;
 }
 
 /**
@@ -350,8 +357,8 @@ function analyzeDSEQuality(sequence: string, dseRegion: GenomicRegion): number {
 function predictCleavageSite(
   sequence: string,
   startPosition: number,
-  distanceRange: [number, number],
-  preferences: string[],
+  distanceRange: readonly [number, number],
+  preferences: readonly string[],
 ): number | undefined {
   const [minDistance, maxDistance] = distanceRange;
   const searchStart = startPosition + minDistance;
@@ -392,12 +399,10 @@ function predictCleavageSite(
 
 /**
  * Validates biological constraints for a candidate cleavage site: the cleavage must exist,
- * fall within the configured distance range from the *matched* signal (not from
- * `polyASignal[0]`), and not land inside a poly-G stretch.
- *
- * Takes `signalLength` rather than indexing `options.polyASignal[0].length` (the old
- * implementation's bug, surfaced in PLAN.md Followups: it sized the distance check against
- * the first configured signal instead of against the one that actually matched).
+ * fall within the configured distance range from the matched signal, and not land inside a
+ * poly-G stretch. `signalLength` is the length of the signal that actually matched at
+ * `signalPosition`, so the distance check is anchored to that signal rather than to the
+ * first entry of `options.polyASignal`.
  */
 function validateCleavageSiteConstraints(
   sequence: string,

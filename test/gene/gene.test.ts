@@ -261,8 +261,13 @@ describe('Gene', () => {
         },
       );
       expect(isFailure(result)).toBe(true);
-      if (isFailure(result) && result.error.kind === 'invalid-splicing-profile') {
-        expect(result.error.reason).toBe("Variant 'empty' must include at least one exon");
+      if (isFailure(result) && result.error.kind === 'invalid-variant') {
+        expect(result.error.cause.kind).toBe('variant-no-included-exons');
+        if (result.error.cause.kind === 'variant-no-included-exons') {
+          expect(result.error.cause.variantName).toBe('empty');
+        }
+      } else {
+        throw new Error(`expected invalid-variant, got ${JSON.stringify(result)}`);
       }
     });
 
@@ -278,10 +283,14 @@ describe('Gene', () => {
         },
       );
       expect(isFailure(result)).toBe(true);
-      if (isFailure(result) && result.error.kind === 'invalid-splicing-profile') {
-        expect(result.error.reason).toBe(
-          "Variant 'invalid' references invalid exon index 5. Gene has 2 exons.",
-        );
+      if (isFailure(result) && result.error.kind === 'invalid-variant') {
+        expect(result.error.cause.kind).toBe('variant-invalid-exon-index');
+        if (result.error.cause.kind === 'variant-invalid-exon-index') {
+          expect(result.error.cause.exonIndex).toBe(5);
+          expect(result.error.cause.totalExons).toBe(2);
+        }
+      } else {
+        throw new Error(`expected invalid-variant, got ${JSON.stringify(result)}`);
       }
     });
 
@@ -297,8 +306,13 @@ describe('Gene', () => {
         },
       );
       expect(isFailure(result)).toBe(true);
-      if (isFailure(result) && result.error.kind === 'invalid-splicing-profile') {
-        expect(result.error.reason).toBe("Variant 'duplicate' contains duplicate exon indices");
+      if (isFailure(result) && result.error.kind === 'invalid-variant') {
+        expect(result.error.cause.kind).toBe('variant-duplicate-exon-indices');
+        if (result.error.cause.kind === 'variant-duplicate-exon-indices') {
+          expect(result.error.cause.duplicateIndices).toEqual([0]);
+        }
+      } else {
+        throw new Error(`expected invalid-variant, got ${JSON.stringify(result)}`);
       }
     });
 

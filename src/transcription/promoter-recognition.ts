@@ -6,7 +6,11 @@ import {
   STANDARD_PROMOTER_ELEMENTS,
   CORE_PROMOTER_ELEMENTS,
 } from '../gene/index.js';
-import { MAX_PROMOTER_SEARCH_DISTANCE, TSS_PROXIMITY_THRESHOLD } from './biological-constants.js';
+import {
+  MAX_PROMOTER_SEARCH_DISTANCE,
+  TSS_PROXIMITY_THRESHOLD,
+  DEFAULT_MIN_PROMOTER_STRENGTH,
+} from './biological-constants.js';
 import { TATA_BOX_TYPICAL_POSITION, DPE_TYPICAL_POSITION } from '../gene/biological-constants.js';
 
 /**
@@ -37,7 +41,7 @@ const DEFAULT_SEARCH_OPTIONS: Required<PromoterSearchOptions> = {
   maxDownstreamDistance: 50,
   minElements: 1,
   elements: STANDARD_PROMOTER_ELEMENTS,
-  minStrengthScore: 5,
+  minStrengthScore: DEFAULT_MIN_PROMOTER_STRENGTH,
 };
 
 interface ElementMatch {

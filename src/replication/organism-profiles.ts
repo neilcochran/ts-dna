@@ -4,9 +4,7 @@
  * Profiles are pure data; they carry no behavior. The fields are limited to values the
  * replication pipeline actually consumes (polymerase speed, Okazaki fragment size range,
  * primer length range, nucleosome presence) plus a human-readable name and the broad
- * prokaryotic / eukaryotic classification. Aspirational fields (`temperature`, `errorRate`,
- * `enableTiming`, `enableProofreading`) from the pre-restructure shape were removed since
- * the simulation does not honor them.
+ * prokaryotic / eukaryotic classification.
  */
 export interface OrganismProfile {
   /** Human-readable name (e.g. "E. coli"). */

@@ -1,6 +1,13 @@
 import { geneCoord, type GeneCoord } from '../coordinates/index.js';
 import type { PromoterElement } from './PromoterElement.js';
-import { UNSAFE_PROMOTER_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link Promoter} constructor. Not re-exported
+ * from the package barrel; in-tree callers reach it via {@link unsafePromoter}.
+ *
+ * @internal
+ */
+const UNSAFE_PROMOTER_KEY: unique symbol = Symbol('unsafe-promoter');
 
 /**
  * Multiplier applied to the total element count when a promoter has more than one element,
@@ -128,4 +135,23 @@ export class Promoter {
     const nameStr = this.name ? ` (${this.name})` : '';
     return `Promoter${nameStr} at TSS=${this.transcriptionStartSite} with elements: [${elementNames}]`;
   }
+}
+
+/**
+ * Constructs a {@link Promoter} without re-running validation. Reserved for `gene/`-internal
+ * callers.
+ *
+ * @param transcriptionStartSite - Validated, branded gene-coordinate TSS
+ * @param elements - Validated promoter elements
+ * @param name - Optional promoter name
+ * @returns A new `Promoter`
+ *
+ * @internal
+ */
+export function unsafePromoter(
+  transcriptionStartSite: GeneCoord,
+  elements: readonly PromoterElement[],
+  name: string | undefined,
+): Promoter {
+  return new Promoter(transcriptionStartSite, elements, name, UNSAFE_PROMOTER_KEY);
 }

@@ -1,6 +1,5 @@
 import { OkazakiFragment, parseOkazakiFragment, parseRNAPrimer } from '../../src/replication';
 import { unsafeOkazakiFragment } from '../../src/replication/OkazakiFragment';
-import { UNSAFE_OKAZAKI_KEY } from '../../src/replication/internal-keys';
 import { parseDNA } from '../../src/sequence';
 import { isFailure, isSuccess } from '../../src/result/Result';
 
@@ -170,10 +169,6 @@ describe('OkazakiFragment', () => {
       const frag = unsafeOkazakiFragment('x', 100, 101, PRIMER_AT_0, sequence, false, false);
       expect(frag.id).toBe('x');
       expect(frag.length()).toBe(1);
-    });
-
-    test('UNSAFE_OKAZAKI_KEY is a unique symbol', () => {
-      expect(typeof UNSAFE_OKAZAKI_KEY).toBe('symbol');
     });
   });
 });

@@ -4,9 +4,6 @@ import type { MRNA } from '../modifications/MRNA.js';
 /**
  * Outcome of processing a single splice variant: the mature mRNA it produces plus the
  * derived coding-sequence string and predicted polypeptide length.
- *
- * Fields are public-readonly; the seven wrapper getters that previously surfaced
- * `variant.name`, `mRNA.length`, etc. were dropped because they added nothing programmatic.
  */
 export class SplicingOutcome {
   /**

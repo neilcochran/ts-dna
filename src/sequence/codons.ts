@@ -1,10 +1,67 @@
 import { Result, success, failure } from '../result/index.js';
-import type { ReadingFrameError } from './errors.js';
+import type { RNA } from './RNA.js';
+import type { ReadingFrameError, CodonError } from './errors.js';
 
 /**
  * Length of a codon in nucleotides. Always 3 for the standard genetic code.
  */
 export const CODON_LENGTH = 3;
+
+/**
+ * A validated RNA codon: an {@link RNA} sequence whose length is exactly {@link CODON_LENGTH}.
+ *
+ * Branded subtype of `RNA` so the type system distinguishes "any RNA" from "RNA known to be
+ * codon-length." Functions that take a `Codon` will reject a general `RNA`; functions that take
+ * an `RNA` continue to accept `Codon` (since `Codon` is an `RNA`). All `RNA` methods
+ * (`.sequence`, `.length()`, complements) work on `Codon` unchanged.
+ *
+ * Construct via {@link parseCodon} for untrusted input, or via {@link unsafeCodon} for in-tree
+ * callers that have already verified the length invariant.
+ */
+export type Codon = RNA & {
+  /** Type-level brand. Not present at runtime. */
+  readonly __codon: 'Codon';
+};
+
+/**
+ * Brands a validated {@link RNA} as a {@link Codon}, enforcing the length-3 invariant.
+ *
+ * @param rna - The candidate RNA sequence
+ * @returns `Result.success` containing the branded `Codon` when `rna.sequence.length === CODON_LENGTH`,
+ * or `Result.failure` carrying a {@link CodonError} otherwise
+ *
+ * @example
+ * ```typescript
+ * const result = parseCodon(parseRNA('AUG').unwrap());
+ * if (result.success) {
+ *   result.data.sequence; // 'AUG'
+ * }
+ * ```
+ */
+export function parseCodon(rna: RNA): Result<Codon, CodonError> {
+  if (rna.sequence.length !== CODON_LENGTH) {
+    return failure({
+      kind: 'wrong-codon-length',
+      length: rna.sequence.length,
+      expected: CODON_LENGTH,
+    });
+  }
+  return success(rna as Codon);
+}
+
+/**
+ * Brands an {@link RNA} as a {@link Codon} without re-checking the length. Reserved for
+ * in-tree callers that have already established the length invariant (e.g. via a parser or
+ * by slicing a coding sequence in codon-sized steps).
+ *
+ * @param rna - A pre-validated codon-length RNA
+ * @returns The same `rna` with the {@link Codon} brand applied
+ *
+ * @internal
+ */
+export function unsafeCodon(rna: RNA): Codon {
+  return rna as Codon;
+}
 
 /**
  * The canonical start codon (RNA alphabet). Codes for methionine and initiates translation.

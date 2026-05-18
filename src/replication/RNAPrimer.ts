@@ -1,10 +1,18 @@
 import { Result, success, failure, isFailure } from '../result/index.js';
 import { parseRNA } from '../sequence/index.js';
 import type { RNA } from '../sequence/index.js';
-import { unsafeRNA } from '../sequence/internal-factories.js';
+import { unsafeRNA } from '../sequence/RNA.js';
 import { MIN_RNA_PRIMER_LENGTH, MAX_RNA_PRIMER_LENGTH } from './biological-constants.js';
 import type { RNAPrimerError } from './errors.js';
-import { UNSAFE_PRIMER_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link RNAPrimer} constructor. Not re-exported
+ * from the package barrel; only files inside `src/replication/` reach it via
+ * {@link unsafeRNAPrimer}.
+ *
+ * @internal
+ */
+const UNSAFE_PRIMER_KEY: unique symbol = Symbol('unsafe-rna-primer');
 
 /**
  * An immutable RNA primer used to initiate DNA synthesis on an Okazaki fragment.
@@ -36,7 +44,7 @@ export class RNAPrimer {
    *
    * @param sequence - Validated RNA sequence (3-10 nucleotides)
    * @param position - 0-based template position
-   * @param trustedKey - Module-private construction key. See {@link UNSAFE_PRIMER_KEY}.
+   * @param trustedKey - Module-private construction key.
    *
    * @throws Error if `trustedKey` is missing or does not match the sentinel
    */

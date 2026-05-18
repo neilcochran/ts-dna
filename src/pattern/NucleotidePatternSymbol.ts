@@ -1,6 +1,16 @@
 import { NUCLEOTIDE_PATTERN_SYMBOLS } from './iupac-symbols.js';
 import type { IUPACSymbol } from './iupac-symbols.js';
-import { UNSAFE_NUCLEOTIDE_PATTERN_SYMBOL_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link NucleotidePatternSymbol} constructor.
+ * Not re-exported from the package barrel; in-tree callers reach it via
+ * {@link unsafeNucleotidePatternSymbol}.
+ *
+ * @internal
+ */
+const UNSAFE_NUCLEOTIDE_PATTERN_SYMBOL_KEY: unique symbol = Symbol(
+  'unsafe-nucleotide-pattern-symbol',
+);
 
 /**
  * A single IUPAC nucleotide notation symbol (e.g. `A`, `T`, `R`, `N`) with the concrete bases

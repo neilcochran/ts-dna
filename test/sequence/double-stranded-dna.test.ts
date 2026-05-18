@@ -5,8 +5,7 @@ import {
   parseDoubleStrandedDNA,
   describeDoubleStrandedError,
 } from '../../src/sequence';
-import { unsafeDoubleStrandedDNA } from '../../src/sequence/internal-factories';
-import { UNSAFE_DSDNA_KEY } from '../../src/sequence/internal-keys';
+import { unsafeDoubleStrandedDNA } from '../../src/sequence/DoubleStrandedDNA';
 import { isFailure, isSuccess } from '../../src/result/Result';
 
 describe('DoubleStrandedDNA', () => {
@@ -135,10 +134,6 @@ describe('DoubleStrandedDNA', () => {
       const duplex = unsafeDoubleStrandedDNA(forward, wrongReverse);
       expect(duplex.forward.sequence).toBe('ATCG');
       expect(duplex.reverse.sequence).toBe('AAAA');
-    });
-
-    test('UNSAFE_DSDNA_KEY is a unique symbol callers cannot synthesize', () => {
-      expect(typeof UNSAFE_DSDNA_KEY).toBe('symbol');
     });
   });
 

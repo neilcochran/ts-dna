@@ -2,7 +2,15 @@ import { Result, success, failure } from '../result/index.js';
 import type { DNA } from '../sequence/index.js';
 import type { RNAPrimer } from './RNAPrimer.js';
 import type { OkazakiFragmentError } from './errors.js';
-import { UNSAFE_OKAZAKI_KEY } from './internal-keys.js';
+
+/**
+ * Module-private construction key gating the {@link OkazakiFragment} constructor. Not
+ * re-exported from the package barrel; in-tree callers reach it via
+ * {@link unsafeOkazakiFragment}.
+ *
+ * @internal
+ */
+const UNSAFE_OKAZAKI_KEY: unique symbol = Symbol('unsafe-okazaki-fragment');
 
 /**
  * An immutable Okazaki fragment - a short stretch of newly synthesized DNA on the lagging
@@ -60,7 +68,7 @@ export class OkazakiFragment {
    * @param sequence - Optional newly-synthesized DNA filling the fragment
    * @param isPrimerRemoved - Whether the primer has been excised
    * @param isLigated - Whether the fragment has been ligated
-   * @param trustedKey - Module-private construction key. See {@link UNSAFE_OKAZAKI_KEY}.
+   * @param trustedKey - Module-private construction key.
    *
    * @throws Error if `trustedKey` is missing or does not match the sentinel
    */
